@@ -48,9 +48,10 @@ namespace Obeliskial_Essentials
         public static Dictionary<string, string> medsCustomCardDescriptions = new();
         public static RewardsManager RewardsManagerInstance;
 
-        internal static TMP_Text modVersionText;
+        internal static GameObject modVersionTextGO;
         public static readonly string[] vanillaSubclasses = { "mercenary", "sentinel", "berserker", "warden", "ranger", "assassin", "archer", "minstrel", "elementalist", "pyromancer", "loremaster", "warlock", "cleric", "priest", "voodoowitch", "prophet", "bandit", "fallen", "paladin" };
         public static Dictionary<string, string> medsTexts = new();
+        private static List<string> medsExportedSpritePaths = new();
         private void Awake()
         {
             Log = Logger;
@@ -76,8 +77,10 @@ namespace Obeliskial_Essentials
             Log.LogError(msg);
         }
 
-        public static void ExportSprite(Sprite spriteToExport, string spriteType, string subType = "", string subType2 = "")
+        public static void ExportSprite(Sprite spriteToExport, string spriteType, string subType = "", string subType2 = "", bool fullTextureExport = false)
         {
+            if (spriteToExport.textureRect.width == 0 || spriteToExport.textureRect.height == 0) { return; }
+            LogDebug("Exporting sprite: " + spriteToExport.name);
             string filePath = Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "sprite", spriteType);
             if (!subType.IsNullOrWhiteSpace())
             {
@@ -85,26 +88,30 @@ namespace Obeliskial_Essentials
                 if (!subType2.IsNullOrWhiteSpace())
                     filePath = Path.Combine(filePath, subType2);
             }
+            Texture2D finalImage;
+            Texture2D readableText;
             FolderCreate(filePath);
-            filePath = Path.Combine(filePath, spriteToExport.name + ".png");
+            filePath = Path.Combine(filePath, (fullTextureExport ? spriteToExport.texture.name : spriteToExport.name) + ".png");
+            if (medsExportedSpritePaths.Contains(filePath))
+                return;
             RenderTexture renderTex = RenderTexture.GetTemporary((int)spriteToExport.texture.width, (int)spriteToExport.texture.height, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Linear);
             // we flip it when doing the Graphics.Blit because the sprites are packed (which... flips them? idk?)
             Graphics.Blit(spriteToExport.texture, renderTex, new Vector2(1, -1), new Vector2(0, 1));
             RenderTexture previous = RenderTexture.active;
             RenderTexture.active = renderTex;
-            Texture2D readableText = new((int)spriteToExport.textureRect.width, (int)spriteToExport.textureRect.height);
-            readableText.ReadPixels(new Rect(spriteToExport.textureRect.x, spriteToExport.textureRect.y, spriteToExport.textureRect.width, spriteToExport.textureRect.height), 0, 0);
+            readableText = fullTextureExport ? new((int)spriteToExport.texture.width, (int)spriteToExport.texture.height) : new((int)spriteToExport.textureRect.width, (int)spriteToExport.textureRect.height);
+            readableText.ReadPixels(fullTextureExport ? new Rect(0, 0, spriteToExport.texture.width, spriteToExport.texture.height) : new Rect(spriteToExport.textureRect.x, spriteToExport.textureRect.y, spriteToExport.textureRect.width, spriteToExport.textureRect.height), 0, 0);
             readableText.Apply();
             RenderTexture.active = previous;
             RenderTexture.ReleaseTemporary(renderTex);
-
             // flip it back
-            Texture2D finalImage = new((int)spriteToExport.textureRect.width, (int)spriteToExport.textureRect.height);
+            finalImage = fullTextureExport ? new((int)spriteToExport.texture.width, (int)spriteToExport.texture.height) : new((int)spriteToExport.textureRect.width, (int)spriteToExport.textureRect.height);
             for (int i = 0; i < readableText.width; i++)
                 for (int j = 0; j < readableText.height; j++)
                     finalImage.SetPixel(i, readableText.height - j - 1, readableText.GetPixel(i, j));
             finalImage.Apply();
             File.WriteAllBytes(filePath, ImageConversion.EncodeToPNG(finalImage));
+            medsExportedSpritePaths.Add(filePath);
         }
         public static void FolderCreate(string folderPath)
         {
@@ -114,7 +121,13 @@ namespace Obeliskial_Essentials
         }
         public static void AddModVersionText(string sModName, string sModVersion, string sModDate)
         {
-            modVersionText.text += sModName + " v" + sModVersion + (sModDate.IsNullOrWhiteSpace() ? "" : (" (" + sModDate + ")")) + "\n";
+            LogDebug("Adding mod version text: " + sModName + " v" + sModVersion + (sModDate.IsNullOrWhiteSpace() ? "" : (" (" + sModDate + ")")));
+            LogDebug("current text: " + modVersionTextGO.GetComponent<TextMeshProUGUI>().text);
+            if (modVersionTextGO.GetComponent<TextMeshProUGUI>().text.IsNullOrWhiteSpace())
+                modVersionTextGO.GetComponent<TextMeshProUGUI>().text = sModName + " v" + sModVersion + (sModDate.IsNullOrWhiteSpace() ? "" : (" (" + sModDate + ")"));
+            else
+                modVersionTextGO.GetComponent<TextMeshProUGUI>().text += "\n" + sModName + " v" + sModVersion + (sModDate.IsNullOrWhiteSpace() ? "" : (" (" + sModDate + ")"));
+            LogDebug("after   text: " + modVersionTextGO.GetComponent<TextMeshProUGUI>().text);
         }
 
         public static void ExtractData<T>(T[] data)
@@ -262,7 +275,7 @@ namespace Obeliskial_Essentials
                     id = DataTextConvert.ToString(d);
                     text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
                 }
-                else if (data[a - 1].GetType() == typeof(CardPlayerPackData))
+                else if (data[a - 1].GetType() == typeof(CardPlayerPairsPackData))
                 {
                     type = "pairsPack";
                     CardPlayerPairsPackData d = (CardPlayerPairsPackData)(object)data[a - 1];

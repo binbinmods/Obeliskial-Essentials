@@ -45,9 +45,16 @@ namespace Obeliskial_Essentials
         [HarmonyPriority(Priority.First)]
         private static void MainMenuManagerStartPostfix(ref MainMenuManager __instance)
         {
-            if (modVersionText == null)
-                modVersionText = Instantiate(__instance.version, new Vector3(1f, 1f), Quaternion.identity, __instance.version.transform.parent);
-            modVersionText.text = "";
+            if (modVersionTextGO == null)
+            {
+                modVersionTextGO = Instantiate(__instance.version.gameObject, __instance.version.rectTransform.position, Quaternion.identity, __instance.version.transform.parent);
+                /*modVersionTextGO.GetComponent<RectTransform>().anchorMin = new Vector2(0.5f, 0.5f);
+                modVersionTextGO.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 0.5f);
+                modVersionTextGO.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0.5f);*/
+                modVersionTextGO.GetComponent<TextMeshProUGUI>().text = "EEEE";
+                modVersionTextGO.GetComponent<TMP_Text>().text = "EEEE";
+                LogDebug(modVersionTextGO.GetComponent<TextMeshProUGUI>().text);
+            }
             AddModVersionText(PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION, ModDate.ToString());
         }
 

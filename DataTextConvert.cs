@@ -872,12 +872,13 @@ namespace Obeliskial_Essentials
             text.TierMob = ToString(data.TierMob);
             text.TierReward = ToString(data.TierReward);
             text.UpgradedMob = ToString(data.UpgradedMob);
+            LogDebug("exporting NPC: " + text.ID);
             if (medsExportSprites.Value)
             {
                 if (data.GameObjectAnimated != null)
                     foreach (SpriteRenderer SR in data.GameObjectAnimated.GetComponentsInChildren<SpriteRenderer>(true))
                         if (SR.sprite != null)
-                            ExportSprite(SR.sprite, "NPC", data.Id);
+                            ExportSprite(SR.sprite, "NPC", data.Id, "", true);
                 if (data.Sprite != null)
                     ExportSprite(data.Sprite, "NPC", data.Id);
                 if (data.SpritePortrait != null)
@@ -1562,7 +1563,7 @@ namespace Obeliskial_Essentials
                 if (data.SkinGo != null)
                     foreach (SpriteRenderer SR in data.SkinGo.GetComponentsInChildren<SpriteRenderer>(true))
                         if (SR.sprite != null)
-                            ExportSprite(SR.sprite, "skin", data.SkinId);
+                            ExportSprite(SR.sprite, "skin", data.SkinId, "", true);
                 if (data.SpritePortrait != null)
                     ExportSprite(data.SpritePortrait, "skin", data.SkinId);
                 if (data.SpritePortraitGrande != null)

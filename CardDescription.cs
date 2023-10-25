@@ -140,6 +140,19 @@ namespace Obeliskial_Essentials
                                 _id = __instance.AddCardChoose != 0 ? "cardsDiscoverNumberToHand" : "cardsDiscoverToHand";
                             else if (__instance.AddCardPlace == Enums.CardPlace.TopDeck && __instance.AddCardChoose != 0)
                                 _id = "cardsDiscoverNumberToTopDeck";
+                            else if (__instance.AddCardPlace == Enums.CardPlace.Cast)
+                            {
+                                CardData crdTemp = Globals.Instance.GetCardData(__instance.AddCardId, false);
+                                if ((UnityEngine.Object)crdTemp != (UnityEngine.Object)null)
+                                {
+                                    stringBuilder2.Clear();
+                                    stringBuilder2.Append(medsColorFromCardDataRarity(crdTemp));
+                                    stringBuilder2.Append(crdTemp.CardName);
+                                    stringBuilder2.Append("</color>");
+                                    _id = string.Format(Texts.Instance.GetText("cardsCast"), (object)stringBuilder2.ToString());
+                                    stringBuilder2.Clear();
+                                }
+                            }
                         }
                         else if (__instance.AddCardFrom == Enums.CardFrom.Deck)
                         {
