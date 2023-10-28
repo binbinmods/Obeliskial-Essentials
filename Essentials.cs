@@ -13,6 +13,9 @@ using Steamworks;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System;
+using UnityEngine.UIElements;
+using UnityEngine.UI;
+using static Unity.Audio.Handle;
 
 
 /*
@@ -26,7 +29,7 @@ namespace Obeliskial_Essentials
     [BepInProcess("AcrossTheObelisk.exe")]
     public class Essentials : BaseUnityPlugin
     {
-        internal const int ModDate = 20231020;
+        internal const int ModDate = 20231026;
         private readonly Harmony harmony = new(PluginInfo.PLUGIN_GUID);
         internal static ManualLogSource Log;
 
@@ -47,8 +50,7 @@ namespace Obeliskial_Essentials
         public static Dictionary<Enums.CardType, List<string>> medsBasicCardItemByType = new();
         public static Dictionary<string, string> medsCustomCardDescriptions = new();
         public static RewardsManager RewardsManagerInstance;
-
-        internal static GameObject modVersionTextGO;
+        internal static string medsVersionText = "";
         public static readonly string[] vanillaSubclasses = { "mercenary", "sentinel", "berserker", "warden", "ranger", "assassin", "archer", "minstrel", "elementalist", "pyromancer", "loremaster", "warlock", "cleric", "priest", "voodoowitch", "prophet", "bandit", "fallen", "paladin" };
         public static Dictionary<string, string> medsTexts = new();
         private static List<string> medsExportedSpritePaths = new();
@@ -58,6 +60,12 @@ namespace Obeliskial_Essentials
             LogInfo($"{PluginInfo.PLUGIN_GUID} {PluginInfo.PLUGIN_VERSION} has loaded!");
             medsExportJSON = Config.Bind(new ConfigDefinition("Debug", "Export Vanilla Content"), false, new ConfigDescription("Export AtO class data to JSON files that are compatible with Obeliskial Content."));
             medsExportSprites = Config.Bind(new ConfigDefinition("Debug", "Export Sprites"), true, new ConfigDescription("Export sprites when exporting JSON files."));
+            UniverseLib.Universe.Init(1f, ModVersionUI.InitUI, LogHandler, new()
+            {
+                Disable_EventSystem_Override = false, // or null
+                Force_Unlock_Mouse = true, // or null
+                Unhollowed_Modules_Folder = null
+            });
             harmony.PatchAll();
         }
         internal static void LogDebug(string msg)
@@ -75,6 +83,24 @@ namespace Obeliskial_Essentials
         internal static void LogError(string msg)
         {
             Log.LogError(msg);
+        }
+        void LogHandler(string message, UnityEngine.LogType type)
+        {
+            string log = message?.ToString() ?? "";
+            switch (type)
+            {
+                case UnityEngine.LogType.Assert:
+                case UnityEngine.LogType.Log:
+                    LogInfo(log);
+                    break;
+                case UnityEngine.LogType.Warning:
+                    LogWarning(log);
+                    break;
+                case UnityEngine.LogType.Error:
+                case UnityEngine.LogType.Exception:
+                    LogError(log);
+                    break;
+            }
         }
 
         public static void ExportSprite(Sprite spriteToExport, string spriteType, string subType = "", string subType2 = "", bool fullTextureExport = false)
@@ -121,13 +147,12 @@ namespace Obeliskial_Essentials
         }
         public static void AddModVersionText(string sModName, string sModVersion, string sModDate)
         {
-            LogDebug("Adding mod version text: " + sModName + " v" + sModVersion + (sModDate.IsNullOrWhiteSpace() ? "" : (" (" + sModDate + ")")));
-            LogDebug("current text: " + modVersionTextGO.GetComponent<TextMeshProUGUI>().text);
-            if (modVersionTextGO.GetComponent<TextMeshProUGUI>().text.IsNullOrWhiteSpace())
-                modVersionTextGO.GetComponent<TextMeshProUGUI>().text = sModName + " v" + sModVersion + (sModDate.IsNullOrWhiteSpace() ? "" : (" (" + sModDate + ")"));
-            else
-                modVersionTextGO.GetComponent<TextMeshProUGUI>().text += "\n" + sModName + " v" + sModVersion + (sModDate.IsNullOrWhiteSpace() ? "" : (" (" + sModDate + ")"));
-            LogDebug("after   text: " + modVersionTextGO.GetComponent<TextMeshProUGUI>().text);
+            string newText = sModName + " v" + sModVersion + (sModDate.IsNullOrWhiteSpace() ? "" : (" (" + sModDate + ")"));
+            if (medsVersionText.IsNullOrWhiteSpace())
+                medsVersionText = newText;
+            else if (!medsVersionText.Contains(newText))
+                medsVersionText += "\n" + newText;
+
         }
 
         public static void ExtractData<T>(T[] data)
@@ -1027,6 +1052,5 @@ namespace Obeliskial_Essentials
                 File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "roadsTXT", "vanilla.txt"), s);
             }
         }
-
     }
 }

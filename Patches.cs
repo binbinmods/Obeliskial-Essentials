@@ -14,6 +14,7 @@ using System;
 using static UnityEngine.Object;
 using Photon.Realtime;
 using System.Reflection;
+using UnityEngine.InputSystem;
 
 /*
 FULL LIST OF ATO CLASSES->METHODS THAT ARE PATCHED:
@@ -45,16 +46,6 @@ namespace Obeliskial_Essentials
         [HarmonyPriority(Priority.First)]
         private static void MainMenuManagerStartPostfix(ref MainMenuManager __instance)
         {
-            if (modVersionTextGO == null)
-            {
-                modVersionTextGO = Instantiate(__instance.version.gameObject, __instance.version.rectTransform.position, Quaternion.identity, __instance.version.transform.parent);
-                /*modVersionTextGO.GetComponent<RectTransform>().anchorMin = new Vector2(0.5f, 0.5f);
-                modVersionTextGO.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 0.5f);
-                modVersionTextGO.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0.5f);*/
-                modVersionTextGO.GetComponent<TextMeshProUGUI>().text = "EEEE";
-                modVersionTextGO.GetComponent<TMP_Text>().text = "EEEE";
-                LogDebug(modVersionTextGO.GetComponent<TextMeshProUGUI>().text);
-            }
             AddModVersionText(PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION, ModDate.ToString());
         }
 
@@ -885,6 +876,17 @@ namespace Obeliskial_Essentials
             return;
         }
 
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(InputController), "DoKeyBinding")]
+        public static bool DoKeyBindingPrefix(ref InputAction.CallbackContext _context)
+        {
+            if (Keyboard.current != null && _context.control == Keyboard.current[Key.F1])
+            {
+                ModVersionUI.ShowUI = !ModVersionUI.ShowUI;
+                return false;
+            }
+            return true;
+        }
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(AtOManager), "NodeScore")]

@@ -67,6 +67,7 @@ namespace Obeliskial_Essentials
         public string Trait3B; // typically a card trait
         public string Trait4A; // typically an effect trait
         public string Trait4B; // typically an effect trait
+        public bool AutoUnlock;
     }
 
     [Serializable]
