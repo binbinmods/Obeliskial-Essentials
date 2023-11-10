@@ -1,6 +1,6 @@
 # Obeliskial Essentials
 
-This is an **Across the Obelisk** mod that enables my other mods to work and communicate with each other. It includes a custom configuration of the [BepInEx](https://github.com/BepInEx/BepInEx/) modding framework and a copy of sinai-dev’s excellent [Configuration Manager](https://github.com/sinai-dev/BepInExConfigManager/). It also contains classes and methods that may be useful for other developers.
+This is an **Across the Obelisk** mod that enables my other mods to work and communicate with each other. It includes a custom configuration of the [BepInEx](https://github.com/BepInEx/BepInEx/) modding framework and a copy of sinai-dev's excellent [Configuration Manager](https://github.com/sinai-dev/BepInExConfigManager/). It also contains classes and methods that may be useful for other developers.
 
 ## Installation (manual)
 
