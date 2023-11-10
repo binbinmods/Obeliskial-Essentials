@@ -16,6 +16,7 @@ using System;
 using UnityEngine.UIElements;
 using UnityEngine.UI;
 using static Unity.Audio.Handle;
+using System.Text;
 
 
 /*
@@ -29,12 +30,13 @@ namespace Obeliskial_Essentials
     [BepInProcess("AcrossTheObelisk.exe")]
     public class Essentials : BaseUnityPlugin
     {
-        internal const int ModDate = 20231026;
+        internal const int ModDate = 20231110;
         private readonly Harmony harmony = new(PluginInfo.PLUGIN_GUID);
         internal static ManualLogSource Log;
 
         public static ConfigEntry<bool> medsExportJSON { get; private set; }
         public static ConfigEntry<bool> medsExportSprites { get; private set; }
+        public static ConfigEntry<bool> medsShowAtStart { get; private set; }
         internal static Dictionary<string, string> medsNodeEvent = new();
         internal static Dictionary<string, int> medsNodeEventPercent = new();
         internal static Dictionary<string, int> medsNodeEventPriority = new();
@@ -60,7 +62,8 @@ namespace Obeliskial_Essentials
             LogInfo($"{PluginInfo.PLUGIN_GUID} {PluginInfo.PLUGIN_VERSION} has loaded!");
             medsExportJSON = Config.Bind(new ConfigDefinition("Debug", "Export Vanilla Content"), false, new ConfigDescription("Export AtO class data to JSON files that are compatible with Obeliskial Content."));
             medsExportSprites = Config.Bind(new ConfigDefinition("Debug", "Export Sprites"), true, new ConfigDescription("Export sprites when exporting JSON files."));
-            UniverseLib.Universe.Init(1f, ModVersionUI.InitUI, LogHandler, new()
+            medsShowAtStart = Config.Bind(new ConfigDefinition("Debug", "Show At Start"), true, new ConfigDescription("Show the mod version window when the game loads."));
+            UniverseLib.Universe.Init(1f, ObeliskialUI.InitUI, LogHandler, new()
             {
                 Disable_EventSystem_Override = false, // or null
                 Force_Unlock_Mouse = true, // or null
@@ -152,7 +155,6 @@ namespace Obeliskial_Essentials
                 medsVersionText = newText;
             else if (!medsVersionText.Contains(newText))
                 medsVersionText += "\n" + newText;
-
         }
 
         public static void ExtractData<T>(T[] data)
@@ -1051,6 +1053,223 @@ namespace Obeliskial_Essentials
                 FolderCreate(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "roadsTXT"));
                 File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "roadsTXT", "vanilla.txt"), s);
             }
+        }
+
+
+        public static void medsCreateCardClones()
+        {
+            Traverse.Create(Globals.Instance).Field("_CardsListSearch").SetValue(new Dictionary<string, List<string>>());
+            Dictionary<string, CardData> medsCardsSource = Traverse.Create(Globals.Instance).Field("_CardsSource").GetValue<Dictionary<string, CardData>>();
+            Dictionary<CardType, List<string>> medsCardListByType = new();
+            Dictionary<CardClass, List<string>> medsCardListByClass = new();
+            List<string> medsCardListNotUpgraded = new();
+            Dictionary<CardClass, List<string>> medsCardListNotUpgradedByClass = new();
+            Dictionary<string, List<string>> medsCardListByClassType = new();
+            Dictionary<string, int> medsCardEnergyCost = new();
+            Dictionary<CardType, List<string>> medsCardItemByType = new();
+            List<string> medsSortNameID = new();
+            foreach (CardType key in Enum.GetValues(typeof(Enums.CardType)))
+            {
+                if (key != Enums.CardType.None)
+                    medsCardListByType[key] = new List<string>();
+            }
+            foreach (CardClass key in Enum.GetValues(typeof(Enums.CardClass)))
+            {
+                medsCardListByClass[key] = new List<string>();
+                medsCardListNotUpgradedByClass[key] = new List<string>();
+            }
+            Dictionary<string, CardData> medsCards = new();
+            foreach (string key in medsCardsSource.Keys)
+                medsCards.Add(key, medsCardsSource[key]);
+            StringBuilder stringBuilder = new StringBuilder();
+            foreach (string key1 in medsCardsSource.Keys)
+            {
+                stringBuilder.Clear();
+                medsCards[key1].InitClone(key1);
+                CardData card = medsCards[key1];
+                string text1;
+                if (card.UpgradedFrom != "")
+                {
+                    stringBuilder.Append("c_");
+                    stringBuilder.Append(card.UpgradedFrom);
+                    stringBuilder.Append("_name");
+                    text1 = Texts.Instance.GetText(stringBuilder.ToString(), "cards");
+                }
+                else
+                {
+                    stringBuilder.Append("c_");
+                    stringBuilder.Append(card.Id);
+                    stringBuilder.Append("_name");
+                    text1 = Texts.Instance.GetText(stringBuilder.ToString(), "cards");
+                }
+                if (text1 != "")
+                    card.CardName = text1;
+                stringBuilder.Clear();
+                stringBuilder.Append("c_");
+                stringBuilder.Append(card.Id);
+                stringBuilder.Append("_fluff");
+                string text2 = Texts.Instance.GetText(stringBuilder.ToString(), "cards");
+                if (text2 != "")
+                    card.Fluff = text2;
+                medsSortNameID.Add(card.CardName + "|" + key1);
+            }
+            // sort by name _then_ ID
+            medsSortNameID.Sort();
+            Dictionary<string, CardData> medsCardsSorted = new();
+            Dictionary<string, CardData> medsCardsSourceSorted = new();
+            //LogDebug("READY TO SORT CARDS! " + medsSortNameID.Count);
+            foreach (string key in medsSortNameID)
+            {
+                string cID = key.Split("|")[1];
+                //LogDebug("SORTING CARD: " + key);
+                medsCardsSorted[cID] = medsCards[cID];
+                medsCardsSourceSorted[cID] = medsCardsSource[cID];
+            }
+            //LogDebug("FINISHED SORTING CARDS!");
+            medsCardsSource = medsCardsSourceSorted;
+            medsCards = medsCardsSorted;
+
+            foreach (string key1 in medsCardsSource.Keys)
+            {
+                CardData card = medsCards[key1];
+                if ((card.CardClass != Enums.CardClass.Item || !card.Item.QuestItem) && card.ShowInTome)
+                {
+                    medsCardEnergyCost.Add(card.Id, card.EnergyCost);
+                    Globals.Instance.IncludeInSearch(card.CardName, card.Id);
+                    medsCardListByClass[card.CardClass].Add(card.Id);
+                    if (card.CardUpgraded == Enums.CardUpgraded.No)
+                    {
+                        medsCardListNotUpgradedByClass[card.CardClass].Add(card.Id);
+                        medsCardListNotUpgraded.Add(card.Id);
+                        if (card.CardClass == Enums.CardClass.Item)
+                        {
+                            if (!medsCardItemByType.ContainsKey(card.CardType))
+                                medsCardItemByType.Add(card.CardType, new List<string>());
+                            if (!medsCardItemByType[card.CardType].Contains(card.Id))
+                                medsCardItemByType[card.CardType].Add(card.Id);
+                        }
+                    }
+                    List<Enums.CardType> cardTypes = card.GetCardTypes();
+                    for (int index = 0; index < cardTypes.Count; ++index)
+                    {
+                        medsCardListByType[cardTypes[index]].Add(card.Id);
+                        string key2 = Enum.GetName(typeof(Enums.CardClass), (object)card.CardClass) + "_" + Enum.GetName(typeof(Enums.CardType), (object)cardTypes[index]);
+                        if (!medsCardListByClassType.ContainsKey(key2))
+                            medsCardListByClassType[key2] = new List<string>();
+                        if (!medsCardListByClassType[key2].Contains(card.Id))
+                            medsCardListByClassType[key2].Add(card.Id);
+                        Globals.Instance.IncludeInSearch(Texts.Instance.GetText(Enum.GetName(typeof(Enums.CardType), (object)cardTypes[index])), card.Id);
+                    }
+                }
+            }
+            Traverse.Create(Globals.Instance).Field("_CardListByType").SetValue(medsCardListByType);
+            Traverse.Create(Globals.Instance).Field("_CardListByClass").SetValue(medsCardListByClass);
+            Traverse.Create(Globals.Instance).Field("_CardListNotUpgraded").SetValue(medsCardListNotUpgraded);
+            Traverse.Create(Globals.Instance).Field("_CardListNotUpgradedByClass").SetValue(medsCardListNotUpgradedByClass);
+            Traverse.Create(Globals.Instance).Field("_CardListByClassType").SetValue(medsCardListByClassType);
+            Traverse.Create(Globals.Instance).Field("_CardEnergyCost").SetValue(medsCardEnergyCost);
+            Traverse.Create(Globals.Instance).Field("_CardItemByType").SetValue(medsCardItemByType);
+            Traverse.Create(Globals.Instance).Field("_CardEnergyCost").SetValue(medsCardEnergyCost);
+            Traverse.Create(Globals.Instance).Field("_Cards").SetValue(medsCards);
+            Traverse.Create(Globals.Instance).Field("_CardsSource").SetValue(medsCardsSource);
+            foreach (string key in Globals.Instance.Cards.Keys)
+                Globals.Instance.Cards[key].InitClone2();
+            //medsCardListNotUpgraded.Sort(); // no longer necessary because we sort cards and cardssource instead?
+        }
+
+        public static void DropOnlyItemNodes()
+        {
+            Dictionary<string, NodeData> medsNodeDataSource = Traverse.Create(Globals.Instance).Field("_NodeDataSource").GetValue<Dictionary<string, NodeData>>();
+            string sTotal = "";
+            List<string> allItems = new();
+            foreach (string nodeID in medsNodeDataSource.Keys)
+            {
+                List<string> nodeItems = new();
+                foreach (CombatData _combat in medsNodeDataSource[nodeID].NodeCombat)
+                    foreach (string sItem in DropOnlyItemCombat(_combat))
+                        if (!nodeItems.Contains(sItem))
+                            nodeItems.Add(sItem);
+                foreach (EventData _event in medsNodeDataSource[nodeID].NodeEvent)
+                    foreach (string sItem in DropOnlyItemEvent(_event))
+                        if (!nodeItems.Contains(sItem))
+                            nodeItems.Add(sItem);
+                if (nodeItems.Count() > 0)
+                {
+                    nodeItems.Sort();
+                    sTotal += medsNodeDataSource[nodeID].NodeZone.ZoneId + "\t" + medsNodeDataSource[nodeID].NodeName + "\t" + nodeID + "\t" + String.Join(", ", nodeItems.ToArray()) + "\n";
+                }
+                foreach (string sItem in nodeItems)
+                    if (!allItems.Contains(sItem))
+                        allItems.Add(sItem);
+            }
+            allItems.Sort();
+            sTotal += String.Join(", ", allItems.ToArray());
+            File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "DropOnly.txt"), sTotal);
+        }
+        public static List<string> DropOnlyItemCombat(CombatData _combat)
+        {
+            if (_combat == null)
+                return new List<string>();
+            LogDebug("checking combat: " + _combat.CombatId);
+            List<string> combatItems = DropOnlyItemEvent(_combat.EventData);
+            return combatItems;
+        }
+        public static List<string> DropOnlyItemEvent(EventData _event)
+        {
+            if (_event == null)
+                return new List<string>();
+            LogDebug("checking event: " + _event.EventId);
+            int a = 0;
+            List<string> eventItems = new();
+            foreach (EventReplyData _eventReply in _event.Replys)
+            {
+                a++;
+                LogDebug("checking eventreply: " + _event.EventId + " " + a.ToString());
+                foreach (string sItem in DropOnlyItemCombat(_eventReply.SsCombat))
+                    if (!eventItems.Contains(sItem))
+                        eventItems.Add(sItem);
+                foreach (string sItem in DropOnlyItemCombat(_eventReply.SscCombat))
+                    if (!eventItems.Contains(sItem))
+                        eventItems.Add(sItem);
+                foreach (string sItem in DropOnlyItemCombat(_eventReply.FlCombat))
+                    if (!eventItems.Contains(sItem))
+                        eventItems.Add(sItem);
+                foreach (string sItem in DropOnlyItemCombat(_eventReply.FlcCombat))
+                    if (!eventItems.Contains(sItem))
+                        eventItems.Add(sItem);
+                foreach (string sItem in DropOnlyItemLoot(_eventReply.SsLootList))
+                    if (!eventItems.Contains(sItem))
+                        eventItems.Add(sItem);
+                foreach (string sItem in DropOnlyItemLoot(_eventReply.SscLootList))
+                    if (!eventItems.Contains(sItem))
+                        eventItems.Add(sItem);
+                foreach (string sItem in DropOnlyItemLoot(_eventReply.FlLootList))
+                    if (!eventItems.Contains(sItem))
+                        eventItems.Add(sItem);
+                foreach (string sItem in DropOnlyItemLoot(_eventReply.FlcLootList))
+                    if (!eventItems.Contains(sItem))
+                        eventItems.Add(sItem);
+                if (_eventReply.SsAddItem != null && _eventReply.SsAddItem.Item != null && !eventItems.Contains(_eventReply.SsAddItem.CardName))
+                    eventItems.Add(_eventReply.SsAddItem.CardName);
+                if (_eventReply.SscAddItem != null && _eventReply.SscAddItem.Item != null && !eventItems.Contains(_eventReply.SscAddItem.CardName))
+                    eventItems.Add(_eventReply.SscAddItem.CardName);
+                if (_eventReply.FlAddItem != null && _eventReply.FlAddItem.Item != null && !eventItems.Contains(_eventReply.FlAddItem.CardName))
+                    eventItems.Add(_eventReply.FlAddItem.CardName);
+                if (_eventReply.FlcAddItem != null && _eventReply.FlcAddItem.Item != null && !eventItems.Contains(_eventReply.FlcAddItem.CardName))
+                    eventItems.Add(_eventReply.FlcAddItem.CardName);
+            }
+            return eventItems;
+        }
+        public static List<string> DropOnlyItemLoot(LootData _loot)
+        {
+            if (_loot == null)
+                return new List<string>();
+            LogDebug("checking loot: " + _loot.Id);
+            List<string> lootItems = new();
+            foreach (LootItem _lootItem in _loot.LootItemTable)
+                if (_lootItem != null && _lootItem.LootCard != null && _lootItem.LootCard.Item != null && _lootItem.LootPercent == 100f && !lootItems.Contains(_lootItem.LootCard.CardName))
+                    lootItems.Add(_lootItem.LootCard.CardName);
+            return lootItems;
         }
     }
 }

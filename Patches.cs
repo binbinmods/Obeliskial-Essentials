@@ -882,7 +882,7 @@ namespace Obeliskial_Essentials
         {
             if (Keyboard.current != null && _context.control == Keyboard.current[Key.F1])
             {
-                ModVersionUI.ShowUI = !ModVersionUI.ShowUI;
+                ObeliskialUI.ShowUI = !ObeliskialUI.ShowUI;
                 return false;
             }
             return true;
@@ -1030,6 +1030,7 @@ namespace Obeliskial_Essentials
             if (index == medsActiveTomeCards && !absolute)
                 return false;
             medsActiveTomeCards = index;
+            Traverse.Create(__instance).Field("activeTomeCards").SetValue(medsActiveTomeCards);
             List<string> stringList = new List<string>();
             switch (index)
             {
@@ -1136,6 +1137,345 @@ namespace Obeliskial_Essentials
                 return false; // do not run original method if either node is not visible
             return true;
         }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(MainMenuManager), "SetMenuCurrentProfile")]
+        public static void SetMenuCurrentProfilePostfix()
+        {
+            MainMenuManager.Instance.profileMenuText.text += $" (Obeliskial)";
+        }
+
+        /*[HarmonyPrefix]
+        [HarmonyPatch(typeof(BotHeroChar), "OnMouseUp")]
+        public static bool BotHeroCharClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(BotonCardback), "OnMouseUp")]
+        public static bool BotonCardbackClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(BotonEndTurn), "OnMouseUp")]
+        public static bool BotonEndTurnClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(BotonFilter), "OnMouseUp")]
+        public static bool BotonFilterClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(BotonGeneric), "OnMouseUp")]
+        public static bool BotonGenericClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(BotonMenuGameMode), "OnMouseUp")]
+        public static bool BotonMenuGameModeClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(BotonRollover), "OnMouseUp")]
+        public static bool BotonRolloverClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(BotonScore), "OnMouseUp")]
+        public static bool BotonScoreClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(BotonSkin), "OnMouseUp")]
+        public static bool BotonSkinClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(BotonSupply), "OnMouseUp")]
+        public static bool BotonSupplyClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(botTownUpgrades), "OnMouseUp")]
+        public static bool botTownUpgradesClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(BoxPlayer), "OnMouseUp")]
+        public static bool BoxPlayerClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(CardCraftSelectorEnergy), "OnMouseUp")]
+        public static bool CardCraftSelectorEnergyClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(CardCraftSelectorRarity), "OnMouseUp")]
+        public static bool CardCraftSelectorRarityClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(CardItem), "OnMouseUp")]
+        public static bool CardItemClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(CardVertical), "OnMouseUp")]
+        public static bool CardVerticalClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(CharacterGOItem), "OnMouseUp")]
+        public static bool CharacterGOItemClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(CharacterItem), "fOnMouseUp")]
+        public static bool CharacterItemClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(CharacterLoot), "OnMouseUp")]
+        public static bool CharacterLootClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(CharPopupClose), "OnMouseUp")]
+        public static bool CharPopupCloseClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(CombatTarget), "OnMouseUp")]
+        public static bool CombatTargetClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(DeckInHero), "OnMouseUp")]
+        public static bool DeckInHeroClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(DeckPile), "OnMouseUp")]
+        public static bool DeckPileClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(EmoteManager), "OnMouseUp")]
+        public static bool EmoteManagerClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(HeroSelection), "OnMouseUp")]
+        public static bool HeroSelectionClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(InitiativePortrait), "OnMouseUp")]
+        public static bool InitiativePortraitClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(ItemCombatIcon), "fOnMouseUp")]
+        public static bool ItemCombatIconClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Node), "OnMouseUp")]
+        public static bool NodeClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(OverCharacter), "OnMouseUp")]
+        public static bool OverCharacterClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(PerkChallengeItem), "OnMouseUp")]
+        public static bool PerkChallengeItemClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(PerkColumnItem), "OnMouseUp")]
+        public static bool PerkColumnItemClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(PerkNode), "OnMouseUp")]
+        public static bool PerkNodeClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(RandomHeroSelector), "OnMouseUp")]
+        public static bool RandomHeroSelectorClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Reply), "OnMouseUp")]
+        public static bool ReplyClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(TomeButton), "OnMouseUp")]
+        public static bool TomeButtonClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(TomeEdge), "OnMouseUp")]
+        public static bool TomeEdgeClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(TomeNumber), "OnMouseUp")]
+        public static bool TomeNumberClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(TomeRun), "OnMouseUp")]
+        public static bool TomeRunClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(TownBuilding), "OnMouseUp")]
+        public static bool TownBuildingClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(TraitLevel), "OnMouseUp")]
+        public static bool TraitLevelClickCapture()
+        {
+            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+                return false;
+            return true;
+        }
+        */
+
+
+
+
+
+
+
+
+
+
 
         // all of the below is just for testing
 

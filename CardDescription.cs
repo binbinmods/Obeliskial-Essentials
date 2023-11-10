@@ -278,9 +278,9 @@ namespace Obeliskial_Essentials
                     if (__instance.DispelAuras == -1)
                     {
                         if (__instance.TargetSide == Enums.CardTargetSide.Enemy)
-                            stringBuilder1.Append(Texts.Instance.GetText("cardsDispelAll"));
-                        else
                             stringBuilder1.Append(Texts.Instance.GetText("cardsPurgeAll"));
+                        else
+                            stringBuilder1.Append(Texts.Instance.GetText("cardsDispelAll"));
                         stringBuilder1.Append("\n");
                     }
                     num1 = 0;
@@ -2321,7 +2321,7 @@ namespace Obeliskial_Essentials
                 }
                 else if (__instance.TargetSide == Enums.CardTargetSide.FriendNotSelf)
                 {
-                    __instance.Target = Texts.Instance.GetText("otherHero");
+                    __instance.Target = __instance.TargetType == Enums.CardTargetType.Global ? "All Other Heroes" : Texts.Instance.GetText("otherHero");
                 }
                 else if (__instance.TargetSide == Enums.CardTargetSide.Enemy)
                 {

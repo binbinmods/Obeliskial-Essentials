@@ -1,21 +1,28 @@
 # Obeliskial Essentials
 
-Essential reference classes and methods for Across the Obelisk modding.
+This is an **Across the Obelisk** mod that enables my other mods to work and communicate with each other. It includes a custom configuration of the [BepInEx](https://github.com/BepInEx/BepInEx/) modding framework and a copy of sinai-dev’s excellent [Configuration Manager](https://github.com/sinai-dev/BepInExConfigManager/). It also contains classes and methods that may be useful for other developers.
 
-## Installation
+## Installation (manual)
 
-Install [BepInEx](https://across-the-obelisk.thunderstore.io/package/BepInEx/BepInExPack_AcrossTheObelisk/).
+1. Click _Manual Download_ at the top of the page.
+2. In Steam, right-click Across the Obelisk and select _Manage_->_Browse local files_.
+3. Extract the archive into the game folder. 
+4. Run the game. If everything runs correctly, you will see a list of registered mods on the main menu.
+5. Press F5 to open/close the Config Manager and F1 to show/hide mod version information.
 
-Download the latest [release](https://github.com/stiffmeds/Obeliskial-Essentials/releases) and put it in your BepInEx _plugins_ folder.
+## Installation (automatic)
 
-Change settings in BepInEx\config\com.meds.obeliskialessentials.cfg (appears after first run) OR use a configuration manager (I use [this one - you want the Mono version](https://github.com/sinai-dev/BepInExConfigManager)) to set them ingame. If you use a config manager you need to change BepInEx\config\BepInEx.cfg: HideManagerGameObject = true.
+1. Download and install [Thunderstore Mod Manager](https://www.overwolf.com/app/Thunderstore-Thunderstore_Mod_Manager) or [r2modman](https://across-the-obelisk.thunderstore.io/package/ebkr/r2modman/).
+2. Click **Install with Mod Manager** button on top of the page.
+3. Run the game via the mod manager.
 
 ## Options
 
-| Option                              | Default | Description                                                                                                                                                                    |
-|:------------------------------------|:-------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Export JSON**                     | false   | Export AtO class data to JSON files that are compatible with Obeliskial Content.                                                                                               |
-| **Export Sprites**                  | true    | Export sprites when exporting vanilla content.                                                                                                                                 |
+| Option             | Default | Description                                                                      |
+|:-------------------|:-------:|:---------------------------------------------------------------------------------|
+| **Export JSON**    | false   | Export AtO class data to JSON files that are compatible with Obeliskial Content. |
+| **Export Sprites** | true    | Export sprites when exporting vanilla content.                                   |
+| **Show At Start**  | true    | Show the mod version window when the game loads.                                 |
 
 ## Support
 
