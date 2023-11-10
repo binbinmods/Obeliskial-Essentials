@@ -26,7 +26,7 @@ This is an **Across the Obelisk** mod that enables my other mods to work and com
 
 ## Support
 
-Open a github issue or ping @stiffmeds in the **#modding** channel of the [official Across the Obelisk Discord](https://discord.gg/across-the-obelisk-679706811108163701).
+Open a github issue or make a post in the **modding #support-and-requests** channel of the [official Across the Obelisk Discord](https://discord.gg/across-the-obelisk-679706811108163701).
 
 ## Donations
 
