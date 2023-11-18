@@ -1,14 +1,15 @@
 # Obeliskial Essentials
 
-This is an **Across the Obelisk** mod that enables my other mods to work and communicate with each other. It includes a custom configuration of the [BepInEx](https://github.com/BepInEx/BepInEx/) modding framework and a copy of sinai-dev's excellent [Configuration Manager](https://github.com/sinai-dev/BepInExConfigManager/). It also contains classes and methods that may be useful for other developers.
+This is an **Across the Obelisk** mod that enables my other mods to work and communicate with each other. It includes a copy of sinai-dev's excellent [Configuration Manager](https://github.com/sinai-dev/BepInExConfigManager/). It also contains classes and methods that may be useful for other developers.
 
 ## Installation (manual)
 
-1. Click _Manual Download_ at the top of the page.
-2. In Steam, right-click Across the Obelisk and select _Manage_->_Browse local files_.
-3. Extract the archive into the game folder. 
-4. Run the game. If everything runs correctly, you will see a list of registered mods on the main menu.
-5. Press F5 to open/close the Config Manager and F1 to show/hide mod version information.
+1. Install the [BepInEx pack](https://across-the-obelisk.thunderstore.io/package/BepInEx/BepInExPack_AcrossTheObelisk/).
+2. Click _Manual Download_ at the top of the page.
+3. In Steam, right-click Across the Obelisk and select _Manage_->_Browse local files_.
+4. Extract the archive into the game folder. 
+5. Run the game. If everything runs correctly, you will see a list of registered mods on the main menu.
+6. Press F5 to open/close the Config Manager and F1 to show/hide mod version information.
 
 ## Installation (automatic)
 

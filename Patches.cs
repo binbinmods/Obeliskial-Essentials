@@ -382,7 +382,7 @@ namespace Obeliskial_Essentials
                     if (!((UnityEngine.Object)_subclassdata == (UnityEngine.Object)null))
                     {
                         GameObject gameObject2 = UnityEngine.Object.Instantiate<GameObject>(HeroSelectionManager.Instance.heroSelectionPrefab, Vector3.zero, Quaternion.identity, gameObject1.transform);
-                        gameObject2.transform.localPosition = new Vector3((float)(1.6500000238418579 * (double)index2), -0.65f, 0.0f);
+                        gameObject2.transform.localPosition = new Vector3((float)(1.4800000238418579 * (double)index2), -0.65f, 0.0f);
                         gameObject2.name = _subclassdata.SubClassName.ToLower();
                         HeroSelection component = gameObject2.transform.Find("Portrait").transform.GetComponent<HeroSelection>();
                         HeroSelectionManager.Instance.heroSelectionDictionary.Add(gameObject2.name, component);
@@ -1143,6 +1143,14 @@ namespace Obeliskial_Essentials
         public static void SetMenuCurrentProfilePostfix()
         {
             MainMenuManager.Instance.profileMenuText.text += $" (Obeliskial)";
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Globals), "GetWeeklyData")]
+        public static void GetWeeklyDataPrefix(ref int _week)
+        {
+            if (medsForceWeekly != 0)
+                _week = medsForceWeekly;
         }
 
         /*[HarmonyPrefix]

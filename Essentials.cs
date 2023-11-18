@@ -30,7 +30,7 @@ namespace Obeliskial_Essentials
     [BepInProcess("AcrossTheObelisk.exe")]
     public class Essentials : BaseUnityPlugin
     {
-        internal const int ModDate = 20231110;
+        internal const int ModDate = 20231118;
         private readonly Harmony harmony = new(PluginInfo.PLUGIN_GUID);
         internal static ManualLogSource Log;
 
@@ -56,6 +56,7 @@ namespace Obeliskial_Essentials
         public static readonly string[] vanillaSubclasses = { "mercenary", "sentinel", "berserker", "warden", "ranger", "assassin", "archer", "minstrel", "elementalist", "pyromancer", "loremaster", "warlock", "cleric", "priest", "voodoowitch", "prophet", "bandit", "fallen", "paladin" };
         public static Dictionary<string, string> medsTexts = new();
         private static List<string> medsExportedSpritePaths = new();
+        internal static int medsForceWeekly = 0;
         private void Awake()
         {
             Log = Logger;
@@ -768,7 +769,7 @@ namespace Obeliskial_Essentials
                 LeaderboardEntry[] scoreboardSingle = await leaderboard1.GetScoresAroundUserAsync(0, 0);
                 string theList = "ID\tScore\tDetails\t2\t3\t4\t5\t6\t7\t8\t9\t10";
                 for (int a = 0; a < scoreboardGlobal.Length; a++)
-                    theList += "\n" + scoreboardGlobal[a].User.Id.ToString() + "\t" + scoreboardGlobal[a].Score + "\t" + string.Join("\t", scoreboardGlobal[a].Details);
+                    theList += "\n" + (SteamManager.Instance.shameList.Contains(scoreboardGlobal[a].User.Id.ToString()) ? "SHAME:" : "") + scoreboardGlobal[a].User.Id.ToString() + "\t" + scoreboardGlobal[a].Score + "\t" + string.Join("\t", scoreboardGlobal[a].Details);
                 File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "scoreboardGlobal.json"), theList);
                 theList = "";
                 for (int a = 0; a < scoreboardSingle.Length; a++)
@@ -1270,6 +1271,58 @@ namespace Obeliskial_Essentials
                 if (_lootItem != null && _lootItem.LootCard != null && _lootItem.LootCard.Item != null && _lootItem.LootPercent == 100f && !lootItems.Contains(_lootItem.LootCard.CardName))
                     lootItems.Add(_lootItem.LootCard.CardName);
             return lootItems;
+        }
+
+        internal static void medsGetWeeklyInfo()
+        {
+            Dictionary<string, string[]> cardsDrafted = Traverse.Create(ChallengeSelectionManager.Instance).Field("cardsDrafted").GetValue<Dictionary<string, string[]>>();
+            Dictionary<string, string> cardsDraftedSpecial = Traverse.Create(ChallengeSelectionManager.Instance).Field("cardsDraftedSpecial").GetValue<Dictionary<string, string>>();
+            Dictionary<string, string> cardsDraftedPackname = Traverse.Create(ChallengeSelectionManager.Instance).Field("cardsDraftedPackname").GetValue<Dictionary<string, string>>();
+            Hero[] theTeam = Traverse.Create(ChallengeSelectionManager.Instance).Field("theTeam").GetValue<Hero[]>();
+            CardScreenManager.Instance.ShowCardScreen(true);
+            SnapshotCamera snapshotCamera = SnapshotCamera.MakeSnapshotCamera(0);
+            for (int a = 0; a < 4; a++) // hero
+            {
+                Hero _hero = theTeam[a];
+                if (_hero == null)
+                    continue;
+
+                for (int b = 0; b < 2; b++) // first pack / rerolled pack
+                {
+                    for (int d = 0; d < 3; d++) // card 1 / 2 / 3
+                    {
+                        for (int c = 0; c < 8; c++) // pack 1-8
+                        {
+                            string sTmp = a.ToString() + "_" + b.ToString() + "_" + c.ToString();
+                            CardData crd = Globals.Instance.GetCardData(cardsDrafted[sTmp][d], false);
+                            CardScreenManager.Instance.SetCardData(crd);
+                            GameObject cardGO = Traverse.Create(CardScreenManager.Instance).Field("cardGO").GetValue<GameObject>();
+                            if ((UnityEngine.Object)cardGO != (UnityEngine.Object)null)
+                            {
+                                cardGO.transform.Find("BorderCard").gameObject.SetActive(false);
+                                Texture2D snapshot = snapshotCamera.TakeObjectSnapshot(cardGO, UnityEngine.Color.clear, new Vector3(0, 0.008f, 1), Quaternion.Euler(new Vector3(0f, 0f, 0f)), new Vector3(0.78f, 0.78f, 0.78f), 297, 450);
+                                SnapshotCamera.SavePNG(snapshot, a.ToString() + "_" + _hero.SourceName + "_" + c.ToString() + "_" + cardsDraftedPackname[sTmp] + "_" + b.ToString() + "_" + d.ToString(), Directory.CreateDirectory(Path.Combine(Application.dataPath, "../Weeklies", medsForceWeekly.ToString())).FullName);
+                                UnityEngine.Object.Destroy(snapshot);
+                                UnityEngine.Object.Destroy(cardGO);
+                            }
+                            if (d == 0)
+                            {
+                                crd = Globals.Instance.GetCardData(cardsDraftedSpecial[sTmp + "_special"].Split("_")[0], false);
+                                CardScreenManager.Instance.SetCardData(crd);
+                                cardGO = Traverse.Create(CardScreenManager.Instance).Field("cardGO").GetValue<GameObject>();
+                                if ((UnityEngine.Object)cardGO != (UnityEngine.Object)null)
+                                {
+                                    cardGO.transform.Find("BorderCard").gameObject.SetActive(false);
+                                    Texture2D snapshot = snapshotCamera.TakeObjectSnapshot(cardGO, UnityEngine.Color.clear, new Vector3(0, 0.008f, 1), Quaternion.Euler(new Vector3(0f, 0f, 0f)), new Vector3(0.78f, 0.78f, 0.78f), 297, 450);
+                                    SnapshotCamera.SavePNG(snapshot, a.ToString() + "_" + _hero.SourceName + "_" + c.ToString() + "_" + cardsDraftedPackname[sTmp] + "_" + b.ToString() + "_special", Directory.CreateDirectory(Path.Combine(Application.dataPath, "../Weeklies", medsForceWeekly.ToString())).FullName);
+                                    UnityEngine.Object.Destroy(snapshot);
+                                    UnityEngine.Object.Destroy(cardGO);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
