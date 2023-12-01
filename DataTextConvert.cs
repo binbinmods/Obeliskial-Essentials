@@ -669,6 +669,8 @@ namespace Obeliskial_Essentials
                 if (data.StickerSurprise != null)
                     ExportSprite(data.StickerSurprise, "subclass", data.Id);
             }
+            // text.AutoUnlock = data.InitialUnlock; // #XMAS
+            // text.SourceCharacterName = data.SourceCharacterName;// #XMAS
             return text;
         }
 
@@ -1177,6 +1179,7 @@ namespace Obeliskial_Essentials
             text.NPCList = ToString(data.NPCList);
             text.NPCRemoveInMadness0Index = data.NpcRemoveInMadness0Index;
             text.ThermometerTierData = ToString(data.ThermometerTierData);
+            // text.IsRift = data.IsRift; // #XMAS
             return text;
         }
         public static CombatEffectText ToText(CombatEffect data)

@@ -3,6 +3,7 @@ using UnityEngine;
 using UniverseLib.UI;
 using UniverseLib.UI.Models;
 using static Obeliskial_Essentials.Essentials;
+using System;
 
 namespace Obeliskial_Essentials
 {
@@ -33,14 +34,14 @@ namespace Obeliskial_Essentials
                 if (uiBase == null || !uiBase.RootObject || uiBase.Enabled == value)
                     return;
 
-                UniversalUI.SetUIActive(PluginInfo.PLUGIN_GUID, value);
+                UniversalUI.SetUIActive(PluginInfo.PLUGIN_GUID + ".versionUI", value);
             }
         }
         internal static void InitUI()
         {
-            uiBase = UniversalUI.RegisterUI(PluginInfo.PLUGIN_GUID, UpdateUI);
+            uiBase = UniversalUI.RegisterUI(PluginInfo.PLUGIN_GUID + ".versionUI", UpdateUI);
             //MedsUI MedsPanel = new MedsUI(uiBase);
-            uiRoot = UIFactory.CreateUIObject("medsNavbar", uiBase.RootObject);
+            uiRoot = UIFactory.CreateUIObject("medsVersionWindow", uiBase.RootObject);
             uiRoot.AddComponent<Image>().color = new Color(0.03f, 0.008f, 0.05f, 0.9f);
             UIFactory.SetLayoutGroup<VerticalLayoutGroup>(uiRoot, false, false, true, true, 5, 8, 8, 8, 8);
             //uiVert = UIFactory.CreateVerticalGroup(uiNav, "medsNavVert", true, false, true, true, 5, new Vector4(4, 4, 4, 4), new Color(0.03f, 0.008f, 0.05f, 0.9f), TextAnchor.UpperLeft);
@@ -114,7 +115,7 @@ namespace Obeliskial_Essentials
             if (medsShowAtStart.Value)
             {
                 ShowUI = true;
-                UniversalUI.SetUIActive(PluginInfo.PLUGIN_GUID, true);
+                UniversalUI.SetUIActive(PluginInfo.PLUGIN_GUID + ".versionUI", true);
             }
             else
             {
@@ -129,6 +130,96 @@ namespace Obeliskial_Essentials
             labelMouseX.text = "x:" + newPos.x.ToString();
             labelMouseY.text = "y:" + newPos.y.ToString();*/
         }
+    }
+    public class DevTools: UniverseLib.UI.Panels.PanelBase
+    {
+        public static DevTools Instance { get; internal set; }
+        public DevTools(UIBase owner) : base(owner)
+        {
+            Instance = this;
+        }
+        internal static UIBase uiBase;
+        public override string Name => "Developer Tools (F2 to hide)";
+        public override int MinWidth => 300;
+        public override int MinHeight => 300;
+        public override Vector2 DefaultAnchorMin => new(0f, 1f);
+        public override Vector2 DefaultAnchorMax => new(0f, 1f);
+        public override bool CanDragAndResize => true;
+        internal static Text labelMouseXY;
+        public static GameObject lockAtOGO;
+        public static Toggle lockAtOToggle;
+        internal static bool ShowUI
+        {
+            get => uiBase != null && uiBase.Enabled;
+            set
+            {
+                if (uiBase == null || !uiBase.RootObject || uiBase.Enabled == value)
+                    return;
+
+                UniversalUI.SetUIActive(PluginInfo.PLUGIN_GUID + ".devToolsUI", value);
+                Instance.SetActive(value);
+            }
+        }
+        protected override void ConstructPanelContent()
+        {
+            GameObject medsDevToolsGO = UIFactory.CreateUIObject("medsDevTools", ContentRoot);
+            UIFactory.SetLayoutGroup<VerticalLayoutGroup>(medsDevToolsGO, false, false, true, true, 5, 4, 4, 4, 4, TextAnchor.UpperLeft);
+            //medsDevToolsGO.AddComponent<Image>().color = new Color(0.03f, 0.008f, 0.05f, 0.1f);
+
+            labelMouseXY = UIFactory.CreateLabel(medsDevToolsGO, "labelMouseX", "Mouse x: ", TextAnchor.UpperLeft);
+            UIFactory.SetLayoutElement(labelMouseXY.gameObject, minWidth: 100);
+
+            ButtonRef btnPartyXP = UIFactory.CreateButton(medsDevToolsGO, "btnPartyXP", "+150 party xp");
+            UIFactory.SetLayoutElement(btnPartyXP.Component.gameObject, minWidth: 100, minHeight: 30);
+            btnPartyXP.Component.onClick.AddListener(delegate
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    try { AtOManager.Instance.GetHero(i).GrantExperience(150); }
+                    catch (Exception e) { LogDebug("Failed to add 150 xp to hero " + i.ToString() + ": " + e.Message); };
+                }
+            });
+
+            ButtonRef btn1HPEnemies = UIFactory.CreateButton(medsDevToolsGO, "btn1HPEnemies", "Set Enemy HP to 1");
+            UIFactory.SetLayoutElement(btn1HPEnemies.Component.gameObject, minWidth: 100, minHeight: 30);
+            btn1HPEnemies.Component.onClick.AddListener(delegate
+            {
+                try
+                {
+                    NPC[] teamNPC = MatchManager.Instance.GetTeamNPC();
+                    foreach (NPC npc in teamNPC)
+                    {
+                        if (npc != null && npc.Alive)
+                            npc.HpCurrent = 1;
+                    }
+                }
+                catch (Exception e) { LogDebug("Failed to set enemy HP to 1: " + e.Message); };
+            });
+            lockAtOGO = UIFactory.CreateToggle(medsDevToolsGO, "disableButtonsToggle", out lockAtOToggle, out Text lockAtOText);
+            lockAtOText.text = "Disable AtO Buttons";
+            lockAtOToggle.isOn = false;
+            UIFactory.SetLayoutElement(lockAtOGO, minWidth: 85, minHeight: 20);
+
+            Canvas.ForceUpdateCanvases();
+        }
+        internal static void Init()
+        {
+            uiBase = UniversalUI.RegisterUI(PluginInfo.PLUGIN_GUID + ".devToolsUI", UpdateUI);
+            DevTools devTools = new(uiBase);
+            ShowUI = false;
+            UniversalUI.SetUIActive(PluginInfo.PLUGIN_GUID + ".devToolsUI", false);
+        }
+        private static void UpdateUI()
+        {
+            try
+            {
+                Vector3 newPos = UnityEngine.Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                labelMouseXY.text = "x: " + newPos.x.ToString("0.0000") + " | y: " + newPos.y.ToString("0.0000");
+            }
+            catch { }
+        }
+
+        // override other methods as desired
     }
     /*public class ModVersionUI : MonoBehaviour
     {
@@ -172,21 +263,5 @@ namespace Obeliskial_Essentials
         }
 
     }
-    public class VersionPanel : UniverseLib.UI.Panels.PanelBase
-    {
-        public VersionPanel(UIBase owner) : base(owner) { }
-        public override string Name => "Obeliskial Essentials (F1 to hide)";
-        public override int MinWidth => 300;
-        public override int MinHeight => 300;
-        public override Vector2 DefaultAnchorMin => new(0f, 1f);
-        public override Vector2 DefaultAnchorMax => new(0f, 1f);
-        public override bool CanDragAndResize => false;
-        protected override void ConstructPanelContent()
-        {
-            //ObeliskialUI.modVersions = UIFactory.CreateLabel(ContentRoot, "Mod Versions", "Obeliskial\nEssentials\nv" + PluginInfo.PLUGIN_VERSION, TextAnchor.UpperLeft);
-            //UIFactory.SetLayoutElement(ObeliskialUI.modVersions.gameObject);
-        }
-
-        // override other methods as desired
-    }*/
+    */
 }

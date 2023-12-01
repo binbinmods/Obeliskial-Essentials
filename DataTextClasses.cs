@@ -68,6 +68,7 @@ namespace Obeliskial_Essentials
         public string Trait4A; // typically an effect trait
         public string Trait4B; // typically an effect trait
         public bool AutoUnlock;
+        public string SourceCharacterName;
     }
 
     [Serializable]
@@ -706,6 +707,7 @@ namespace Obeliskial_Essentials
         public string[] NPCList; // NPCData
         public int NPCRemoveInMadness0Index;
         public string ThermometerTierData; // ThermometerTierData
+        public bool IsRift;
     }
 
     [Serializable]

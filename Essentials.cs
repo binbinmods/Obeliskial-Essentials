@@ -30,7 +30,7 @@ namespace Obeliskial_Essentials
     [BepInProcess("AcrossTheObelisk.exe")]
     public class Essentials : BaseUnityPlugin
     {
-        internal const int ModDate = 20231118;
+        internal const int ModDate = 20231120;
         private readonly Harmony harmony = new(PluginInfo.PLUGIN_GUID);
         internal static ManualLogSource Log;
 
@@ -70,6 +70,13 @@ namespace Obeliskial_Essentials
                 Force_Unlock_Mouse = true, // or null
                 Unhollowed_Modules_Folder = null
             });
+            UniverseLib.Universe.Init(1f, DevTools.Init, LogHandler, new()
+            {
+                Disable_EventSystem_Override = false, // or null
+                Force_Unlock_Mouse = true, // or null
+                Unhollowed_Modules_Folder = null
+            });
+            AddModVersionText(PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION, ModDate.ToString());
             harmony.PatchAll();
         }
         internal static void LogDebug(string msg)
@@ -1274,6 +1281,38 @@ namespace Obeliskial_Essentials
         }
 
         internal static void medsGetWeeklyInfo()
+        {
+            string s = "Week\tName\tStart\tEnd\tHero 1\tHero 2\tHero 3\tHero 4\tTrait1Name\tTrait1Desc\tTrait2Name\tTrait2Desc\tTrait3Name\tTrait3Desc\tTrait4Name\tTrait4Desc\tTrait5Name\tTrait5Desc\tTrait6Name\tTrait6Desc\tBoss 1\tBoss 2\tBoss 3\tSeed";
+            foreach (ChallengeData _wkly in Globals.Instance.WeeklyDataSource.Values)
+            {
+                s += "\n" + _wkly.Week.ToString() + "\t" + (_wkly.IdSteam.IsNullOrWhiteSpace() || Texts.Instance.GetText(_wkly.IdSteam).IsNullOrWhiteSpace() ? "Week " + _wkly.Week.ToString() : Texts.Instance.GetText(_wkly.IdSteam)) + "\t";
+                DateTime _dte = new DateTime(2023, 11, 2, 14, 0, 0);
+                s += _dte.AddDays(7 * _wkly.Week).ToString("d MMMM yyyy @ h tt") + "\t" + _dte.AddDays(7 * _wkly.Week + 7).ToString("d MMMM yyyy @ h tt") + "\t";
+                s += _wkly.Hero1.CharacterName + "\t" + _wkly.Hero2.CharacterName + "\t" + _wkly.Hero3.CharacterName + "\t" + _wkly.Hero4.CharacterName + "\t";
+                foreach (ChallengeTrait _trt in _wkly.Traits)
+                    s += _trt.Name + "\t" + Texts.Instance.GetText(_trt.Id + "Desc") + "\t";
+                s += _wkly.Boss1.NPCName + "\t" + _wkly.Boss2.NPCName + "\t";
+                int x = 0;
+                foreach (NPCData _npc in _wkly.BossCombat.NPCList)
+                {
+                    if (_npc != null && _npc.IsBoss)
+                    {
+                        x++;
+                        s += (x > 1 ? "&" : "") + _npc.NPCName;
+                    }
+                }
+                s += "\t" + _wkly.Seed;
+            }
+            
+            /*
+            week 1 starts: 9  November 
+            week 2 starts: 16 November
+            week 3 starts: 23 November 2023 @ 2 pm (UTC/GMT)
+            */
+            File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "weeklies.txt"), s);
+        }
+
+        internal static void medsGetWeeklyCards()
         {
             Dictionary<string, string[]> cardsDrafted = Traverse.Create(ChallengeSelectionManager.Instance).Field("cardsDrafted").GetValue<Dictionary<string, string[]>>();
             Dictionary<string, string> cardsDraftedSpecial = Traverse.Create(ChallengeSelectionManager.Instance).Field("cardsDraftedSpecial").GetValue<Dictionary<string, string>>();

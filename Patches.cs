@@ -41,13 +41,6 @@ namespace Obeliskial_Essentials
         private static Dictionary<string, SubClassData[]> subclassDictionary = new();
         private static Dictionary<string, SubClassData> nonHistorySubclassDictionary = new();
         private static Dictionary<string, string> SubclassByName = new();
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(MainMenuManager), "Start")]
-        [HarmonyPriority(Priority.First)]
-        private static void MainMenuManagerStartPostfix(ref MainMenuManager __instance)
-        {
-            AddModVersionText(PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION, ModDate.ToString());
-        }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Globals), "CreateGameContent")]
@@ -389,8 +382,6 @@ namespace Obeliskial_Essentials
                         component.blocked = !PlayerManager.Instance.IsHeroUnlocked(_subclassdata.Id);
                         if (component.blocked && GameManager.Instance.IsObeliskChallenge() && !GameManager.Instance.IsWeeklyChallenge())
                             component.blocked = false;
-                        if (_subclassdata.Id == "mercenary" || _subclassdata.Id == "ranger" || _subclassdata.Id == "elementalist" || _subclassdata.Id == "cleric")
-                            component.blocked = false;
                         /* no longer auto-unlock custom heroes!
                         if (!(Plugin.medsSubclassList.Contains(_subclassdata.Id)))
                             component.blocked = false;*/
@@ -446,7 +437,7 @@ namespace Obeliskial_Essentials
             Traverse.Create(HeroSelectionManager.Instance).Field("SubclassByName").SetValue(SubclassByName);
             if (!GameManager.Instance.IsObeliskChallenge() && AtOManager.Instance.IsFirstGame() && !GameManager.Instance.IsMultiplayer())
             {
-                AtOManager.Instance.SetGameId("cban29t");
+                AtOManager.Instance.SetGameId("tuto");
                 HeroSelectionManager.Instance.heroSelectionDictionary["mercenary"].AssignHeroToBox(HeroSelectionManager.Instance.boxGO[0]);
                 HeroSelectionManager.Instance.heroSelectionDictionary["ranger"].AssignHeroToBox(HeroSelectionManager.Instance.boxGO[1]);
                 HeroSelectionManager.Instance.heroSelectionDictionary["elementalist"].AssignHeroToBox(HeroSelectionManager.Instance.boxGO[2]);
@@ -600,7 +591,7 @@ namespace Obeliskial_Essentials
                 {
                     HeroSelectionManager.Instance.gameSeedModify.gameObject.SetActive(false);
                     if (AtOManager.Instance.IsFirstGame())
-                        AtOManager.Instance.SetGameId("cban29t");
+                        AtOManager.Instance.SetGameId("tuto");
                 }
                 else
                 {
@@ -880,10 +871,18 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(InputController), "DoKeyBinding")]
         public static bool DoKeyBindingPrefix(ref InputAction.CallbackContext _context)
         {
-            if (Keyboard.current != null && _context.control == Keyboard.current[Key.F1])
+            if (Keyboard.current != null)
             {
-                ObeliskialUI.ShowUI = !ObeliskialUI.ShowUI;
-                return false;
+                if (_context.control == Keyboard.current[Key.F1])
+                {
+                    ObeliskialUI.ShowUI = !ObeliskialUI.ShowUI;
+                    return false;
+                }
+                else if (_context.control == Keyboard.current[Key.F2])
+                {
+                    DevTools.ShowUI = !DevTools.ShowUI;
+                    return false;
+                }
             }
             return true;
         }
@@ -1153,11 +1152,11 @@ namespace Obeliskial_Essentials
                 _week = medsForceWeekly;
         }
 
-        /*[HarmonyPrefix]
+        [HarmonyPrefix]
         [HarmonyPatch(typeof(BotHeroChar), "OnMouseUp")]
         public static bool BotHeroCharClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1165,7 +1164,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(BotonCardback), "OnMouseUp")]
         public static bool BotonCardbackClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1173,7 +1172,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(BotonEndTurn), "OnMouseUp")]
         public static bool BotonEndTurnClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1181,7 +1180,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(BotonFilter), "OnMouseUp")]
         public static bool BotonFilterClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1189,7 +1188,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(BotonGeneric), "OnMouseUp")]
         public static bool BotonGenericClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1197,7 +1196,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(BotonMenuGameMode), "OnMouseUp")]
         public static bool BotonMenuGameModeClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1205,7 +1204,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(BotonRollover), "OnMouseUp")]
         public static bool BotonRolloverClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1213,7 +1212,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(BotonScore), "OnMouseUp")]
         public static bool BotonScoreClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1221,7 +1220,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(BotonSkin), "OnMouseUp")]
         public static bool BotonSkinClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1229,7 +1228,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(BotonSupply), "OnMouseUp")]
         public static bool BotonSupplyClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1237,7 +1236,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(botTownUpgrades), "OnMouseUp")]
         public static bool botTownUpgradesClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1245,7 +1244,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(BoxPlayer), "OnMouseUp")]
         public static bool BoxPlayerClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1253,7 +1252,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(CardCraftSelectorEnergy), "OnMouseUp")]
         public static bool CardCraftSelectorEnergyClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1261,7 +1260,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(CardCraftSelectorRarity), "OnMouseUp")]
         public static bool CardCraftSelectorRarityClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1269,7 +1268,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(CardItem), "OnMouseUp")]
         public static bool CardItemClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1277,7 +1276,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(CardVertical), "OnMouseUp")]
         public static bool CardVerticalClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1285,7 +1284,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(CharacterGOItem), "OnMouseUp")]
         public static bool CharacterGOItemClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1293,7 +1292,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(CharacterItem), "fOnMouseUp")]
         public static bool CharacterItemClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1301,7 +1300,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(CharacterLoot), "OnMouseUp")]
         public static bool CharacterLootClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1309,7 +1308,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(CharPopupClose), "OnMouseUp")]
         public static bool CharPopupCloseClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1317,7 +1316,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(CombatTarget), "OnMouseUp")]
         public static bool CombatTargetClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1325,7 +1324,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(DeckInHero), "OnMouseUp")]
         public static bool DeckInHeroClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1333,7 +1332,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(DeckPile), "OnMouseUp")]
         public static bool DeckPileClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1341,7 +1340,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(EmoteManager), "OnMouseUp")]
         public static bool EmoteManagerClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1349,7 +1348,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(HeroSelection), "OnMouseUp")]
         public static bool HeroSelectionClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1357,7 +1356,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(InitiativePortrait), "OnMouseUp")]
         public static bool InitiativePortraitClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1365,7 +1364,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(ItemCombatIcon), "fOnMouseUp")]
         public static bool ItemCombatIconClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1373,7 +1372,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(Node), "OnMouseUp")]
         public static bool NodeClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1381,7 +1380,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(OverCharacter), "OnMouseUp")]
         public static bool OverCharacterClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1389,7 +1388,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(PerkChallengeItem), "OnMouseUp")]
         public static bool PerkChallengeItemClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1397,7 +1396,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(PerkColumnItem), "OnMouseUp")]
         public static bool PerkColumnItemClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1405,7 +1404,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(PerkNode), "OnMouseUp")]
         public static bool PerkNodeClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1413,7 +1412,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(RandomHeroSelector), "OnMouseUp")]
         public static bool RandomHeroSelectorClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1421,7 +1420,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(Reply), "OnMouseUp")]
         public static bool ReplyClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1429,7 +1428,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(TomeButton), "OnMouseUp")]
         public static bool TomeButtonClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1437,7 +1436,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(TomeEdge), "OnMouseUp")]
         public static bool TomeEdgeClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1445,7 +1444,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(TomeNumber), "OnMouseUp")]
         public static bool TomeNumberClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1453,7 +1452,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(TomeRun), "OnMouseUp")]
         public static bool TomeRunClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1461,7 +1460,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(TownBuilding), "OnMouseUp")]
         public static bool TownBuildingClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
@@ -1469,11 +1468,10 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(TraitLevel), "OnMouseUp")]
         public static bool TraitLevelClickCapture()
         {
-            if (ModVersionUI.ShowUI && ModVersionUI.lockAtOToggle.isOn)
+            if (DevTools.ShowUI && DevTools.lockAtOToggle.isOn)
                 return false;
             return true;
         }
-        */
 
 
 
