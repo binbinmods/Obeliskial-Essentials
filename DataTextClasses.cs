@@ -609,6 +609,7 @@ namespace Obeliskial_Essentials
         public bool VisibleIfNotRequirement;
         public float medsPosX;
         public float medsPosY;
+        public string SourceNodeName;
     }
 
     [Serializable]
@@ -622,6 +623,11 @@ namespace Obeliskial_Essentials
         public string ID;
         public string[] LootItemTable; // LootItem
         public int NumItems;
+        public string ShadyModel;
+        public float ShadyScaleX;
+        public float ShadyScaleY;
+        public float ShadyOffsetX;
+        public float ShadyOffsetY;
     }
 
     [Serializable]
@@ -1290,5 +1296,36 @@ namespace Obeliskial_Essentials
         public string Name;
         public string[] Traits; // list of traits that give access to this deck
         public string[] Cards; // list of (unupgraded) cards in this deck
+    }
+    [Serializable]
+    public class Mod
+    {
+        public string Name;
+        public string Description;
+        public string Version;
+        public int Date;
+        public string Link;
+        public string[] Dependencies;
+        public string Author;
+        public string FolderName;
+        public int Priority;
+        public string[] Type;
+        public string Comment;
+        public bool Enabled;
+        public Mod(string _name, string _author = "", string _description = "", string _version = "1.0.0", int _date = 19920101, string _link = "", string[] _dependencies = null, string _folderName = "", int _priority = 100, string[] _type = null, string _comment = "", bool _enabled = true)
+        {
+            Name = _name;
+            Author = _author;
+            Description = _description;
+            Version = _version;
+            Date = _date;
+            Link = _link;
+            Dependencies = _dependencies ?? new string[] { };
+            FolderName = _folderName;
+            Priority = _priority;
+            Type = _type ?? new string[] { };
+            Comment = _comment;
+            Enabled = _enabled;
+        }
     }
 }

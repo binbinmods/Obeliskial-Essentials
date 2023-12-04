@@ -30,7 +30,7 @@ namespace Obeliskial_Essentials
     [BepInProcess("AcrossTheObelisk.exe")]
     public class Essentials : BaseUnityPlugin
     {
-        internal const int ModDate = 20231120;
+        internal const int ModDate = 20231203;
         private readonly Harmony harmony = new(PluginInfo.PLUGIN_GUID);
         internal static ManualLogSource Log;
 
@@ -57,6 +57,7 @@ namespace Obeliskial_Essentials
         public static Dictionary<string, string> medsTexts = new();
         private static List<string> medsExportedSpritePaths = new();
         internal static int medsForceWeekly = 0;
+        internal static List<Mod> medsMods = new();
         private void Awake()
         {
             Log = Logger;
@@ -76,7 +77,8 @@ namespace Obeliskial_Essentials
                 Force_Unlock_Mouse = true, // or null
                 Unhollowed_Modules_Folder = null
             });
-            AddModVersionText(PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION, ModDate.ToString());
+            RegisterMod(PluginInfo.PLUGIN_NAME, "stiffmeds", "Essential reference classes and methods for Across the Obelisk modding.", PluginInfo.PLUGIN_VERSION, ModDate, @"https://across-the-obelisk.thunderstore.io/package/meds/Obeliskial_Essentials/", null, "", int.MaxValue, new string[1] { "Core" }, "", true);
+            //AddModVersionText(PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION, ModDate.ToString());
             harmony.PatchAll();
         }
         internal static void LogDebug(string msg)
@@ -163,6 +165,19 @@ namespace Obeliskial_Essentials
                 medsVersionText = newText;
             else if (!medsVersionText.Contains(newText))
                 medsVersionText += "\n" + newText;
+        }
+        public static void RegisterMod(string _name, string _author = "", string _description = "", string _version = "1.0.0", int _date = 19920101, string _link = "", string[] _dependencies = null, string _folderName = "", int _priority = 100, string[] _type = null, string _comment = "", bool _enabled = true)
+        {
+            Mod _mod = new(_name, _author, _description, _version, _date, _link, _dependencies, _folderName, _priority, _type, _comment, _enabled);
+            if (!medsMods.Contains(_mod))
+                medsMods.Add(_mod);
+        }
+
+        public static string TextChargesLeft(int currentCharges, int chargesTotal)
+        {
+            int cCharges = currentCharges;
+            int cTotal = chargesTotal;
+            return "<br><color=#FFF>" + cCharges.ToString() + "/" + cTotal.ToString() + "</color>";
         }
 
         public static void ExtractData<T>(T[] data)

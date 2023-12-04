@@ -1079,6 +1079,7 @@ namespace Obeliskial_Essentials
             text.NodeZone = ToString(data.NodeZone);
             text.TravelDestination = data.TravelDestination;
             text.VisibleIfNotRequirement = data.VisibleIfNotRequirement;
+            //#XMAStext.SourceNodeName = data.SourceNodeName;
             if (data.NodeBackgroundImg != null && medsExportSprites.Value)
                 ExportSprite(data.NodeBackgroundImg, "node");
             return text;
@@ -1103,6 +1104,13 @@ namespace Obeliskial_Essentials
             text.ID = data.Id;
             text.LootItemTable = ToString(data.LootItemTable);
             text.NumItems = data.NumItems;
+            /* //#XMAS
+            text.ShadyModel = ToString(data.ShadyModel);
+            text.ShadyScaleX = data.ShadyScaleX;
+            text.ShadyScaleY = data.ShadyScaleY;
+            text.ShadyOffsetX = data.ShadyOffsetX;
+            text.ShadyOffsetY = data.ShadyOffsetY;
+            */
             return text;
         }
         public static LootItemText ToText(LootItem data)
