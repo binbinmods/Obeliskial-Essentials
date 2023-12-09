@@ -77,7 +77,7 @@ namespace Obeliskial_Essentials
                 Force_Unlock_Mouse = true, // or null
                 Unhollowed_Modules_Folder = null
             });
-            RegisterMod(PluginInfo.PLUGIN_NAME, "stiffmeds", "Essential reference classes and methods for Across the Obelisk modding.", PluginInfo.PLUGIN_VERSION, ModDate, @"https://across-the-obelisk.thunderstore.io/package/meds/Obeliskial_Essentials/", null, "", int.MaxValue, new string[1] { "Core" }, "", true);
+            RegisterMod(_name: PluginInfo.PLUGIN_NAME, _author: "stiffmeds", _description: "Essential reference classes and methods for Across the Obelisk modding.", _version: PluginInfo.PLUGIN_VERSION, _date: ModDate, _link: @"https://across-the-obelisk.thunderstore.io/package/meds/Obeliskial_Essentials/", _priority: int.MaxValue, _type: new string[1] { "Core" });
             //AddModVersionText(PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION, ModDate.ToString());
             harmony.PatchAll();
         }
@@ -171,6 +171,13 @@ namespace Obeliskial_Essentials
             Mod _mod = new(_name, _author, _description, _version, _date, _link, _dependencies, _folderName, _priority, _type, _comment, _enabled);
             if (!medsMods.Contains(_mod))
                 medsMods.Add(_mod);
+            //#TODO: update mod version text
+        }
+        public static void RegisterMod(Mod _mod)
+        {
+            if (!medsMods.Contains(_mod))
+                medsMods.Add(_mod);
+            //#TODO: update mod version text
         }
 
         public static string TextChargesLeft(int currentCharges, int chargesTotal)

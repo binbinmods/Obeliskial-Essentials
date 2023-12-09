@@ -1485,6 +1485,73 @@ namespace Obeliskial_Essentials
 
         // all of the below is just for testing
 
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(AI), "DoAI")]
+        public static void DoAIPrefix()
+        {
+            LogDebug("DoAI");
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(MatchManager), "GenerateDecksNPCs")]
+        public static void GenerateDecksNPCsPrefix()
+        {
+            LogDebug("GenerateDecksNPCs");
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(NPC), "BeginRound")]
+        public static void BeginRoundPrefix()
+        {
+            LogDebug("BeginRound");
+        }           
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(NPC), "CreateOverDeck")]
+        public static void CreateOverDeckPrefix()
+        {
+            LogDebug("CreateOverDeck");
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(MatchManager), "AddCardToNPCDeck")]
+        public static void AddCardToNPCDeckPrefix(ref int npcIndex, ref string idCard)
+        {
+            LogDebug("AddCardToNPCDeck: " + npcIndex.ToString() + ", " + idCard);
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(MatchManager), "GetCardFromDeckToHandNPC")]
+        public static bool GetCardFromDeckToHandNPCPrefix(ref MatchManager __instance, ref int npcIndex)
+        {
+            //Dictionary<string, NodeData> medsNodeDataSource = Traverse.Create(Globals.Instance).Field("_NodeDataSource").GetValue<Dictionary<string, NodeData>>();
+            List<string>[] medsNPCDeck = Traverse.Create(Globals.Instance).Field("NPCDeck").GetValue<List<string>[]>();
+            List<string>[] medsNPCDeckDiscard = Traverse.Create(Globals.Instance).Field("NPCDeckDiscard").GetValue<List<string>[]>();
+            List<string>[] medsNPCHand = Traverse.Create(Globals.Instance).Field("NPCHand").GetValue<List<string>[]>();
+            NPC[] _NPCs = __instance.GetTeamNPC();
+            if (__instance.CountNPCDeck(npcIndex) == 0)
+            {
+                medsNPCDeck[npcIndex] = new List<string>((IEnumerable<string>)medsNPCDeckDiscard[npcIndex]);
+                medsNPCDeckDiscard[npcIndex].Clear();
+                medsNPCDeck[npcIndex] = medsNPCDeck[npcIndex].ShuffleList<string>();
+            }
+            if (medsNPCDeck[npcIndex].Count <= 0)
+            {
+                Traverse.Create(__instance).Field("NPCDeck").SetValue(medsNPCDeck);
+                Traverse.Create(__instance).Field("NPCDeckDiscard").SetValue(medsNPCDeckDiscard);
+                return false;
+            }
+            string str = medsNPCDeck[npcIndex][0];
+            medsNPCDeck[npcIndex].RemoveAt(0);
+            if (medsNPCHand[npcIndex] == null)
+                medsNPCHand[npcIndex] = new List<string>();
+            medsNPCHand[npcIndex].Add(str);
+            Traverse.Create(__instance).Field("NPCDeck").SetValue(medsNPCDeck);
+            Traverse.Create(__instance).Field("NPCDeckDiscard").SetValue(medsNPCDeckDiscard);
+            Traverse.Create(__instance).Field("NPCHand").SetValue(medsNPCHand);
+            LogDebug("GetCardFromDeckToHandNPC: " + npcIndex.ToString());
+            return false;
+        }
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(MapManager), "TravelToThisNode")]

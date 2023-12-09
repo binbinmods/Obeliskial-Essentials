@@ -596,6 +596,7 @@ namespace Obeliskial_Essentials
             text.CharacterName = data.CharacterName;
             text.Energy = data.Energy;
             text.EnergyTurn = data.EnergyTurn;
+            text.ExpansionCharacter = data.ExpansionCharacter;
             text.Female = data.Female;
             text.FluffOffsetX = data.FluffOffsetX;
             text.FluffOffsetY = data.FluffOffsetY;
@@ -669,8 +670,8 @@ namespace Obeliskial_Essentials
                 if (data.StickerSurprise != null)
                     ExportSprite(data.StickerSurprise, "subclass", data.Id);
             }
-            // text.AutoUnlock = data.InitialUnlock; // #XMAS
-            // text.SourceCharacterName = data.SourceCharacterName;// #XMAS
+            text.AutoUnlock = data.InitialUnlock; // #XMAS
+            text.SourceCharacterName = data.SourceCharacterName;// #XMAS
             return text;
         }
 
@@ -1079,7 +1080,7 @@ namespace Obeliskial_Essentials
             text.NodeZone = ToString(data.NodeZone);
             text.TravelDestination = data.TravelDestination;
             text.VisibleIfNotRequirement = data.VisibleIfNotRequirement;
-            //#XMAStext.SourceNodeName = data.SourceNodeName;
+            text.SourceNodeName = data.SourceNodeName; // #XMAS
             if (data.NodeBackgroundImg != null && medsExportSprites.Value)
                 ExportSprite(data.NodeBackgroundImg, "node");
             return text;
@@ -1104,13 +1105,11 @@ namespace Obeliskial_Essentials
             text.ID = data.Id;
             text.LootItemTable = ToString(data.LootItemTable);
             text.NumItems = data.NumItems;
-            /* //#XMAS
-            text.ShadyModel = ToString(data.ShadyModel);
-            text.ShadyScaleX = data.ShadyScaleX;
-            text.ShadyScaleY = data.ShadyScaleY;
-            text.ShadyOffsetX = data.ShadyOffsetX;
-            text.ShadyOffsetY = data.ShadyOffsetY;
-            */
+            text.ShadyModel = ToString(data.ShadyModel); // #XMAS
+            text.ShadyScaleX = data.ShadyScaleX; // #XMAS
+            text.ShadyScaleY = data.ShadyScaleY; // #XMAS
+            text.ShadyOffsetX = data.ShadyOffsetX; // #XMAS
+            text.ShadyOffsetY = data.ShadyOffsetY; // #XMAS
             return text;
         }
         public static LootItemText ToText(LootItem data)
@@ -1187,7 +1186,7 @@ namespace Obeliskial_Essentials
             text.NPCList = ToString(data.NPCList);
             text.NPCRemoveInMadness0Index = data.NpcRemoveInMadness0Index;
             text.ThermometerTierData = ToString(data.ThermometerTierData);
-            // text.IsRift = data.IsRift; // #XMAS
+            text.IsRift = data.IsRift; // #XMAS
             return text;
         }
         public static CombatEffectText ToText(CombatEffect data)

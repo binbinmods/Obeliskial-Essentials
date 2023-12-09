@@ -23,6 +23,7 @@ namespace Obeliskial_Essentials
         public string CharacterName;
         public int Energy;
         public int EnergyTurn;
+        public bool ExpansionCharacter;
         public bool Female;
         public float FluffOffsetX;
         public float FluffOffsetY;
