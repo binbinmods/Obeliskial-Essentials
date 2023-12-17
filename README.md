@@ -19,11 +19,12 @@ This is an **Across the Obelisk** mod that enables my other mods to work and com
 
 ## Options
 
-| Option             | Default | Description                                                                      |
-|:-------------------|:-------:|:---------------------------------------------------------------------------------|
-| **Export JSON**    | false   | Export AtO class data to JSON files that are compatible with Obeliskial Content. |
-| **Export Sprites** | true    | Export sprites when exporting vanilla content.                                   |
-| **Show At Start**  | true    | Show the mod version window when the game loads.                                 |
+| Option                          | Default | Description                                                                      |
+|:--------------------------------|:-------:|:---------------------------------------------------------------------------------|
+| **Export JSON**                 | false   | Export AtO class data to JSON files that are compatible with Obeliskial Content. |
+| **Export Sprites**              | true    | Export sprites when exporting vanilla content.                                   |
+| **Show At Start**               | true    | Show the mod version window when the game loads.                                 |
+| **Disable Paradox Integration** | true    | Disable Paradox integration and telemetry (does not include launcher).           |
 
 ## Support
 
