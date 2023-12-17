@@ -30,13 +30,14 @@ namespace Obeliskial_Essentials
     [BepInProcess("AcrossTheObelisk.exe")]
     public class Essentials : BaseUnityPlugin
     {
-        internal const int ModDate = 20231203;
+        internal const int ModDate = 20231217;
         private readonly Harmony harmony = new(PluginInfo.PLUGIN_GUID);
         internal static ManualLogSource Log;
 
         public static ConfigEntry<bool> medsExportJSON { get; private set; }
         public static ConfigEntry<bool> medsExportSprites { get; private set; }
         public static ConfigEntry<bool> medsShowAtStart { get; private set; }
+        public static ConfigEntry<bool> medsConsistency { get; private set; }
         internal static Dictionary<string, string> medsNodeEvent = new();
         internal static Dictionary<string, int> medsNodeEventPercent = new();
         internal static Dictionary<string, int> medsNodeEventPriority = new();
@@ -53,11 +54,16 @@ namespace Obeliskial_Essentials
         public static Dictionary<string, string> medsCustomCardDescriptions = new();
         public static RewardsManager RewardsManagerInstance;
         internal static string medsVersionText = "";
-        public static readonly string[] vanillaSubclasses = { "mercenary", "sentinel", "berserker", "warden", "ranger", "assassin", "archer", "minstrel", "elementalist", "pyromancer", "loremaster", "warlock", "cleric", "priest", "voodoowitch", "prophet", "bandit", "fallen", "paladin" };
+        public static readonly string[] vanillaSubclasses = { "mercenary", "sentinel", "berserker", "warden", "ranger", "assassin", "archer", "minstrel", "elementalist", "pyromancer", "loremaster", "warlock", "cleric", "priest", "voodoowitch", "prophet", "bandit", "fallen", "paladin", "queen" };
         public static Dictionary<string, string> medsTexts = new();
         private static List<string> medsExportedSpritePaths = new();
         internal static int medsForceWeekly = 0;
-        internal static List<Mod> medsMods = new();
+        public static Dictionary<int, Mod> medsMods = new();
+        internal static Dictionary<string, List<string>> medsModAuthors = new();
+        public static Dictionary<string, string> medsLoadedDependencies = new();
+        public static string medsCloneTwo = "";
+        public static string medsCloneThree = "";
+        public static string medsCloneFour = "";
         private void Awake()
         {
             Log = Logger;
@@ -65,6 +71,7 @@ namespace Obeliskial_Essentials
             medsExportJSON = Config.Bind(new ConfigDefinition("Debug", "Export Vanilla Content"), false, new ConfigDescription("Export AtO class data to JSON files that are compatible with Obeliskial Content."));
             medsExportSprites = Config.Bind(new ConfigDefinition("Debug", "Export Sprites"), true, new ConfigDescription("Export sprites when exporting JSON files."));
             medsShowAtStart = Config.Bind(new ConfigDefinition("Debug", "Show At Start"), true, new ConfigDescription("Show the mod version window when the game loads."));
+            medsConsistency = Config.Bind(new ConfigDefinition("Should Be Vanilla", "Disable Paradox Integration"), true, new ConfigDescription("Disable Paradox integration and telemetry (does not include launcher)."));
             UniverseLib.Universe.Init(1f, ObeliskialUI.InitUI, LogHandler, new()
             {
                 Disable_EventSystem_Override = false, // or null
@@ -166,18 +173,40 @@ namespace Obeliskial_Essentials
             else if (!medsVersionText.Contains(newText))
                 medsVersionText += "\n" + newText;
         }
-        public static void RegisterMod(string _name, string _author = "", string _description = "", string _version = "1.0.0", int _date = 19920101, string _link = "", string[] _dependencies = null, string _folderName = "", int _priority = 100, string[] _type = null, string _comment = "", bool _enabled = true)
+        public static void RegisterMod(string _name, string _author = "", string _description = "", string _version = "1.0.0", int _date = 19920101, string _link = "", string[] _dependencies = null, string _contentFolder = "", int _priority = 100, string[] _type = null, string _comment = "", bool _enabled = true)
         {
-            Mod _mod = new(_name, _author, _description, _version, _date, _link, _dependencies, _folderName, _priority, _type, _comment, _enabled);
-            if (!medsMods.Contains(_mod))
-                medsMods.Add(_mod);
-            //#TODO: update mod version text
+            Mod _mod = new(_name, _author, _description, _version, _date, _link, _dependencies, _contentFolder, _priority, _type, _comment, _enabled);
+            RegisterMod(_mod);
         }
         public static void RegisterMod(Mod _mod)
         {
-            if (!medsMods.Contains(_mod))
-                medsMods.Add(_mod);
-            //#TODO: update mod version text
+            if (medsModAuthors.ContainsKey(_mod.Author.ToLower()))
+            {
+                if (medsModAuthors[_mod.Author.ToLower()].Contains(_mod.Name.ToLower()))
+                {
+                    LogError("Attempting to register duplicate mod: " + _mod.Author + " - " + _mod.Name);
+                }
+                else
+                {
+                    medsModAuthors[_mod.Author.ToLower()].Add(_mod.Name.ToLower());
+                    medsMods[medsMods.Count] = _mod;
+                }
+            }
+            else
+            {
+                medsModAuthors[_mod.Author.ToLower()] = new() { _mod.Name.ToLower() };
+                medsMods[medsMods.Count] = _mod;
+            }
+            if (_mod.Enabled)
+            {
+                if (_mod.ContentFolder.IsNullOrWhiteSpace()) // no custom content to load
+                    medsLoadedDependencies[_mod.Author.ToLower().Replace(" ", "_") + "-" + _mod.Name.ToLower().Replace(" ", "_")] = _mod.Version.ToLower();
+                string newText = _mod.Name + " v" + _mod.Version + (_mod.Date == 19920101 ? "" : " (" + _mod.Date.ToString() + ")");
+                if (medsVersionText.IsNullOrWhiteSpace())
+                    medsVersionText = newText;
+                else if (!medsVersionText.Contains(newText))
+                    medsVersionText += "\n" + newText;
+            }
         }
 
         public static string TextChargesLeft(int currentCharges, int chargesTotal)

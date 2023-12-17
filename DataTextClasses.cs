@@ -1308,12 +1308,12 @@ namespace Obeliskial_Essentials
         public string Link;
         public string[] Dependencies;
         public string Author;
-        public string FolderName;
+        public string ContentFolder;
         public int Priority;
         public string[] Type;
         public string Comment;
         public bool Enabled;
-        public Mod(string _name, string _author = "", string _description = "", string _version = "1.0.0", int _date = 19920101, string _link = "", string[] _dependencies = null, string _folderName = "", int _priority = 100, string[] _type = null, string _comment = "", bool _enabled = true)
+        public Mod(string _name, string _author = "", string _description = "", string _version = "1.0.0", int _date = 19920101, string _link = "", string[] _dependencies = null, string _contentFolder = "", int _priority = 100, string[] _type = null, string _comment = "", bool _enabled = true)
         {
             Name = _name;
             Author = _author;
@@ -1322,7 +1322,7 @@ namespace Obeliskial_Essentials
             Date = _date;
             Link = _link;
             Dependencies = _dependencies ?? new string[] { };
-            FolderName = _folderName;
+            ContentFolder = _contentFolder;
             Priority = _priority;
             Type = _type ?? new string[] { };
             Comment = _comment;

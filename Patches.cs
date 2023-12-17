@@ -15,6 +15,7 @@ using static UnityEngine.Object;
 using Photon.Realtime;
 using System.Reflection;
 using UnityEngine.InputSystem;
+using System.Text;
 
 /*
 FULL LIST OF ATO CLASSES->METHODS THAT ARE PATCHED:
@@ -1473,6 +1474,12 @@ namespace Obeliskial_Essentials
             return true;
         }
 
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(GameManager), "Awake")]
+        public static void GameManagerAwakePrefix(ref GameManager __instance)
+        {
+            Traverse.Create(__instance).Field("pDXEnabled").SetValue(!(medsConsistency.Value));
+        }
 
 
 
@@ -1518,39 +1525,6 @@ namespace Obeliskial_Essentials
         public static void AddCardToNPCDeckPrefix(ref int npcIndex, ref string idCard)
         {
             LogDebug("AddCardToNPCDeck: " + npcIndex.ToString() + ", " + idCard);
-        }
-
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(MatchManager), "GetCardFromDeckToHandNPC")]
-        public static bool GetCardFromDeckToHandNPCPrefix(ref MatchManager __instance, ref int npcIndex)
-        {
-            //Dictionary<string, NodeData> medsNodeDataSource = Traverse.Create(Globals.Instance).Field("_NodeDataSource").GetValue<Dictionary<string, NodeData>>();
-            List<string>[] medsNPCDeck = Traverse.Create(Globals.Instance).Field("NPCDeck").GetValue<List<string>[]>();
-            List<string>[] medsNPCDeckDiscard = Traverse.Create(Globals.Instance).Field("NPCDeckDiscard").GetValue<List<string>[]>();
-            List<string>[] medsNPCHand = Traverse.Create(Globals.Instance).Field("NPCHand").GetValue<List<string>[]>();
-            NPC[] _NPCs = __instance.GetTeamNPC();
-            if (__instance.CountNPCDeck(npcIndex) == 0)
-            {
-                medsNPCDeck[npcIndex] = new List<string>((IEnumerable<string>)medsNPCDeckDiscard[npcIndex]);
-                medsNPCDeckDiscard[npcIndex].Clear();
-                medsNPCDeck[npcIndex] = medsNPCDeck[npcIndex].ShuffleList<string>();
-            }
-            if (medsNPCDeck[npcIndex].Count <= 0)
-            {
-                Traverse.Create(__instance).Field("NPCDeck").SetValue(medsNPCDeck);
-                Traverse.Create(__instance).Field("NPCDeckDiscard").SetValue(medsNPCDeckDiscard);
-                return false;
-            }
-            string str = medsNPCDeck[npcIndex][0];
-            medsNPCDeck[npcIndex].RemoveAt(0);
-            if (medsNPCHand[npcIndex] == null)
-                medsNPCHand[npcIndex] = new List<string>();
-            medsNPCHand[npcIndex].Add(str);
-            Traverse.Create(__instance).Field("NPCDeck").SetValue(medsNPCDeck);
-            Traverse.Create(__instance).Field("NPCDeckDiscard").SetValue(medsNPCDeckDiscard);
-            Traverse.Create(__instance).Field("NPCHand").SetValue(medsNPCHand);
-            LogDebug("GetCardFromDeckToHandNPC: " + npcIndex.ToString());
-            return false;
         }
 
         [HarmonyPrefix]
@@ -1639,6 +1613,7 @@ namespace Obeliskial_Essentials
 
         }
 
+        /*
         [HarmonyPrefix]
         [HarmonyPatch(typeof(MapManager), "IncludeMapPrefab")]
         public static void IncludeMapPrefabPrefix(ref MapManager __instance, string nodeId)
@@ -1651,33 +1626,33 @@ namespace Obeliskial_Essentials
 
             for (int index1 = 0; index1 < __instance.mapList.Count; ++index1)
             {
-                Log.LogDebug("index1: " + index1.ToString());
+                //Log.LogDebug("index1: " + index1.ToString());
                 if (__instance.mapList[index1].name.ToLower() == medsND.NodeZone.ZoneId.ToLower())
                 {
 
-                    Log.LogDebug("FOUND IT");
+                    //Log.LogDebug("FOUND IT");
                     bool flag2 = false;
                     for (int index2 = 0; index2 < __instance.worldTransform.childCount; ++index2)
                     {
                         if (__instance.worldTransform.GetChild(index2).gameObject.name == __instance.mapList[index1].name)
                         {
-                            Log.LogDebug("FLAG2");
+                            //Log.LogDebug("FLAG2");
                             flag2 = true;
                             break;
                         }
                     }
                     if (!flag2)
                     {
-                        Log.LogDebug("NOFLAG2");
+                        //Log.LogDebug("NOFLAG2");
                         //UnityEngine.Object.Instantiate<GameObject>(__instance.mapList[index1], new Vector3(0.0f, 0.0f, 0.0f), Quaternion.identity, __instance.worldTransform).name = __instance.mapList[index1].name;
                     }
                 }
                 else
                 {
-                    Log.LogDebug("Did not find: " + __instance.mapList[index1].name.ToLower());
+                    //Log.LogDebug("Did not find: " + __instance.mapList[index1].name.ToLower());
                 }
             }
-        }
+        }*/
 
         /*[HarmonyPrefix]
         [HarmonyPatch(typeof(CharacterItem), "SetParalyze")]
