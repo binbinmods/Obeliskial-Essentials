@@ -17,6 +17,7 @@ using UnityEngine.UIElements;
 using UnityEngine.UI;
 using static Unity.Audio.Handle;
 using System.Text;
+using Steamworks.Ugc;
 
 
 /*
@@ -64,6 +65,7 @@ namespace Obeliskial_Essentials
         public static string medsCloneTwo = "";
         public static string medsCloneThree = "";
         public static string medsCloneFour = "";
+        public static Dictionary<string, List<string>> medsBaseCardsListSearch = new();
         private void Awake()
         {
             Log = Logger;
@@ -1114,10 +1116,35 @@ namespace Obeliskial_Essentials
             }
         }
 
+        public static void medsIncludeInBaseSearch(string _term, string id, bool includeFullTerm = true)
+        {
+            if (SceneStatic.GetSceneName() != "Game")
+                return;
+            _term = _term.ToLower();
+            string[] strArray = _term.Split(' ', StringSplitOptions.None);
+            id = id.ToLower();
+            foreach (string key in strArray)
+            {
+                if (key.Trim() != "")
+                {
+                    if (!medsBaseCardsListSearch.ContainsKey(key))
+                        medsBaseCardsListSearch.Add(key, new List<string>());
+                    if (!medsBaseCardsListSearch[key].Contains(id))
+                        medsBaseCardsListSearch[key].Add(id);
+                }
+            }
+            if (!includeFullTerm)
+                return;
+            if (!medsBaseCardsListSearch.ContainsKey(_term))
+                medsBaseCardsListSearch.Add(_term, new List<string>());
+            if (medsBaseCardsListSearch[_term].Contains(id))
+                return;
+            medsBaseCardsListSearch[_term].Add(id);
+        }
 
         public static void medsCreateCardClones()
         {
-            Traverse.Create(Globals.Instance).Field("_CardsListSearch").SetValue(new Dictionary<string, List<string>>());
+            Traverse.Create(Globals.Instance).Field("_CardsListSearch").SetValue(medsBaseCardsListSearch);
             Dictionary<string, CardData> medsCardsSource = Traverse.Create(Globals.Instance).Field("_CardsSource").GetValue<Dictionary<string, CardData>>();
             Dictionary<CardType, List<string>> medsCardListByType = new();
             Dictionary<CardClass, List<string>> medsCardListByClass = new();
