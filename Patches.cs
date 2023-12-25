@@ -1481,7 +1481,13 @@ namespace Obeliskial_Essentials
             Traverse.Create(__instance).Field("pDXEnabled").SetValue(!(medsConsistency.Value));
         }
 
-
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(AtOManager), "SetCurrentNode")]
+        public static void SetCurrentNodePrefix(ref string _nodeName)
+        {
+            if (_nodeName == "sen_0" && !DevTools.inputStartingNode.Text.IsNullOrWhiteSpace() && DevTools.inputStartingNode.Text.ToLower() != "starting node")
+                _nodeName = DevTools.inputStartingNode.Text.ToLower();
+        }
 
 
 

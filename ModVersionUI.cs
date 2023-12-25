@@ -148,6 +148,7 @@ namespace Obeliskial_Essentials
         internal static Text labelMouseXY;
         public static GameObject lockAtOGO;
         public static Toggle lockAtOToggle;
+        internal static InputFieldRef inputStartingNode;
         internal static bool ShowUI
         {
             get => uiBase != null && uiBase.Enabled;
@@ -195,6 +196,8 @@ namespace Obeliskial_Essentials
                 }
                 catch (Exception e) { LogDebug("Failed to set enemy HP to 1: " + e.Message); };
             });
+            inputStartingNode = UIFactory.CreateInputField(medsDevToolsGO, "inputStartingNode", "starting node");
+            UIFactory.SetLayoutElement(inputStartingNode.Component.gameObject, minWidth: 100, minHeight: 30);
             lockAtOGO = UIFactory.CreateToggle(medsDevToolsGO, "disableButtonsToggle", out lockAtOToggle, out Text lockAtOText);
             lockAtOText.text = "Disable AtO Buttons";
             lockAtOToggle.isOn = false;

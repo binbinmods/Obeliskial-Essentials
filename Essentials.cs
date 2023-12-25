@@ -31,7 +31,7 @@ namespace Obeliskial_Essentials
     [BepInProcess("AcrossTheObelisk.exe")]
     public class Essentials : BaseUnityPlugin
     {
-        internal const int ModDate = 20231217;
+        internal const int ModDate = 20231219;
         private readonly Harmony harmony = new(PluginInfo.PLUGIN_GUID);
         internal static ManualLogSource Log;
 
@@ -421,11 +421,11 @@ namespace Obeliskial_Essentials
                 if (a == 1)
                 {
                     FolderCreate(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", type));
-                    File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "!combined", type + ".json"), "[");
+                    File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "!combined", type + ".json"), "[{\n");
                     if (textFULL != "")
                     {
                         FolderCreate(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", type + "_FULL"));
-                        File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "!combined", type + "_FULL.json"), "[");
+                        File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "!combined", type + "_FULL.json"), "[{\n");
                     }
                 }
                 WriteToJSON(type, text, id);
@@ -434,16 +434,16 @@ namespace Obeliskial_Essentials
                 if (a == data.Length)
                 {
                     // WriteToJSON(type, combined.Remove(combined.Length - 1) + "}", a, h);
-                    File.AppendAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "!combined", type + ".json"), text + "]");
+                    File.AppendAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "!combined", type + ".json"), "\"" + id + "\": " + text + "}]");
                     if (textFULL != "")
-                        File.AppendAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "!combined", type + "_FULL.json"), textFULL + "]");
+                        File.AppendAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "!combined", type + "_FULL.json"), "\"" + id + "\": " + textFULL + "]");
                     Log.LogInfo("exported " + a + " " + type + " values!");
                 }
                 else
                 {
-                    File.AppendAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "!combined", type + ".json"), text + ",");
+                    File.AppendAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "!combined", type + ".json"), "\"" + id + "\": " + text + ",");
                     if (textFULL != "")
-                        File.AppendAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "!combined", type + "_FULL.json"), textFULL + ",");
+                        File.AppendAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "!combined", type + "_FULL.json"), "\"" + id + "\": " + textFULL + ",");
                 }
             }
         }
@@ -1440,6 +1440,47 @@ namespace Obeliskial_Essentials
                     }
                 }
             }
+        }
+        
+        internal static void medsListCorruptors()
+        {
+            List<string> easy = new();
+            List<string> average = new();
+            List<string> hard = new();
+            List<string> extreme = new();
+            List<CardData> cards = new();
+            foreach (string cor in Globals.Instance.CardListByType[CardType.Corruption])
+            {
+                CardData card = Globals.Instance.GetCardData(cor);
+                if (card != null)
+                {
+                    cards.Add(card);
+                    if (card.CardRarity == CardRarity.Common)
+                    {
+                        easy.Add(cor);
+                    }
+                    else if (card.CardRarity == CardRarity.Uncommon)
+                    {
+                        easy.Add(cor);
+                        average.Add(cor);
+                    }
+                    else if (card.CardRarity == CardRarity.Rare)
+                    {
+                        easy.Add(cor);
+                        average.Add(cor);
+                        hard.Add(cor);
+                    }
+                    else
+                    {
+                        easy.Add(cor);
+                        average.Add(cor);
+                        hard.Add(cor);
+                        extreme.Add(cor);
+                    }
+                }
+            }
+            File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "corruptorIndex.txt"), "const corruptorIndex = Object.freeze({\n    easy: [\"" + String.Join("\", \"", easy) + "\"],\n    average: [\"" + String.Join("\", \"", average) + "\"],\n    hard: [\"" + String.Join("\", \"", hard) + "\"],\n    extreme: [\"" + String.Join("\", \"", extreme) + "\"]\n});");
+            ExtractData(cards.ToArray());
         }
     }
 }

@@ -1219,6 +1219,7 @@ namespace Obeliskial_Essentials
             for (int a = 0; a < data.Replys.Length; a++)
             {
                 medsEventReplyDataText[text.EventID + "_" + a.ToString()] = ToText(data.Replys[a], text.EventID, a);
+                //text.Replies[a] = text.EventID + "_" + a.ToString();
                 text.Replies[a] = ToJson(medsEventReplyDataText[text.EventID + "_" + a.ToString()], true);
             }
             text.RequiredClass = ToString(data.RequiredClass);
