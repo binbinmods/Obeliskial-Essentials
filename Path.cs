@@ -42,6 +42,8 @@ namespace Obeliskial_Essentials
                 nodeExperience3Plus[_node.NodeId] = GetNodeXP(_node);
             foreach (string nodeID in newZoneNodeIDs)
                 AddPathStepNew(new List<string>(), nodeID);
+            // temporary: ulminin only
+            //AddPathStepNew(new List<string>(), "ulmin_0");
             foreach (string startID in nodePaths.Keys)
             {
                 foreach (NodePath np in nodePaths[startID])

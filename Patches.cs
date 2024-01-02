@@ -133,6 +133,14 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(HeroSelectionManager), "Start")]
         private static bool HSMStartPrefix(ref HeroSelectionManager __instance)
         {
+            // temp logging for @Sara's issue
+            Dictionary<string, string> cardbackUsed = Traverse.Create(__instance).Field("cardbackUsed").GetValue<Dictionary<string, string>>();
+            Dictionary<string, string> skinUsed = Traverse.Create(__instance).Field("skinUsed").GetValue<Dictionary<string, string>>();
+            foreach (string key in cardbackUsed.Keys)
+                LogDebug("cardback for " + key + ": " + cardbackUsed[key]);
+            foreach (string key in skinUsed.Keys)
+                LogDebug("skin for " + key + ": " + skinUsed[key]);
+
             // replace StartCo with your own... :)
             photonView = Traverse.Create(__instance).Field("photonView").GetValue<PhotonView>();
             ngValueMaster = Traverse.Create(__instance).Field("ngValueMaster").GetValue<int>();
@@ -252,6 +260,7 @@ namespace Obeliskial_Essentials
             LogDebug("about to begin looping through subclasses");
             foreach (KeyValuePair<string, SubClassData> keyValuePair in Globals.Instance.SubClass)
             {
+                LogDebug("kvp: " + keyValuePair.Key);
                 if (!keyValuePair.Value.MainCharacter)
                 {
                     if (!nonHistorySubclassDictionary.ContainsKey(keyValuePair.Key))
