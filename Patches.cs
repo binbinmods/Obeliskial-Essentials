@@ -134,8 +134,9 @@ namespace Obeliskial_Essentials
         private static bool HSMStartPrefix(ref HeroSelectionManager __instance)
         {
             // temp logging for @Sara's issue
-            Dictionary<string, string> cardbackUsed = Traverse.Create(__instance).Field("cardbackUsed").GetValue<Dictionary<string, string>>();
-            Dictionary<string, string> skinUsed = Traverse.Create(__instance).Field("skinUsed").GetValue<Dictionary<string, string>>();
+            LogDebug("HSMStartPrefix");
+            Dictionary<string, string> cardbackUsed = Traverse.Create(PlayerManager.Instance).Field("cardbackUsed").GetValue<Dictionary<string, string>>();
+            Dictionary<string, string> skinUsed = Traverse.Create(PlayerManager.Instance).Field("skinUsed").GetValue<Dictionary<string, string>>();
             foreach (string key in cardbackUsed.Keys)
                 LogDebug("cardback for " + key + ": " + cardbackUsed[key]);
             foreach (string key in skinUsed.Keys)
@@ -890,7 +891,7 @@ namespace Obeliskial_Essentials
                 }
                 else if (_context.control == Keyboard.current[Key.F2])
                 {
-                    DevTools.ShowUI = !DevTools.ShowUI;
+                    ChangeUIState();
                     return false;
                 }
             }

@@ -2,8 +2,8 @@
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using System.Linq;
-using HarmonyLib;
 using System.Collections.Generic;
+using HarmonyLib;
 using System.IO;
 using UnityEngine;
 using TMPro;
@@ -66,6 +66,7 @@ namespace Obeliskial_Essentials
         public static string medsCloneThree = "";
         public static string medsCloneFour = "";
         public static Dictionary<string, List<string>> medsBaseCardsListSearch = new();
+        public static List<string> medsF2UIOpen = new();
         private void Awake()
         {
             Log = Logger;
@@ -81,6 +82,12 @@ namespace Obeliskial_Essentials
                 Unhollowed_Modules_Folder = null
             });
             UniverseLib.Universe.Init(1f, DevTools.Init, LogHandler, new()
+            {
+                Disable_EventSystem_Override = false, // or null
+                Force_Unlock_Mouse = true, // or null
+                Unhollowed_Modules_Folder = null
+            });
+            UniverseLib.Universe.Init(1f, ProfileEditor.Init, LogHandler, new()
             {
                 Disable_EventSystem_Override = false, // or null
                 Force_Unlock_Mouse = true, // or null
@@ -865,7 +872,166 @@ namespace Obeliskial_Essentials
                 }
             }
         }
+        public static void WilburCardJSONExportEvenMoreNewWhatHaveIBecome()
+        {
+            List<string> doneList = new();
+            foreach(string id in Globals.Instance.Cards.Keys)
+            {
+                CardData card = Globals.Instance.GetCardData(id, false);
+                if (card != null)
+                {
+                    CardData relatedCard = Globals.Instance.GetCardData(card.RelatedCard, false);
+                    if (relatedCard != null && (card.CardClass == CardClass.Monster || (card.CardClass == CardClass.Item && relatedCard.CardClass == CardClass.Special) || (card.CardClass == CardClass.Special && relatedCard.CardClass == CardClass.Special && relatedCard.CardType != CardType.Enchantment)) && !doneList.Contains(relatedCard.Id))
+                        doneList.Add(relatedCard.Id);
+                    CardData relatedCard2 = Globals.Instance.GetCardData(card.RelatedCard2, false);
+                    if (relatedCard2 != null && (card.CardClass == CardClass.Monster || (card.CardClass == CardClass.Item && relatedCard2.CardClass == CardClass.Special) || (card.CardClass == CardClass.Special && relatedCard2.CardClass == CardClass.Special && relatedCard2.CardType != CardType.Enchantment)) && !doneList.Contains(relatedCard2.Id))
+                        doneList.Add(relatedCard2.Id);
+                    CardData relatedCard3 = Globals.Instance.GetCardData(card.RelatedCard3, false);
+                    if (relatedCard3 != null && (card.CardClass == CardClass.Monster || (card.CardClass == CardClass.Item && relatedCard3.CardClass == CardClass.Special) || (card.CardClass == CardClass.Special && relatedCard3.CardClass == CardClass.Special && relatedCard3.CardType != CardType.Enchantment)) && !doneList.Contains(relatedCard3.Id))
+                        doneList.Add(relatedCard3.Id);
+                }
+            }
+            Dictionary<string, List<string>> cardIDs = new();
+            Dictionary<string, List<string>> relatedIDs = new();
+            foreach (string id in Globals.Instance.Cards.Keys)
+            {
+                if (doneList.Contains(id))
+                    continue;
+                CardData card = Globals.Instance.GetCardData(id, false);
+                if (card != null)
+                {
+                    string cardname = card.CardName;
+                    if (card.CardType == CardType.Corruption)
+                        cardname += " (Corruptor)";
+                    else if (card.CardClass == CardClass.Monster)
+                        cardname += " (Monster)";
+                    else if (card.CardClass == CardClass.Special && !card.Starter && card.CardType != CardType.Enchantment)
+                        cardname += " (Special)";
+                    else if (card.CardClass == CardClass.Item)
+                        cardname += " (Item)";
+                    if (!cardIDs.ContainsKey(cardname))
+                        cardIDs[cardname] = new();
+                    List<string> newRelated = new();
+                    cardIDs[cardname].Add(card.Id);
+                    foreach (string relatedID in GetRelatedCardIDs(card))
+                        newRelated.Add(relatedID);
+                    // blue upgrade
+                    CardData upgrade1 = Globals.Instance.GetCardData(card.UpgradesTo1, false);
+                    if (upgrade1 != null && !cardIDs[cardname].Contains(upgrade1.Id))
+                    {
+                        cardIDs[cardname].Add(upgrade1.Id);
+                        doneList.Add(upgrade1.Id);
+                        foreach (string relatedID in GetRelatedCardIDs(upgrade1))
+                            newRelated.Add(relatedID);
+                    }
+                    // yellow upgrade
+                    CardData upgrade2 = Globals.Instance.GetCardData(card.UpgradesTo2, false);
+                    if (upgrade2 != null && !cardIDs[cardname].Contains(upgrade2.Id))
+                    {
+                        cardIDs[cardname].Add(upgrade2.Id);
+                        doneList.Add(upgrade2.Id);
+                        foreach (string relatedID in GetRelatedCardIDs(upgrade2))
+                            newRelated.Add(relatedID);
+                    }
+                    // purple upgrade
+                    if (card.UpgradesToRare != null)
+                    {
+                        cardIDs[cardname].Add(card.UpgradesToRare.Id);
+                        doneList.Add(card.UpgradesToRare.Id);
+                        foreach (string relatedID in GetRelatedCardIDs(card.UpgradesToRare))
+                            newRelated.Add(relatedID);
+                    }
 
+                    cardIDs[cardname] = cardIDs[cardname].Distinct().ToList();
+                    if (newRelated.Count > 0)
+                    {
+                        if (!relatedIDs.ContainsKey(cardname))
+                            relatedIDs[cardname] = newRelated;
+                        else
+                            relatedIDs[cardname].AddRange(newRelated);
+                        relatedIDs[cardname] = relatedIDs[cardname].Distinct().ToList();
+                    }
+
+                    doneList.Add(id);
+                }
+            }
+            string combined = "{";
+            string combinedNames = "const choices = [";
+            foreach (string cardName in cardIDs.Keys)
+            {
+                combined += "\n    \"" + cardName.ToLower() + "\": {\n        \"IDs\": [\"" + String.Join("\",\"", cardIDs[cardName]) + "\"]";
+                if (relatedIDs.ContainsKey(cardName))
+                    combined += ",\n        \"RelatedIDs\": [\"" + String.Join("\",\"", relatedIDs[cardName]) + "\"]";
+                combined += "\n    },";
+                combinedNames += "\n    \"" + cardName + "\",";
+            }
+            combined = combined.Remove(combined.Length - 1) + "\n}";
+            combinedNames = combinedNames.Remove(combinedNames.Length - 1) + "\n];";
+            File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "Wilbur_card_export_core.json"), combined);
+            File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "Wilbur_card_export_names.json"), combinedNames);
+        }
+        public static List<string> GetRelatedCardIDs(CardData _card)
+        {
+            List<string> IDs = new();
+            if (_card != null)
+            {
+                CardData relatedCard = Globals.Instance.GetCardData(_card.RelatedCard, false);
+                if (relatedCard != null && !IDs.Contains(relatedCard.Id))
+                    IDs.Add(relatedCard.Id);
+                CardData relatedCard2 = Globals.Instance.GetCardData(_card.RelatedCard2, false);
+                if (relatedCard2 != null && !IDs.Contains(relatedCard2.Id))
+                    IDs.Add(relatedCard2.Id);
+                CardData relatedCard3 = Globals.Instance.GetCardData(_card.RelatedCard3, false);
+                if (relatedCard3 != null && !IDs.Contains(relatedCard3.Id))
+                    IDs.Add(relatedCard3.Id);
+            }
+            return IDs;
+        }
+        public static void WilburCardJSONExportNew()
+        {
+            string combined = "{\"cards\":{";
+            string names = "const choices = [";
+            foreach (string id in Globals.Instance.CardListNotUpgraded)
+            {
+                CardData card = Globals.Instance.GetCardData(id, false);
+                if (card != null)
+                {
+                    string cardname = card.CardName;
+                    if (card.CardType == CardType.Corruption)
+                        cardname += " (Corruptor)";
+                    else if (card.CardClass == CardClass.Monster)
+                        cardname += " (Monster)";
+                    else if (!card.Starter && card.CardType != CardType.Enchantment)
+                        cardname += " (Starter)";
+
+                    combined += "\n    \"" + card.CardName.ToLower() + (card.CardClass == CardClass.Monster ? " (monster)" : "") + "\": [\"" + card.Id + "\"";
+                    names += "\n    \"" + card.CardName + (card.CardClass == CardClass.Monster ? " (Monster)" : "") + "\",";
+                    // blue upgrade
+                    CardData upgrade1 = Globals.Instance.GetCardData(card.UpgradesTo1, false);
+                    if (upgrade1 != null)
+                        combined += ", \"" + upgrade1.Id + "\"";
+                    // yellow upgrade
+                    CardData upgrade2 = Globals.Instance.GetCardData(card.UpgradesTo2, false);
+                    if (upgrade2 != null)
+                        combined += ", \"" + upgrade2.Id + "\"";
+                    // purple upgrade
+                    if (card.UpgradesToRare != null)
+                        combined += ", \"" + card.UpgradesToRare.Id + "\"";
+                    combined += "],";
+                    LogDebug("Exported WilburCard " + id);
+                }
+                else
+                {
+                    LogWarning("WARNING: could not WilburExport card " + id + " (could not find in Globals.Instance.Cards)");
+                }
+            }
+            // remove trailing comma and write to file
+            combined = combined.Remove(combined.Length - 1) + "}}";
+            names = names.Remove(names.Length - 1) + "\n];";
+            File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "Wilbur_card_export_core.json"), combined);
+            File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "Wilbur_card_export_names.json"), names);
+            LogInfo("WilburExport complete!");
+        }
         public static void WilburCardJSONExport()
         {
             string combinedCore = "{\"cards\":[";
@@ -876,7 +1042,7 @@ namespace Obeliskial_Essentials
             int a = 1;*/
             foreach (string id in Globals.Instance.CardListNotUpgraded)
             {
-                CardData card = Globals.Instance.GetCardData(id);
+                CardData card = Globals.Instance.GetCardData(id, false);
                 if ((UnityEngine.Object)card != (UnityEngine.Object)null)
                 {
                     string combined = "{\"name\":\"" + card.CardName + "\",\"cardTypes\":[\"" + Texts.Instance.GetText(DataTextConvert.ToString(card.CardType)) + "\"";
@@ -1481,6 +1647,46 @@ namespace Obeliskial_Essentials
             }
             File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "corruptorIndex.txt"), "const corruptorIndex = Object.freeze({\n    easy: [\"" + String.Join("\", \"", easy) + "\"],\n    average: [\"" + String.Join("\", \"", average) + "\"],\n    hard: [\"" + String.Join("\", \"", hard) + "\"],\n    extreme: [\"" + String.Join("\", \"", extreme) + "\"]\n});");
             ExtractData(cards.ToArray());
+        }
+        internal static void ChangeUIState()
+        {
+            List<string> currentF2UIOpen = new();
+            if (DevTools.ShowUI)
+            {
+                currentF2UIOpen.Add("DevTools");
+                DevTools.ShowUI = false;
+            }
+            if (ProfileEditor.ShowUI)
+            {
+                currentF2UIOpen.Add("ProfileEditor");
+                ProfileEditor.ShowUI = false;
+            }
+            if (currentF2UIOpen.Count > 0)
+            { // store list of previously open windows
+                medsF2UIOpen = currentF2UIOpen;
+            }
+            else
+            { // open previously stored list
+                foreach (string UIType in medsF2UIOpen)
+                {
+                    switch (UIType)
+                    {
+                        case "ProfileEditor":
+                            ProfileEditor.ShowUI = true;
+                            break;
+                    }
+                }
+                // always open main panel
+                DevTools.ShowUI = true;
+            }
+        }
+        internal static void medsSkinSpritePositions(SkinData _skin)
+        {
+            SpriteRenderer[] GOSRs = _skin.SkinGo.GetComponentsInChildren<SpriteRenderer>(true);
+            string s = _skin.SkinName + ":\n";
+            foreach (SpriteRenderer _sr in GOSRs)
+                s += _sr.sprite.name + ": (" + _sr.sprite.rect.xMin + "," + (_sr.sprite.texture.height - _sr.sprite.rect.yMin) + "),(" + _sr.sprite.rect.xMax + "," + (_sr.sprite.texture.height - _sr.sprite.rect.yMax) + ")\n";
+            LogInfo(s);
         }
     }
 }

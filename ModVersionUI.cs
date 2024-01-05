@@ -4,6 +4,7 @@ using UniverseLib.UI;
 using UniverseLib.UI.Models;
 using static Obeliskial_Essentials.Essentials;
 using System;
+using UniverseLib;
 
 namespace Obeliskial_Essentials
 {
@@ -139,7 +140,7 @@ namespace Obeliskial_Essentials
             Instance = this;
         }
         internal static UIBase uiBase;
-        public override string Name => "Developer Tools (F2 to hide)";
+        public override string Name => "Developer Tools";
         public override int MinWidth => 300;
         public override int MinHeight => 300;
         public override Vector2 DefaultAnchorMin => new(0f, 1f);
@@ -149,6 +150,7 @@ namespace Obeliskial_Essentials
         public static GameObject lockAtOGO;
         public static Toggle lockAtOToggle;
         internal static InputFieldRef inputStartingNode;
+        internal static ButtonRef btnProfileEditor;
         internal static bool ShowUI
         {
             get => uiBase != null && uiBase.Enabled;
@@ -163,6 +165,20 @@ namespace Obeliskial_Essentials
         }
         protected override void ConstructPanelContent()
         {
+
+            GameObject closeHolder = this.TitleBar.transform.Find("CloseHolder").gameObject;
+            closeHolder.transform.Find("CloseButton").gameObject.SetActive(false);
+
+            ButtonRef btnClose = UIFactory.CreateButton(closeHolder.gameObject, "btnClose", "Close", new Color(0.3f, 0.2f, 0.2f));
+            UIFactory.SetLayoutElement(btnClose.Component.gameObject, minHeight: 25, minWidth: 50);
+            btnClose.Component.onClick.AddListener(delegate
+            {
+                ShowUI = false;
+            });
+            ButtonRef btnCloseAll = UIFactory.CreateButton(closeHolder.gameObject, "btnCloseAll", "Close All (F2)", new Color(0.3f, 0.2f, 0.2f));
+            UIFactory.SetLayoutElement(btnCloseAll.Component.gameObject, minHeight: 25, minWidth: 100);
+            btnCloseAll.Component.onClick.AddListener(ChangeUIState);
+
             GameObject medsDevToolsGO = UIFactory.CreateUIObject("medsDevTools", ContentRoot);
             UIFactory.SetLayoutGroup<VerticalLayoutGroup>(medsDevToolsGO, false, false, true, true, 5, 4, 4, 4, 4, TextAnchor.UpperLeft);
             //medsDevToolsGO.AddComponent<Image>().color = new Color(0.03f, 0.008f, 0.05f, 0.1f);
@@ -203,6 +219,24 @@ namespace Obeliskial_Essentials
             lockAtOToggle.isOn = false;
             UIFactory.SetLayoutElement(lockAtOGO, minWidth: 85, minHeight: 20);
 
+            btnProfileEditor = UIFactory.CreateButton(medsDevToolsGO, "btnProfileEditor", "Profile Editor");
+            UIFactory.SetLayoutElement(btnProfileEditor.Component.gameObject, minWidth: 100, minHeight: 30);
+            RuntimeHelper.SetColorBlock(btnProfileEditor.Component, UniversalUI.DisabledButtonColor, UniversalUI.DisabledButtonColor * 1.2f);
+            btnProfileEditor.Component.onClick.AddListener(delegate
+            {
+                try
+                {
+                    ProfileEditor.ShowUI = !ProfileEditor.ShowUI;
+                    foreach (SubClassData _SCD in Globals.Instance.SubClass.Values)
+                    {
+
+                    }
+                    //AlertManager.buttonClickDelegate = (AlertManager.OnButtonClickDelegate)null;
+                    //AlertManager.Instance.AlertConfirm(@"Player profile exported to Across the Obelisk\BepInEx\config\player_export.json");
+                }
+                catch (Exception e) { LogDebug("Failed to open profile editor: " + e.Message); };
+            });
+
             Canvas.ForceUpdateCanvases();
         }
         internal static void Init()
@@ -224,16 +258,24 @@ namespace Obeliskial_Essentials
 
         // override other methods as desired
     }
-    /*public class ModVersionUI : MonoBehaviour
+
+
+    public class ProfileEditor : UniverseLib.UI.Panels.PanelBase
     {
-        internal static UIBase uiBase { get; private set; }
-        //internal static Text modVersions;
-        internal static VersionPanel myVersionPanel;
-        internal static GameObject lockAtOGO;
-        internal static Toggle lockAtOToggle;
-        internal static GameObject showAtStartGO;
-        internal static Toggle showAtStartToggle;
-        public static bool ShowUI
+        public static ProfileEditor Instance { get; internal set; }
+        public ProfileEditor(UIBase owner) : base(owner)
+        {
+            Instance = this;
+        }
+        internal static UIBase uiBase;
+        public override string Name => "Profile Editor";
+        public override int MinWidth => 300;
+        public override int MinHeight => 300;
+        public override Vector2 DefaultAnchorMin => new(0f, 0.5f);
+        public override Vector2 DefaultAnchorMax => new(0f, 1f);
+        public override Vector2 DefaultPosition => new(-567f, -187f); //-367, -187
+        public override bool CanDragAndResize => true;
+        internal static bool ShowUI
         {
             get => uiBase != null && uiBase.Enabled;
             set
@@ -241,30 +283,53 @@ namespace Obeliskial_Essentials
                 if (uiBase == null || !uiBase.RootObject || uiBase.Enabled == value)
                     return;
 
-                UniversalUI.SetUIActive(PluginInfo.PLUGIN_GUID, value);
+                UniversalUI.SetUIActive(PluginInfo.PLUGIN_GUID + ".profileEditorUI", value);
+                Instance.SetActive(value);
+                Color color = value ? new Color(0.2f, 0.28f, 0.4f) : UniversalUI.DisabledButtonColor;
+                RuntimeHelper.SetColorBlock(DevTools.btnProfileEditor.Component, color, color * 1.2f);
             }
         }
-        internal static void InitUI()
+        protected override void ConstructPanelContent()
         {
 
-            /*uiBase = UniversalUI.RegisterUI(PluginInfo.PLUGIN_GUID, UpdateUI);
-            myVersionPanel = new(uiBase);
-            myVersionPanel.Rect.pivot = new Vector2(0.5f, 0.3f);
-            myVersionPanel.Rect.anchorMin = new Vector2(0.5f, 0.3f);
-            myVersionPanel.Rect.anchorMax = new Vector2(0.5f, 0.3f);
+            GameObject closeHolder = this.TitleBar.transform.Find("CloseHolder").gameObject;
+            closeHolder.transform.Find("CloseButton").gameObject.SetActive(false);
+            ButtonRef btnClose = UIFactory.CreateButton(closeHolder.gameObject, "btnClose", "Close", new Color(0.3f, 0.2f, 0.2f));
+            UIFactory.SetLayoutElement(btnClose.Component.gameObject, minHeight: 25, minWidth: 50);
+            btnClose.Component.onClick.AddListener(delegate
+            {
+                ShowUI = false;
+            });
+            ButtonRef btnCloseAll = UIFactory.CreateButton(closeHolder.gameObject, "btnCloseAll", "Close All (F2)", new Color(0.3f, 0.2f, 0.2f));
+            UIFactory.SetLayoutElement(btnCloseAll.Component.gameObject, minHeight: 25, minWidth: 100);
+            btnCloseAll.Component.onClick.AddListener(ChangeUIState);
+            /*GameObject closeButton = this.TitleBar.transform.Find("CloseHolder").Find("CloseButton").gameObject;
+            closeButton.SetActive(false);
+            /*closeButton.transform.Find("Text").GetComponent<Text>().text = "Close (F2)";
+            closeButton.GetComponent<Button>().onClick.AddListener(delegate
+            {
+                ProfileEditor.ShowUI = false;
+            });*/
+            GameObject medsProfileEditorGO = UIFactory.CreateUIObject("medsProfileEditor", ContentRoot);
+            UIFactory.SetLayoutGroup<VerticalLayoutGroup>(medsProfileEditorGO, false, false, true, true, 5, 4, 4, 4, 4, TextAnchor.UpperLeft);
+            //medsDevToolsGO.AddComponent<Image>().color = new Color(0.03f, 0.008f, 0.05f, 0.1f);
 
-            Canvas.ForceUpdateCanvases();
-            ShowUI = medsShowAtStart.Value;
-            UniversalUI.SetUIActive(PluginInfo.PLUGIN_GUID, Essentials.medsShowAtStart.Value);
-            /*myVersionPanel.Rect.anchorMin = new Vector2(1f, 1f);
-            myVersionPanel.Rect.anchorMax = new Vector2(1f, 1f);
-            myVersionPanel.Dragger.OnEndResize();
+            //this.Rect.anchoredPosition = new Vector2(-292f, -2f);
+            //Canvas.ForceUpdateCanvases();
         }
-        internal static void UpdateUI()
+        internal static void Init()
         {
-            //modVersions.text = Essentials.medsVersionText;
+            uiBase = UniversalUI.RegisterUI(PluginInfo.PLUGIN_GUID + ".profileEditorUI", UpdateUI);
+            ProfileEditor profileEditor = new(uiBase);
+            ShowUI = false;
+            UniversalUI.SetUIActive(PluginInfo.PLUGIN_GUID + ".profileEditorUI", false);
+        }
+        private static void UpdateUI()
+        {
+
         }
 
+        // override other methods as desired
     }
-    */
+
 }

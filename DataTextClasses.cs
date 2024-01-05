@@ -1224,43 +1224,6 @@ namespace Obeliskial_Essentials
         public string CinematicID;
     }
     [Serializable]
-    public class PlayerDataText : DataText
-    {
-        public string SteamUserID;
-        public string[] LastUsedTeam;
-        public int TownTutorialStep;
-        public List<string> TutorialWatched;
-        public List<string> UnlockedHeroes;
-        public List<string> UnlockedCards;
-        public List<string> UnlockedNodes;
-        public List<string> PlayerRuns;
-        public List<string> BossesKilledName;
-        public List<string> SupplyBought;
-        public bool NgUnlocked;
-        public int NgLevel;
-        public int PlayerRankProgress;
-        public int MaxAdventureMadnessLevel;
-        public int ObeliskMadnessLevel;
-        public int BossesKilled;
-        public int MonstersKilled;
-        public int ExpGained;
-        public int CardsCrafted;
-        public int CardsUpgraded;
-        public int GoldGained;
-        public int DustGained;
-        public int BestScore;
-        public int PurchasedItems;
-        public int SupplyGained;
-        public int SupplyActual;
-        public int CorruptionsCompleted;
-        public List<string> TreasuresClaimed;
-        public Dictionary<string, List<string>> UnlockedCardsByGame;
-        public Dictionary<string, int> HeroProgress;
-        public Dictionary<string, List<string>> HeroPerks;
-        public Dictionary<string, string> SkinUsed;
-        public Dictionary<string, string> CardbackUsed;
-    }
-    [Serializable]
     public class TierRewardDataText : DataText
     {
         public int tierNum;
@@ -1328,5 +1291,48 @@ namespace Obeliskial_Essentials
             Comment = _comment;
             Enabled = _enabled;
         }
+    }
+    [Serializable]
+    public class WilburCardIDs
+    {
+        public List<string> IDs;
+        public List<string> RelatedIDs;
+    }
+    [Serializable]
+    public class PlayerDataText : DataText
+    {
+        public string SteamUserID;
+        public string[] LastUsedTeam;
+        public int TownTutorialStep;
+        public List<string> TutorialWatched;
+        public List<string> UnlockedHeroes;
+        public List<string> UnlockedCards;
+        public List<string> UnlockedNodes;
+        public List<string> PlayerRuns;
+        public List<string> BossesKilledName;
+        public List<string> SupplyBought;
+        public bool NgUnlocked;
+        public int NgLevel;
+        public int PlayerRankProgress;
+        public int MaxAdventureMadnessLevel;
+        public int ObeliskMadnessLevel;
+        public int BossesKilled;
+        public int MonstersKilled;
+        public int ExpGained;
+        public int CardsCrafted;
+        public int CardsUpgraded;
+        public int GoldGained;
+        public int DustGained;
+        public int BestScore;
+        public int PurchasedItems;
+        public int SupplyGained;
+        public int SupplyActual;
+        public int CorruptionsCompleted;
+        public List<string> TreasuresClaimed;
+        public Dictionary<string, List<string>> UnlockedCardsByGame;
+        public Dictionary<string, int> HeroProgress;
+        public Dictionary<string, List<string>> HeroPerks;
+        public Dictionary<string, string> SkinUsed;
+        public Dictionary<string, string> CardbackUsed;
     }
 }
