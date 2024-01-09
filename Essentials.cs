@@ -31,7 +31,7 @@ namespace Obeliskial_Essentials
     [BepInProcess("AcrossTheObelisk.exe")]
     public class Essentials : BaseUnityPlugin
     {
-        internal const int ModDate = 20240105;
+        internal const int ModDate = 20240109;
         private readonly Harmony harmony = new(PluginInfo.PLUGIN_GUID);
         internal static ManualLogSource Log;
 
@@ -847,24 +847,35 @@ namespace Obeliskial_Essentials
             }
         }
 
-        public static void FullCardSpriteOutput(bool toToKFolder = false)
+        public static System.Collections.IEnumerator FullCardSpriteOutputCo(bool toToKFolder = false, UniverseLib.UI.Models.ButtonRef _btn = null)
         {
-
-            if (!((UnityEngine.Object)CardScreenManager.Instance != (UnityEngine.Object)null))
-                return;
+            string origText = "";
+            if (_btn != null)
+            {
+                _btn.ButtonText.alignment = TextAnchor.MiddleLeft;
+                origText = _btn.ButtonText.text;
+            }
+            //SceneStatic.LoadByName("TomeofKnowledge");
+            //yield return Globals.Instance.WaitForSeconds(5f);
             SnapshotCamera snapshotCamera = SnapshotCamera.MakeSnapshotCamera(0);
             CardScreenManager.Instance.ShowCardScreen(true);
             // for each card in cards
             Dictionary<string, CardData> allCards = Traverse.Create(Globals.Instance).Field("_CardsSource").GetValue<Dictionary<string, CardData>>();
             LogInfo("i herd u liek memory leaks ;)");
+            int a = 1;
             foreach (KeyValuePair<string, CardData> kvp in allCards)
             {
+                if (a == 100)
+                    Globals.Instance.StartCoroutine(DevTools.medsButtonTextRevert(DevTools.btnProfileEditor, "i herd u liek memory leaks ;)"));
                 LogInfo("EXTRACTING CARD IMAGE:" + kvp.Key);
+                if (_btn != null)
+                    _btn.ButtonText.text = "Creating image " + a.ToString() + @"/" + allCards.Count() + ": " + kvp.Key;
                 CardScreenManager.Instance.SetCardData(kvp.Value);
                 GameObject cardGO = Traverse.Create(CardScreenManager.Instance).Field("cardGO").GetValue<GameObject>();
                 if ((UnityEngine.Object)cardGO != (UnityEngine.Object)null)
                 {
                     cardGO.transform.Find("BorderCard").gameObject.SetActive(false);
+                    cardGO.transform.Find("Lock").gameObject.SetActive(false);
                     Texture2D snapshot = snapshotCamera.TakeObjectSnapshot(cardGO, UnityEngine.Color.clear, new Vector3(0, 0.008f, 1), Quaternion.Euler(new Vector3(0f, 0f, 0f)), new Vector3(0.78f, 0.78f, 0.78f), 297, 450);
                     string path = toToKFolder ? Path.Combine(Paths.GameRootPath, "Tome of Knowledge", "card_images") : Path.Combine(Paths.GameRootPath, "Card Images", DataTextConvert.ToString(kvp.Value.CardClass));
                     SnapshotCamera.SavePNG(snapshot, kvp.Key, Directory.CreateDirectory(path).FullName);
@@ -873,9 +884,19 @@ namespace Obeliskial_Essentials
                     UnityEngine.Object.Destroy(snapshot);
                     UnityEngine.Object.Destroy(cardGO);
                 }
+                a++;
+                yield return Globals.Instance.WaitForSeconds(0.01f);
             }
+            if (_btn != null)
+            {
+                _btn.ButtonText.alignment = TextAnchor.MiddleCenter;
+                _btn.ButtonText.text = origText;
+                Globals.Instance.StartCoroutine(DevTools.medsButtonTextRevert(_btn));
+            }
+            Application.OpenURL(@"file://" + Path.Combine(Paths.GameRootPath, toToKFolder ? "Tome of Knowledge" : "Card Images"));
+            yield return null;
         }
-        public static void TomeOfKnowledgeExport(bool exportImages = true)
+        public static void TomeOfKnowledgeExport(bool exportImages = true, UniverseLib.UI.Models.ButtonRef _btn = null)
         {
             List<string> doneList = new();
             foreach(string id in Globals.Instance.Cards.Keys)
@@ -999,8 +1020,10 @@ namespace Obeliskial_Essentials
             //combinedNames = combinedNames.Remove(combinedNames.Length - 1) + "\n]";
             FolderCreate(Path.Combine(Paths.GameRootPath, "Tome of Knowledge"));
             File.WriteAllText(Path.Combine(Paths.GameRootPath, "Tome of Knowledge", "cards.json"), combined);
+            if (_btn != null)
+                _btn.ButtonText.text = "Tome of Knowledge bot data export";
             if (exportImages)
-                FullCardSpriteOutput(true);
+                Globals.Instance.StartCoroutine(FullCardSpriteOutputCo(true, _btn));
             //File.WriteAllText(Path.Combine(Paths.GameRootPath, "Tome of Knowledge", "autocomplete.txt"), combinedNames);
         }
         public static List<string> GetRelatedCardIDs(CardData _card)
@@ -1339,7 +1362,7 @@ namespace Obeliskial_Essentials
             foreach (ChallengeData _wkly in Globals.Instance.WeeklyDataSource.Values)
             {
                 s += "\n" + _wkly.Week.ToString() + "\t" + (_wkly.IdSteam.IsNullOrWhiteSpace() || Texts.Instance.GetText(_wkly.IdSteam).IsNullOrWhiteSpace() ? "Week " + _wkly.Week.ToString() : Texts.Instance.GetText(_wkly.IdSteam)) + "\t";
-                DateTime _dte = new DateTime(2023, 11, 2, 14, 0, 0);
+                DateTime _dte = new DateTime(2023, 11, 9, 14, 0, 0);
                 s += _dte.AddDays(7 * _wkly.Week).ToString("d MMMM yyyy @ h tt") + "\t" + _dte.AddDays(7 * _wkly.Week + 7).ToString("d MMMM yyyy @ h tt") + "\t";
                 s += _wkly.Hero1.CharacterName + "\t" + _wkly.Hero2.CharacterName + "\t" + _wkly.Hero3.CharacterName + "\t" + _wkly.Hero4.CharacterName + "\t";
                 foreach (ChallengeTrait _trt in _wkly.Traits)

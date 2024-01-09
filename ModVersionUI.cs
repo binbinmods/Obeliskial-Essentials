@@ -9,6 +9,9 @@ using static Enums;
 using System.Collections.Generic;
 using System.Xml;
 using System.Diagnostics;
+using BepInEx;
+using System.IO;
+using System.Reflection;
 
 namespace Obeliskial_Essentials
 {
@@ -146,8 +149,8 @@ namespace Obeliskial_Essentials
         }
         internal static UIBase uiBase;
         public override string Name => "Developer Tools";
-        public override int MinWidth => 300;
-        public override int MinHeight => 300;
+        public override int MinWidth => 350;
+        public override int MinHeight => 400;
         public override Vector2 DefaultAnchorMin => new(0f, 1f);
         public override Vector2 DefaultAnchorMax => new(0f, 1f);
         public override bool CanDragAndResize => true;
@@ -155,6 +158,8 @@ namespace Obeliskial_Essentials
         public static GameObject lockAtOGO;
         public static Toggle lockAtOToggle;
         internal static InputFieldRef inputStartingNode;
+        internal static InputFieldRef inputActivateEvent;
+        internal static InputFieldRef inputActivateCombat;
         internal static ButtonRef btnProfileEditor;
         internal static bool ShowUI
         {
@@ -185,22 +190,36 @@ namespace Obeliskial_Essentials
             btnCloseAll.Component.onClick.AddListener(ChangeUIState);
 
             GameObject medsDevToolsGO = UIFactory.CreateVerticalGroup(ContentRoot, "medsDevTools", true, true, true, true, 5, new Vector4(4, 4, 4, 4), new Color32(18, 4, 20, 255), TextAnchor.UpperLeft);
-            //medsDevToolsGO.AddComponent<Image>().color = new Color(0.03f, 0.008f, 0.05f, 0.1f);
-
+            
+            // Mouse coordinates
             labelMouseXY = UIFactory.CreateLabel(medsDevToolsGO, "labelMouseX", "Mouse x: ", TextAnchor.UpperLeft);
             UIFactory.SetLayoutElement(labelMouseXY.gameObject, minWidth: 100);
 
-            ButtonRef btnPartyXP = UIFactory.CreateButton(medsDevToolsGO, "btnPartyXP", "+150 party xp");
+            // +150 Party XP
+            ButtonRef btnPartyXP = UIFactory.CreateButton(medsDevToolsGO, "btnPartyXP", "+150 Party XP");
             UIFactory.SetLayoutElement(btnPartyXP.Component.gameObject, minWidth: 100, minHeight: 30);
             btnPartyXP.Component.onClick.AddListener(delegate
             {
+                bool noError = true;
                 for (int i = 0; i < 4; i++)
                 {
-                    try { AtOManager.Instance.GetHero(i).GrantExperience(150); }
-                    catch (Exception e) { LogError("Failed to add 150 xp to hero " + i.ToString() + ": " + e.Message); };
+                    try
+                    {
+                        AtOManager.Instance.GetHero(i).GrantExperience(150);
+                    }
+                    catch (Exception e)
+                    {
+                        noError = false;
+                        LogError("Failed to add 150 xp to hero " + i.ToString() + ": " + e.Message);
+                    };
                 }
+                if (noError)
+                    Globals.Instance.StartCoroutine(medsButtonTextRevert(btnPartyXP));
+                else
+                    Globals.Instance.StartCoroutine(medsButtonTextRevert(btnPartyXP, "Error! Please see LogOutput.log!"));
             });
 
+            // Set Enemy HP to 1
             ButtonRef btn1HPEnemies = UIFactory.CreateButton(medsDevToolsGO, "btn1HPEnemies", "Set Enemy HP to 1");
             UIFactory.SetLayoutElement(btn1HPEnemies.Component.gameObject, minWidth: 100, minHeight: 30);
             btn1HPEnemies.Component.onClick.AddListener(delegate
@@ -213,16 +232,141 @@ namespace Obeliskial_Essentials
                         if (npc != null && npc.Alive)
                             npc.HpCurrent = 1;
                     }
+                    Globals.Instance.StartCoroutine(medsButtonTextRevert(btn1HPEnemies));
                 }
-                catch (Exception e) { LogError("Failed to set enemy HP to 1: " + e.Message); };
+                catch (Exception e)
+                {
+                    LogError("Failed to set enemy HP to 1: " + e.Message);
+                    Globals.Instance.StartCoroutine(medsButtonTextRevert(btn1HPEnemies, "Error! Please see LogOutput.log!"));
+                };
             });
-            inputStartingNode = UIFactory.CreateInputField(medsDevToolsGO, "inputStartingNode", "starting node");
-            UIFactory.SetLayoutElement(inputStartingNode.Component.gameObject, minWidth: 100, minHeight: 30);
-            lockAtOGO = UIFactory.CreateToggle(medsDevToolsGO, "disableButtonsToggle", out lockAtOToggle, out Text lockAtOText);
+
+            // Starting Node
+            GameObject hStartingNode = UIFactory.CreateUIObject("hStartingNode", medsDevToolsGO);
+            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(hStartingNode, false, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleLeft);
+            Text labelStartingNode = UIFactory.CreateLabel(hStartingNode, "labelStartingNode", "Starting node:");
+            UIFactory.SetLayoutElement(labelStartingNode.gameObject, minWidth: 60, minHeight: 30);
+            inputStartingNode = UIFactory.CreateInputField(hStartingNode, "inputStartingNode", "sen_1");
+            inputStartingNode.Component.SetTextWithoutNotify("sen_1");
+            UIFactory.SetLayoutElement(inputStartingNode.Component.gameObject, minWidth: 70, minHeight: 30);
+
+            // Card Image Export
+            ButtonRef btnCardImageExport = UIFactory.CreateButton(medsDevToolsGO, "btnCardImageExport", "Card Image Export");
+            UIFactory.SetLayoutElement(btnCardImageExport.Component.gameObject, minWidth: 100, minHeight: 30);
+            btnCardImageExport.Component.onClick.AddListener(delegate
+            {
+                try
+                {
+                    Globals.Instance.StartCoroutine(FullCardSpriteOutputCo(false, btnCardImageExport));
+                    btnCardImageExport.ButtonText.text = "Card Image Export";
+                }
+                catch (Exception e)
+                {
+                    LogError("Failed to create card images: " + e.Message);
+                    btnCardImageExport.ButtonText.text = "Card Image Export";
+                    Globals.Instance.StartCoroutine(medsButtonTextRevert(btnCardImageExport, "Error! Please see LogOutput.log!"));
+                };
+            });
+
+            // Tome of Knowledge Discord bot data export
+            ButtonRef btnToKDataExport = UIFactory.CreateButton(medsDevToolsGO, "btnToKDataExport", "Tome of Knowledge bot data export");
+            UIFactory.SetLayoutElement(btnToKDataExport.Component.gameObject, minWidth: 100, minHeight: 30);
+            btnToKDataExport.Component.onClick.AddListener(delegate
+            {
+                try
+                {
+                    btnToKDataExport.ButtonText.text = "Exporting data; please wait...";
+                    TomeOfKnowledgeExport(true, btnToKDataExport);
+                }
+                catch (Exception e)
+                {
+                    LogError("Failed to export Tome of Knowledge bot data: " + e.Message);
+                    btnToKDataExport.ButtonText.text = "Tome of Knowledge bot data export";
+                    Globals.Instance.StartCoroutine(medsButtonTextRevert(btnToKDataExport, "Error! Please see LogOutput.log!"));
+                };
+            });
+
+            // Activate Event
+            GameObject hActivateEvent = UIFactory.CreateUIObject("hActivateEvent", medsDevToolsGO);
+            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(hActivateEvent, false, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleLeft);
+            ButtonRef btnActivateEvent = UIFactory.CreateButton(hActivateEvent, "btnActivateEvent", "Activate Event");
+            UIFactory.SetLayoutElement(btnActivateEvent.Component.gameObject, minWidth: 150, minHeight: 30);
+            inputActivateEvent = UIFactory.CreateInputField(hActivateEvent, "inputActivateEvent", "e_ulmin30_a");
+            inputActivateEvent.Component.SetTextWithoutNotify("e_ulmin30_a");
+            UIFactory.SetLayoutElement(inputActivateEvent.Component.gameObject, minWidth: 150, minHeight: 30);
+            btnActivateEvent.Component.onClick.AddListener(delegate
+            {
+                string eventID = inputActivateEvent.Text.Trim();
+                if (MapManager.Instance == null)
+                {
+                    LogError("Failed to activate event " + eventID + ": MapManager not active!");
+                    Globals.Instance.StartCoroutine(medsButtonTextRevert(btnActivateEvent, "Error! MapManager is not active!"));
+                }
+                else if (!Globals.Instance.Events.ContainsKey(eventID))
+                {
+                    LogError("Failed to activate event " + eventID + ": event does not exist!");
+                    Globals.Instance.StartCoroutine(medsButtonTextRevert(btnActivateEvent, "Error! Event does not exist!"));
+                }
+                else
+                {
+                    try
+                    {
+                        MapManager.Instance.GetType().GetMethod("DoEvent", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(MapManager.Instance, new object[] { Globals.Instance.GetEventData(eventID) });
+                    }
+                    catch (Exception e)
+                    {
+                        LogError("Failed to activate event " + eventID + ": " + e.Message);
+                        Globals.Instance.StartCoroutine(medsButtonTextRevert(btnActivateEvent, "Error! Please see LogOutput.log!"));
+                    }
+                }
+            });
+
+
+            // Activate Combat
+            GameObject hActivateCombat = UIFactory.CreateUIObject("hActivateCombat", medsDevToolsGO);
+            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(hActivateCombat, false, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleLeft);
+            ButtonRef btnActivateCombat = UIFactory.CreateButton(hActivateCombat, "btnActivateCombat", "Activate Combat");
+            UIFactory.SetLayoutElement(btnActivateCombat.Component.gameObject, minWidth: 150, minHeight: 30);
+            inputActivateCombat = UIFactory.CreateInputField(hActivateCombat, "inputActivateCombat", "esen_16a");
+            inputActivateCombat.Component.SetTextWithoutNotify("esen_16a");
+            UIFactory.SetLayoutElement(inputActivateCombat.Component.gameObject, minWidth: 150, minHeight: 30);
+            btnActivateCombat.Component.onClick.AddListener(delegate
+            {
+                string combatID = inputActivateCombat.Text.Trim();
+                CombatData combat = Globals.Instance.GetCombatData(combatID);
+                if (MapManager.Instance == null)
+                {
+                    LogError("Failed to activate combat " + combatID + ": MapManager not active!");
+                    Globals.Instance.StartCoroutine(medsButtonTextRevert(btnActivateCombat, "Error! MapManager is not active!"));
+                }
+                else if (combat == null)
+                {
+                    LogError("Failed to activate combat " + combatID + ": combat does not exist!");
+                    Globals.Instance.StartCoroutine(medsButtonTextRevert(btnActivateCombat, "Error! Combat does not exist!"));
+                }
+                else
+                {
+                    try
+                    {
+                        AtOManager.Instance.LaunchCombat(combat);
+                    }
+                    catch (Exception e)
+                    {
+                        LogError("Failed to activate combat " + combatID + ": " + e.Message);
+                        Globals.Instance.StartCoroutine(medsButtonTextRevert(btnActivateCombat, "Error! Please see LogOutput.log!"));
+                    }
+                }
+            });
+
+            // Disable AtO Buttons
+            GameObject hDisableAtOButtons = UIFactory.CreateUIObject("hDisableAtOButtons", medsDevToolsGO);
+            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(hDisableAtOButtons, false, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleCenter);
+            lockAtOGO = UIFactory.CreateToggle(hDisableAtOButtons, "disableButtonsToggle", out lockAtOToggle, out Text lockAtOText);
             lockAtOText.text = "Disable AtO Buttons";
             lockAtOToggle.isOn = false;
-            UIFactory.SetLayoutElement(lockAtOGO, minWidth: 85, minHeight: 20);
-
+            UIFactory.SetLayoutElement(lockAtOGO, minWidth: 85, minHeight: 30);
+            
+            // Profile Editor
             btnProfileEditor = UIFactory.CreateButton(medsDevToolsGO, "btnProfileEditor", "Profile Editor");
             UIFactory.SetLayoutElement(btnProfileEditor.Component.gameObject, minWidth: 100, minHeight: 30);
             RuntimeHelper.SetColorBlock(btnProfileEditor.Component, UniversalUI.DisabledButtonColor, UniversalUI.DisabledButtonColor * 1.2f);
@@ -231,17 +375,19 @@ namespace Obeliskial_Essentials
                 try
                 {
                     ProfileEditor.ShowUI = !ProfileEditor.ShowUI;
-                    foreach (SubClassData _SCD in Globals.Instance.SubClass.Values)
-                    {
-
-                    }
-                    //AlertManager.buttonClickDelegate = (AlertManager.OnButtonClickDelegate)null;
-                    //AlertManager.Instance.AlertConfirm(@"Player profile exported to Across the Obelisk\BepInEx\config\player_export.json");
                 }
                 catch (Exception e) { LogDebug("Failed to open profile editor: " + e.Message); };
             });
 
             Canvas.ForceUpdateCanvases();
+        }
+        internal static System.Collections.IEnumerator medsButtonTextRevert(ButtonRef _btn, string _tempText = "Done!", float _time = 5f)
+        {
+            string oldText = _btn.ButtonText.text;
+            _btn.ButtonText.text = _tempText;
+            yield return Globals.Instance.WaitForSeconds(_time);
+            _btn.ButtonText.text = oldText;
+            yield return null;
         }
         internal static void Init()
         {
@@ -255,7 +401,7 @@ namespace Obeliskial_Essentials
             try
             {
                 Vector3 newPos = UnityEngine.Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                labelMouseXY.text = "x: " + newPos.x.ToString("0.0000") + " | y: " + newPos.y.ToString("0.0000");
+                labelMouseXY.text = "Mouse x: " + newPos.x.ToString("0.0000") + " | y: " + newPos.y.ToString("0.0000");
             }
             catch { }
         }
@@ -285,7 +431,6 @@ namespace Obeliskial_Essentials
         internal static Dictionary<string, Toggle> toggleCardbacksUnlocked = new();
         internal static Dictionary<string, Toggle> toggleCardsUnlocked = new();
         internal static Dictionary<string, Toggle> toggleNodesUnlocked = new();
-        internal static Toggle toggleAllHeroesUnlocked;
         internal static ButtonRef btnAllHeroesLockUnlock;
         internal static InputFieldRef inputAllHeroesRank;
         internal static InputFieldRef inputAllHeroesExperience;
@@ -295,6 +440,10 @@ namespace Obeliskial_Essentials
         internal static InputFieldRef inputObeliskMadness;
         internal static GameObject profileScroll;
         internal static GameObject profileScrollContent;
+        internal static Dictionary<string, ButtonRef> btnCardsLockUnlock = new();
+        internal static Dictionary<string, GameObject> GOCardsCategories = new();
+        internal static Dictionary<string, ButtonRef> btnCardsViewCategories = new();
+        internal static Dictionary<string, List<string>> cardsByCategory = new();
         //internal static Text labelMouseXY;
         //internal static InputFieldRef inputStartingNode;
         internal static bool ShowUI
@@ -368,109 +517,51 @@ namespace Obeliskial_Essentials
             UIFactory.SetLayoutElement(horizontalSupplies, minHeight: 30, flexibleWidth: 9999, flexibleHeight: 30);
             UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(horizontalSupplies, false, false, true, true, 5, 2, childAlignment: TextAnchor.UpperLeft);
 
-            inputSupplies = UIFactory.CreateInputField(horizontalSupplies, "inputSupplies", "0-999");
-            UIFactory.SetLayoutElement(inputSupplies.Component.gameObject, minWidth: 40, minHeight: 30);
-
             Text labelSupplies = UIFactory.CreateLabel(horizontalSupplies, "labelSupplies", "Supplies");
             UIFactory.SetLayoutElement(labelSupplies.gameObject, minWidth: 60, minHeight: 30);
 
-            /*
-            ButtonRef btnPartyXP = UIFactory.CreateButton(medsDevToolsGO, "btnPartyXP", "+150 party xp");
-            UIFactory.SetLayoutElement(btnPartyXP.Component.gameObject, minWidth: 100, minHeight: 30);
-            btnPartyXP.Component.onClick.AddListener(delegate
-            {
-                for (int i = 0; i < 4; i++)
-                {
-                    try { AtOManager.Instance.GetHero(i).GrantExperience(150); }
-                    catch (Exception e) { LogError("Failed to add 150 xp to hero " + i.ToString() + ": " + e.Message); };
-                }
-            });
+            inputSupplies = UIFactory.CreateInputField(horizontalSupplies, "inputSupplies", "0-999");
+            UIFactory.SetLayoutElement(inputSupplies.Component.gameObject, minWidth: 40, minHeight: 30);
+            inputSupplies.Component.textComponent.alignment = TextAnchor.MiddleRight;
+            inputSupplies.Component.characterValidation = InputField.CharacterValidation.Integer;
 
-
-            // from UnityExplorer
-            /*
-
-            GameObject horiRow = UIFactory.CreateUIObject("HoriGroup", UIRoot);
-            UIFactory.SetLayoutElement(horiRow, minHeight: 29, flexibleHeight: 150, flexibleWidth: 9999);
-            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(horiRow, false, false, true, true, 5, 2, childAlignment: TextAnchor.UpperLeft);
-            horiRow.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-            // Left name label
-
-            Text NameLabel = UIFactory.CreateLabel(horiRow, "NameLabel", "<notset>", TextAnchor.MiddleLeft);
-            NameLabel.horizontalOverflow = HorizontalWrapMode.Wrap;
-            LayoutElement NameLayout = UIFactory.SetLayoutElement(NameLabel.gameObject, minHeight: 25, minWidth: 20, flexibleHeight: 300, flexibleWidth: 0);
-            UIFactory.SetLayoutGroup<VerticalLayoutGroup>(NameLabel.gameObject, true, true, true, true);
-
-            InputFieldRef HiddenNameLabel = UIFactory.CreateInputField(NameLabel.gameObject, "HiddenNameLabel", "");
-            RectTransform hiddenRect = HiddenNameLabel.Component.GetComponent<RectTransform>();
-            hiddenRect.anchorMin = Vector2.zero;
-            hiddenRect.anchorMax = Vector2.one;
-            HiddenNameLabel.Component.readOnly = true;
-            HiddenNameLabel.Component.lineType = UnityEngine.UI.InputField.LineType.MultiLineNewline;
-            HiddenNameLabel.Component.textComponent.horizontalOverflow = HorizontalWrapMode.Wrap;
-            HiddenNameLabel.Component.gameObject.GetComponent<Image>().color = Color.clear;
-            HiddenNameLabel.Component.textComponent.color = Color.clear;
-            UIFactory.SetLayoutElement(HiddenNameLabel.Component.gameObject, minHeight: 25, minWidth: 20, flexibleHeight: 300, flexibleWidth: 0);
-
-            // Right vertical group
-
-            GameObject RightGroupContent = UIFactory.CreateUIObject("RightGroup", horiRow);
-            UIFactory.SetLayoutGroup<VerticalLayoutGroup>(RightGroupContent, false, false, true, true, 4, childAlignment: TextAnchor.UpperLeft);
-            UIFactory.SetLayoutElement(RightGroupContent, minHeight: 25, minWidth: 200, flexibleWidth: 9999, flexibleHeight: 800);
-            LayoutElement RightGroupLayout = RightGroupContent.GetComponent<LayoutElement>();
-
-            ConstructEvaluateHolder(RightGroupContent);
-
-            // Right horizontal group
-
-            GameObject rightHoriGroup = UIFactory.CreateUIObject("RightHoriGroup", RightGroupContent);
-            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(rightHoriGroup, false, false, true, true, 4, childAlignment: TextAnchor.UpperLeft);
-            UIFactory.SetLayoutElement(rightHoriGroup, minHeight: 25, minWidth: 200, flexibleWidth: 9999, flexibleHeight: 800);
-
-            SubContentButton = UIFactory.CreateButton(rightHoriGroup, "SubContentButton", "▲", subInactiveColor);
-            UIFactory.SetLayoutElement(SubContentButton.Component.gameObject, minWidth: 25, minHeight: 25, flexibleWidth: 0, flexibleHeight: 0);
-            SubContentButton.OnClick += SubContentClicked;
-
-            */
             // heroes 
             // create container + accordion
             GameObject GOHeroes = UIFactory.CreateUIObject("medsHeroes", profileScrollContent);
             UIFactory.SetLayoutGroup<VerticalLayoutGroup>(GOHeroes, true, false, true, true, 5, 2, 2, 0, 0, TextAnchor.UpperLeft);
             ButtonRef btnViewHeroes = UIFactory.CreateButton(GOHeroes, "btnViewHeroes", "Show Heroes");
             UIFactory.SetLayoutElement(btnViewHeroes.Component.gameObject, minHeight: 25, minWidth: 100);
-            GameObject GOHeroVertical = UIFactory.CreateUIObject("medsHeroVertical", GOHeroes);
+            GameObject GOHeroContent = UIFactory.CreateUIObject("medsHeroContent", GOHeroes);
             btnViewHeroes.ButtonText.fontStyle = FontStyle.Bold;
             btnViewHeroes.Component.onClick.AddListener(delegate
             {
-                btnViewHeroes.ButtonText.text = GOHeroVertical.gameObject.activeSelf ? "Show Heroes" : "Hide Heroes";
-                Color color = GOHeroVertical.gameObject.activeSelf ? UniversalUI.DisabledButtonColor : new Color(0.2f, 0.28f, 0.4f);
+                btnViewHeroes.ButtonText.text = GOHeroContent.gameObject.activeSelf ? "Show Heroes" : "Hide Heroes";
+                Color color = GOHeroContent.gameObject.activeSelf ? UniversalUI.DisabledButtonColor : new Color(0.2f, 0.28f, 0.4f);
                 RuntimeHelper.SetColorBlock(btnViewHeroes.Component, color, color * 1.2f);
-                GOHeroVertical.gameObject.SetActive(!GOHeroVertical.gameObject.activeSelf);
+                GOHeroContent.gameObject.SetActive(!GOHeroContent.gameObject.activeSelf);
             });
-            UIFactory.SetLayoutGroup<VerticalLayoutGroup>(GOHeroVertical, true, false, true, true, 2, 2, 2, 0, 0, TextAnchor.UpperLeft);
+            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(GOHeroContent, true, false, true, true, 5, 2, 2, 0, 0, TextAnchor.UpperLeft);
 
+            // create columns
+            Dictionary<int, GameObject> heroColumns = new();
+            for (int b = 0; b < 3; b++)
+            {
+                heroColumns[b] = UIFactory.CreateUIObject("medsHeroesColumn" + b.ToString(), GOHeroContent);
+                UIFactory.SetLayoutGroup<VerticalLayoutGroup>(heroColumns[b], true, false, true, true, 3, 0, 0, 0, 0, TextAnchor.UpperLeft);
+            }
             // all heroes
-            GameObject GOHeroHorizontal = UIFactory.CreateUIObject("medsHeroHorizontalAll", GOHeroVertical);
-            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(GOHeroHorizontal, true, false, true, true, 10, 0, 0, 0, 0, TextAnchor.MiddleCenter);
             // locked/unlocked
-            GameObject GOSCDHorizontal = UIFactory.CreateUIObject("medsSCDHorizontalAllA", GOHeroHorizontal);
-            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(GOSCDHorizontal, true, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleLeft);
-            spacer = UIFactory.CreateLabel(GOSCDHorizontal, "spacerAllA1", " ");
-            UIFactory.SetLayoutElement(spacer.gameObject, minWidth: 40, minHeight: 30);
-            spacer = UIFactory.CreateLabel(GOSCDHorizontal, "spacerAllA2", " ");
-            UIFactory.SetLayoutElement(spacer.gameObject, minWidth: 31, minHeight: 30);
+            GameObject GOSCDHorizontal = UIFactory.CreateUIObject("medsSCDHorizontalAllHeroesUnlock", heroColumns[0]);
+            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(GOSCDHorizontal, false, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleCenter);
             btnAllHeroesLockUnlock = UIFactory.CreateButton(GOSCDHorizontal, "btnAllHeroesLockUnlock", "Unlock All");
-            UIFactory.SetLayoutElement(btnAllHeroesLockUnlock.Component.gameObject, minHeight: 25, minWidth: 100);
+            UIFactory.SetLayoutElement(btnAllHeroesLockUnlock.Component.gameObject, minHeight: 25, minWidth: 90);
             btnAllHeroesLockUnlock.Component.onClick.AddListener(AllHeroesLockUnlock);
-            spacer = UIFactory.CreateLabel(GOSCDHorizontal, "spacerAllA3", " ");
-            UIFactory.SetLayoutElement(spacer.gameObject, minWidth: 31, minHeight: 30);
-            spacer = UIFactory.CreateLabel(GOSCDHorizontal, "spacerAllA4", " ");
-            UIFactory.SetLayoutElement(spacer.gameObject, minWidth: 40, minHeight: 30);
+            spacer = UIFactory.CreateLabel(GOSCDHorizontal, "spacerAllHeroesUnlock", " ");
+            UIFactory.SetLayoutElement(spacer.gameObject, minWidth: 1, minHeight: 30);
 
             // hero rank
-            GOSCDHorizontal = UIFactory.CreateUIObject("medsSCDHorizontalAllB", GOHeroHorizontal);
-            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(GOSCDHorizontal, true, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleLeft);
+            GOSCDHorizontal = UIFactory.CreateUIObject("medsSCDHorizontalAllHeroesRank", heroColumns[1]);
+            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(GOSCDHorizontal, false, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleCenter);
             ButtonRef btnAllHeroesSetRank = UIFactory.CreateButton(GOSCDHorizontal, "btnAllHeroesSetRank", "Set All");
             UIFactory.SetLayoutElement(btnAllHeroesSetRank.Component.gameObject, minHeight: 25, minWidth: 100);
             btnAllHeroesSetRank.Component.onClick.AddListener(AllHeroesRankXPApply);
@@ -480,57 +571,34 @@ namespace Obeliskial_Essentials
             inputAllHeroesRank = UIFactory.CreateInputField(GOSCDHorizontal, "inputAllHeroesRank", "");
             inputAllHeroesRank.Component.textComponent.alignment = TextAnchor.MiddleRight;
             inputAllHeroesRank.Component.characterValidation = InputField.CharacterValidation.Integer;
-            inputAllHeroesRank.Component.SetTextWithoutNotify(Globals.Instance.PerkLevel.Count.ToString());
+            inputAllHeroesRank.Component.SetTextWithoutNotify("50");
             inputAllHeroesRank.Component.onValueChanged.AddListener((newRank) => { AllHeroesRankUpdate(newRank); });
+            UIFactory.SetLayoutElement(inputAllHeroesRank.Component.gameObject, minWidth: 22, minHeight: 25);
 
             // hero experience
-            UIFactory.SetLayoutElement(inputAllHeroesRank.Component.gameObject, minWidth: 22, minHeight: 30);
             Text xp = UIFactory.CreateLabel(GOSCDHorizontal, "labelXPAll", "XP:");
             UIFactory.SetLayoutElement(xp.gameObject, minWidth: 30, minHeight: 30);
             xp.alignment = TextAnchor.MiddleRight;
             inputAllHeroesExperience = UIFactory.CreateInputField(GOSCDHorizontal, "inputAllHeroesExperience", "");
             inputAllHeroesExperience.Component.textComponent.alignment = TextAnchor.MiddleRight;
             inputAllHeroesExperience.Component.characterValidation = InputField.CharacterValidation.Integer;
-            inputAllHeroesExperience.Component.SetTextWithoutNotify(Globals.Instance.PerkLevel[^1].ToString());
+            inputAllHeroesExperience.Component.SetTextWithoutNotify("95500");
             inputAllHeroesExperience.Component.onValueChanged.AddListener((newXP) => { AllHeroesXPUpdate(newXP); });
-            UIFactory.SetLayoutElement(inputAllHeroesExperience.Component.gameObject, minWidth: 50, minHeight: 30);
+            UIFactory.SetLayoutElement(inputAllHeroesExperience.Component.gameObject, minWidth: 50, minHeight: 25);
 
-            GOSCDHorizontal = UIFactory.CreateUIObject("medsSCDHorizontalAllC", GOHeroHorizontal);
-            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(GOSCDHorizontal, true, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleLeft);
-            spacer = UIFactory.CreateLabel(GOSCDHorizontal, "spacerAllC1", " ");
+            GOSCDHorizontal = UIFactory.CreateUIObject("medsSCDHorizontalAllSpacer", heroColumns[2]);
+            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(GOSCDHorizontal, false, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleLeft);
+            spacer = UIFactory.CreateLabel(GOSCDHorizontal, "spacerAllHeroes", " ");
             UIFactory.SetLayoutElement(spacer.gameObject, minWidth: 100, minHeight: 30);
-            btnAllHeroesLockUnlock.Component.onClick.AddListener(AllHeroesLockUnlock);
-            spacer = UIFactory.CreateLabel(GOSCDHorizontal, "spacerAllC2", " ");
-            UIFactory.SetLayoutElement(spacer.gameObject, minWidth: 31, minHeight: 30);
-            spacer = UIFactory.CreateLabel(GOSCDHorizontal, "spacerAllC3", " ");
-            UIFactory.SetLayoutElement(spacer.gameObject, minWidth: 40, minHeight: 30);
-            btnAllHeroesLockUnlock.Component.onClick.AddListener(AllHeroesLockUnlock);
-            spacer = UIFactory.CreateLabel(GOSCDHorizontal, "spacerAllC4", " ");
-            UIFactory.SetLayoutElement(spacer.gameObject, minWidth: 31, minHeight: 30);
-            spacer = UIFactory.CreateLabel(GOSCDHorizontal, "spacerAllC5", " ");
-            UIFactory.SetLayoutElement(spacer.gameObject, minWidth: 40, minHeight: 30);
 
             // individual heroes
-            GOHeroHorizontal = UIFactory.CreateUIObject("medsHeroHorizontal0", GOHeroVertical);
-            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(GOHeroHorizontal, true, false, true, true, 10, 0, 0, 0, 0, TextAnchor.MiddleCenter);
             int a = 0;
             foreach (SubClassData scd in Globals.Instance.SubClass.Values)
             {
                 if (!scd.MainCharacter || scd.Id == "medsdlcone" || scd.Id == "medsdlctwo" || scd.Id == "medsdlcthree" || scd.Id == "medsdlcfour")
                     continue;
-                // create horizontal container for every fourth subclass
-                if (a > 1 && a % 3 == 0)
-                {
-                    GOHeroHorizontal = UIFactory.CreateUIObject("medsHeroHorizontal" + a.ToString(), GOHeroVertical);
-                    UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(GOHeroHorizontal, true, false, true, true, 10, 0, 0, 0, 0, TextAnchor.MiddleCenter);
-                }
-                else if (a % 3 != 0)
-                {
-                    spacer = UIFactory.CreateLabel(GOHeroHorizontal, "spacer" + a.ToString(), " ");
-                    UIFactory.SetLayoutElement(spacer.gameObject, minWidth: 0, minHeight: 30, flexibleWidth: 999);
-                }
-                GOSCDHorizontal = UIFactory.CreateUIObject("medsSCDHorizontal" + scd.Id, GOHeroHorizontal);
-                UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(GOSCDHorizontal, true, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleLeft);
+                GOSCDHorizontal = UIFactory.CreateUIObject("medsSCDHorizontal" + scd.Id, heroColumns[a % 3]);
+                UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(GOSCDHorizontal, false, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleCenter);
                 // locked/unlocked
                 GameObject GOHeroesUnlocked = UIFactory.CreateToggle(GOSCDHorizontal, "medsHeroesUnlockedToggle" + scd.Id, out Toggle toggleTemp, out Text toggleText);
                 toggleHeroesUnlocked[scd.Id] = toggleTemp;
@@ -547,7 +615,7 @@ namespace Obeliskial_Essentials
                 inputHeroesRank[scd.Id].Component.textComponent.alignment = TextAnchor.MiddleRight;
                 inputHeroesRank[scd.Id].Component.characterValidation = InputField.CharacterValidation.Integer;
                 inputHeroesRank[scd.Id].Component.onValueChanged.AddListener((newRank) => { HeroRankUpdate(scd.Id, newRank); });
-                UIFactory.SetLayoutElement(inputHeroesRank[scd.Id].Component.gameObject, minWidth: 22, minHeight: 30);
+                UIFactory.SetLayoutElement(inputHeroesRank[scd.Id].Component.gameObject, minWidth: 22, minHeight: 25);
 
                 // hero experience
                 xp = UIFactory.CreateLabel(GOSCDHorizontal, "labelXP" + scd.Id, "XP:");
@@ -557,37 +625,20 @@ namespace Obeliskial_Essentials
                 inputHeroesExperience[scd.Id].Component.textComponent.alignment = TextAnchor.MiddleRight;
                 inputHeroesExperience[scd.Id].Component.characterValidation = InputField.CharacterValidation.Integer;
                 inputHeroesExperience[scd.Id].Component.onValueChanged.AddListener((newXP) => { HeroXPUpdate(scd.Id, newXP); });
-                UIFactory.SetLayoutElement(inputHeroesExperience[scd.Id].Component.gameObject, minWidth: 50, minHeight: 30);
+                UIFactory.SetLayoutElement(inputHeroesExperience[scd.Id].Component.gameObject, minWidth: 50, minHeight: 25);
                 a++;
             }
-            while (a % 3 != 0)
-            {
-                spacer = UIFactory.CreateLabel(GOHeroHorizontal, "spacer" + a.ToString(), " ");
-                UIFactory.SetLayoutElement(spacer.gameObject, minWidth: 0, minHeight: 30, flexibleWidth: 999);
-                GOSCDHorizontal = UIFactory.CreateUIObject("medsSCDHorizontal" + a.ToString(), GOHeroHorizontal);
-                UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(GOSCDHorizontal, true, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleLeft);
-                spacer = UIFactory.CreateLabel(GOSCDHorizontal, "spacerA" + a.ToString(), " ");
-                UIFactory.SetLayoutElement(spacer.gameObject, minWidth: 100, minHeight: 30);
-                spacer = UIFactory.CreateLabel(GOSCDHorizontal, "spacerB" + a.ToString(), " ");
-                UIFactory.SetLayoutElement(spacer.gameObject, minWidth: 40, minHeight: 30);
-                spacer = UIFactory.CreateLabel(GOSCDHorizontal, "spacerC" + a.ToString(), " ");
-                UIFactory.SetLayoutElement(spacer.gameObject, minWidth: 22, minHeight: 30);
-                spacer = UIFactory.CreateLabel(GOSCDHorizontal, "spacerD" + a.ToString(), " ");
-                UIFactory.SetLayoutElement(spacer.gameObject, minWidth: 30, minHeight: 30);
-                spacer = UIFactory.CreateLabel(GOSCDHorizontal, "spacerE" + a.ToString(), " ");
-                UIFactory.SetLayoutElement(spacer.gameObject, minWidth: 50, minHeight: 30);
-                a++;
-            }
-            GOHeroVertical.gameObject.SetActive(false);
+            GOHeroContent.gameObject.SetActive(false);
+
 
             // cards 
+            int maxColumns = 4;
             // ensure order
-            Dictionary<string, List<string>> cardsByCategory = new();
             cardsByCategory["Warrior"] = new();
             cardsByCategory["Scout"] = new();
             cardsByCategory["Mage"] = new();
             cardsByCategory["Healer"] = new();
-            cardsByCategory["Special"] = new();
+            //cardsByCategory["Special"] = new();
             cardsByCategory["Boon"] = new();
             cardsByCategory["Injury"] = new();
             cardsByCategory["Weapon"] = new();
@@ -596,35 +647,129 @@ namespace Obeliskial_Essentials
             cardsByCategory["Accesory"] = new();
             cardsByCategory["Pet"] = new();
 
+            List<CardClass> acceptedCardClasses = new() { CardClass.Warrior, CardClass.Scout, CardClass.Mage, CardClass.Healer, CardClass.Boon, CardClass.Injury, CardClass.Item };
+            /*
+            skip if not:
+                warrior, scout, mage, healer;
+                boon or injury; or
+                item.
+            */
             foreach (CardData card in Globals.Instance.Cards.Values)
             {
-                if (card.CardUpgraded != CardUpgraded.No || card.CardClass == CardClass.MagicKnight || card.CardClass == CardClass.Monster || card.CardType == CardType.None || (card.CardClass == CardClass.Special && !(card.CardType == CardType.Enchantment || card.Starter)))
+                if (card.CardUpgraded != CardUpgraded.No || !acceptedCardClasses.Contains(card.CardClass))
                     continue;
                 if (card.CardClass == CardClass.Item)
-                    cardsByCategory[DataTextConvert.ToString(card.CardType)].Add(card.Id);
+                    cardsByCategory[DataTextConvert.ToString(card.CardType)].Add(card.CardName + "|" + card.Id);
                 else
-                    cardsByCategory[DataTextConvert.ToString(card.CardClass)].Add(card.Id);
+                    cardsByCategory[DataTextConvert.ToString(card.CardClass)].Add(card.CardName + "|" + card.Id);
             }
 
+            GameObject GOCards = UIFactory.CreateUIObject("medsCards", profileScrollContent);
+            UIFactory.SetLayoutGroup<VerticalLayoutGroup>(GOCards, true, false, true, true, 5, 2, 2, 0, 0, TextAnchor.UpperLeft);
+            btnCardsViewCategories["All"] = UIFactory.CreateButton(GOCards, "btnViewCardsAll", "Show Cards");
+            UIFactory.SetLayoutElement(btnCardsViewCategories["All"].Component.gameObject, minHeight: 25, minWidth: 100);
+            GOCardsCategories["All"] = UIFactory.CreateUIObject("medsCardsVerticalAll", GOCards);
+            UIFactory.SetLayoutGroup<VerticalLayoutGroup>(GOCardsCategories["All"], true, false, true, true, 5, 0, 0, 0, 0, TextAnchor.UpperCenter);
+            btnCardsViewCategories["All"].ButtonText.fontStyle = FontStyle.Bold;
+            btnCardsViewCategories["All"].Component.onClick.AddListener(delegate
+            {
+                btnCardsViewCategories["All"].ButtonText.text = GOCardsCategories["All"].gameObject.activeSelf ? "Show Cards" : "Hide Cards";
+                Color color = GOCardsCategories["All"].gameObject.activeSelf ? UniversalUI.DisabledButtonColor : new Color(0.2f, 0.28f, 0.4f);
+                RuntimeHelper.SetColorBlock(btnCardsViewCategories["All"].Component, color, color * 1.2f);
+                GOCardsCategories["All"].gameObject.SetActive(!GOCardsCategories["All"].gameObject.activeSelf);
+            });
+            // all cards
+            GameObject GOCardsHorizontal = UIFactory.CreateUIObject("medsCardsHorizontalAll", GOCardsCategories["All"]);
+            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(GOCardsHorizontal, false, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleCenter);
+            // #TODO: lock/unlock all
+            btnCardsLockUnlock["All"] = UIFactory.CreateButton(GOCardsHorizontal, "btnAllCardsLockUnlock", "Unlock All Cards");
+            UIFactory.SetLayoutElement(btnCardsLockUnlock["All"].Component.gameObject, minHeight: 25, minWidth: 200);
+            btnCardsLockUnlock["All"].Component.onClick.AddListener(delegate { CardsLockUnlock("All"); });
 
-            /*labelMouseXY = UIFactory.CreateLabel(medsDevToolsGO, "labelMouseX", "Mouse x: ", TextAnchor.UpperLeft);
-            UIFactory.SetLayoutElement(labelMouseXY.gameObject, minWidth: 100);
 
 
-            inputStartingNode = UIFactory.CreateInputField(medsDevToolsGO, "inputStartingNode", "starting node");
-            UIFactory.SetLayoutElement(inputStartingNode.Component.gameObject, minWidth: 100, minHeight: 30);
+            // GameObject GOCardsColumn = UIFactory.CreateUIObject
+            /*
+            IS IT actually a better idea to have three/four equal-width columns containing "cells" (HorizontalGroup containing individual card)
+
+            current: vertical (cards) containing horizontals (rows) containing horizontals (individuals), needs that hacky workaround to left-align end items
+            wouldbe: vertical (cards) containing verticals (columns) containing horizontals (individuals), probably still need hacky workaround for any cols with less items? UNLESS you _don't_ allow vertical resize (which may already be the case - the false in t/f/t/t for SetLayoutGroup?) and UpperCenter align? 
+            so worth doing IF hacky workaround not required. Maybe give it a bit more detailed think 
+
+            */
+            foreach (string cardCategory in cardsByCategory.Keys)
+            {
+                cardsByCategory[cardCategory].Sort();
+                // make category accordion
+                btnCardsViewCategories[cardCategory] = UIFactory.CreateButton(GOCardsCategories["All"], "btnViewCards" + cardCategory, "Show " + cardCategory.Replace("Accesory", "Accessory") + " Cards");
+                UIFactory.SetLayoutElement(btnCardsViewCategories[cardCategory].Component.gameObject, minHeight: 25, minWidth: 200);
+                GOCardsCategories[cardCategory] = UIFactory.CreateUIObject("medsCardsCategory" + cardCategory, GOCardsCategories["All"]);
+                btnCardsViewCategories[cardCategory].ButtonText.fontStyle = FontStyle.Bold;
+                btnCardsViewCategories[cardCategory].Component.onClick.AddListener(delegate
+                {
+                    btnCardsViewCategories[cardCategory].ButtonText.text = GOCardsCategories[cardCategory].gameObject.activeSelf ? "Show " + cardCategory.Replace("Accesory", "Accessory") + " Cards" : "Hide " + cardCategory.Replace("Accesory", "Accessory") + " Cards";
+                    Color color = GOCardsCategories[cardCategory].gameObject.activeSelf ? UniversalUI.DisabledButtonColor : new Color(0.2f, 0.28f, 0.4f);
+                    RuntimeHelper.SetColorBlock(btnCardsViewCategories[cardCategory].Component, color, color * 1.2f);
+                    GOCardsCategories[cardCategory].gameObject.SetActive(!GOCardsCategories[cardCategory].gameObject.activeSelf);
+                });
+                UIFactory.SetLayoutGroup<VerticalLayoutGroup>(GOCardsCategories[cardCategory], true, false, true, true, 3, 0, 0, 0, 0, TextAnchor.UpperCenter);
+                // lock/unlock entire category
+                GOCardsHorizontal = UIFactory.CreateUIObject("medsCards" + cardCategory + "HorizontalAll", GOCardsCategories[cardCategory]);
+                UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(GOCardsHorizontal, false, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleCenter);
+                btnCardsLockUnlock[cardCategory] = UIFactory.CreateButton(GOCardsHorizontal, "btn" + cardCategory + "CardsLockUnlock", "Unlock All " + cardCategory.Replace("Accesory", "Accessory") + " Cards");
+                UIFactory.SetLayoutElement(btnCardsLockUnlock[cardCategory].Component.gameObject, minHeight: 25, minWidth: 200);
+                btnCardsLockUnlock[cardCategory].Component.onClick.AddListener(delegate { CardsLockUnlock(cardCategory); });
+
+                // container for columns of individual cards
+                GOCardsHorizontal = UIFactory.CreateUIObject("medsCards" + cardCategory + "Horizontal", GOCardsCategories[cardCategory]);
+                UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(GOCardsHorizontal, true, false, true, true, 5, 0, 0, 0, 0, TextAnchor.UpperCenter);
+                // make four? columns
+                Dictionary<int, GameObject> cardColumns = new();
+                for (int b = 0; b < maxColumns; b++)
+                {
+                    cardColumns[b] = UIFactory.CreateUIObject("medsCards" + cardCategory + "Column" + b.ToString(), GOCardsHorizontal);
+                    UIFactory.SetLayoutGroup<VerticalLayoutGroup>(cardColumns[b], true, false, true, true, 3, 0, 0, 0, 0, TextAnchor.UpperLeft);
+                }
+                a = 0;
+                foreach (string sCard in cardsByCategory[cardCategory])
+                {
+                    string cardName = sCard.Split("|")[0];
+                    string cardID = sCard.Split("|")[1];
+                    // make individual card item
+                    GameObject GOCardUnlocked = UIFactory.CreateToggle(cardColumns[a % maxColumns], "medsCardUnlockedToggle" + cardID, out Toggle toggleTemp, out Text toggleText);
+                    toggleCardsUnlocked[cardID] = toggleTemp;
+                    toggleText.text = cardName;
+                    toggleText.fontStyle = FontStyle.Bold;
+                    UIFactory.SetLayoutElement(GOCardUnlocked, minWidth: 100);
+                    toggleCardsUnlocked[cardID].onValueChanged.AddListener(delegate { CardLockUnlock(cardID); });
+                    a++;
+                }
+                GOCardsCategories[cardCategory].gameObject.SetActive(false);
+            }
+            GOCardsCategories["All"].gameObject.SetActive(false);
 
 
-
-            lockAtOGO = UIFactory.CreateToggle(medsDevToolsGO, "disableButtonsToggle", out lockAtOToggle, out Text lockAtOText);
-            lockAtOText.text = "Disable AtO Buttons";
-            lockAtOToggle.isOn = false;
-            UIFactory.SetLayoutElement(lockAtOGO, minWidth: 85, minHeight: 20);*/
-
-
-            // #TODO: can you change position here? also maybe add log to see when this occurs:
             profileScrollContent.SetActive(false);
             LogDebug("Profile Editor ConstructPanelContent end");
+        }
+        internal static void CardsLockUnlock(string _category)
+        {
+            if (_category == "All")
+            {
+                foreach (string cardID in toggleCardsUnlocked.Keys)
+                    toggleCardsUnlocked[cardID].SetIsOnWithoutNotify(btnCardsLockUnlock["All"].ButtonText.text != "Lock All Cards");
+                btnCardsLockUnlock["All"].ButtonText.text = btnCardsLockUnlock["All"].ButtonText.text == "Lock All Cards" ? "Unlock All Cards" : "Lock All Cards";
+            }
+            else
+            {
+                foreach (string sCard in cardsByCategory[_category])
+                    toggleCardsUnlocked[sCard.Split("|")[1]].SetIsOnWithoutNotify(btnCardsLockUnlock[_category].ButtonText.text != "Lock All " + _category.Replace("Accesory", "Accessory") + " Cards");
+                btnCardsLockUnlock[_category].ButtonText.text = btnCardsLockUnlock[_category].ButtonText.text == "Lock All " + _category.Replace("Accesory", "Accessory") + " Cards" ? "Unlock All " + _category.Replace("Accesory", "Accessory") + " Cards" : "Lock All " + _category.Replace("Accesory", "Accessory") + " Cards";
+            }
+        }
+        internal static void CardLockUnlock(string _id)
+        {
+            // ... don't actually need to do anything?
         }
         internal static void AllHeroesLockUnlock()
         {
@@ -721,11 +866,13 @@ namespace Obeliskial_Essentials
         }
         internal static void LoadPlayerProfile()
         {
+            LogInfo("LOADING PLAYER PROFILE!");
+            inputSupplies.Component.SetTextWithoutNotify(PlayerManager.Instance.SupplyActual.ToString());
             btnAllHeroesLockUnlock.ButtonText.text = "Lock All";
             foreach (string scID in toggleHeroesUnlocked.Keys)
             {
                 bool unlocked = PlayerManager.Instance.IsHeroUnlocked(scID);
-                LogDebug("Hero " + scID + (unlocked ? " is unlocked" : " is locked"));
+                LogInfo("Hero " + scID + (unlocked ? " is unlocked" : " is locked"));
                 toggleHeroesUnlocked[scID].SetIsOnWithoutNotify(unlocked);
                 inputHeroesRank[scID].Component.SetTextWithoutNotify(PlayerManager.Instance.GetPerkRank(scID).ToString());
                 inputHeroesExperience[scID].Component.SetTextWithoutNotify(PlayerManager.Instance.GetProgress(scID).ToString());
@@ -734,11 +881,29 @@ namespace Obeliskial_Essentials
                 if (!unlocked)
                     btnAllHeroesLockUnlock.ButtonText.text = "Unlock All";
             }
-            inputSupplies.Text = PlayerManager.Instance.SupplyActual.ToString();
+            btnCardsLockUnlock["All"].ButtonText.text = "Lock All Cards";
+            foreach(string cardCategory in cardsByCategory.Keys)
+            {
+                btnCardsLockUnlock[cardCategory].ButtonText.text = "Lock All " + cardCategory.Replace("Accesory", "Accessory") + " Cards";
+                foreach (string sCard in cardsByCategory[cardCategory])
+                {
+                    string cardID = sCard.Split("|")[1];
+                    bool unlocked = PlayerManager.Instance.IsCardUnlocked(cardID);
+                    LogInfo("Card " + cardID + (unlocked ? " is unlocked" : " is locked"));
+                    toggleCardsUnlocked[cardID].SetIsOnWithoutNotify(unlocked);
+                    if (!unlocked && btnCardsLockUnlock["All"].ButtonText.text == "Lock All Cards")
+                        btnCardsLockUnlock["All"].ButtonText.text = "Unlock All Cards";
+                    if (!unlocked && btnCardsLockUnlock[cardCategory].ButtonText.text == "Lock All " + cardCategory.Replace("Accesory", "Accessory") + " Cards")
+                        btnCardsLockUnlock[cardCategory].ButtonText.text = "Unlock All " + cardCategory.Replace("Accesory", "Accessory") + " Cards";
+                }
+            }
             profileScrollContent.SetActive(true);
         }
         internal static void SavePlayerProfile()
         {
+            LogInfo("SAVING PROFILE");
+            if (int.TryParse(inputSupplies.Text, out int newSupplies))
+                PlayerManager.Instance.SupplyActual = newSupplies;
             List<string> unlockedHeroes = new();
             foreach (string scID in toggleHeroesUnlocked.Keys)
             {
@@ -748,8 +913,13 @@ namespace Obeliskial_Essentials
                     PlayerManager.Instance.HeroProgress[scID] = newXP;
             }
             PlayerManager.Instance.UnlockedHeroes = unlockedHeroes;
-            if (int.TryParse(inputSupplies.Text, out int newSupplies))
-                PlayerManager.Instance.SupplyActual = newSupplies;
+            LogInfo("Unlocked heroes: " + string.Join(", ", unlockedHeroes));
+            List<string> unlockedCards = new();
+            foreach (string cardID in toggleCardsUnlocked.Keys)
+                if (toggleCardsUnlocked[cardID].isOn)
+                    unlockedCards.Add(cardID);
+            PlayerManager.Instance.UnlockedCards = unlockedCards;
+            LogInfo("Unlocked cards: " + string.Join(", ", unlockedCards));
             SaveManager.SavePlayerData();
         }
         internal static void Init()
