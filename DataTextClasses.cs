@@ -517,7 +517,7 @@ namespace Obeliskial_Essentials
     }
 
     [Serializable]
-    public class NPCDataText  : DataText
+    public class NPCDataText : DataText
     {
         public string[] AICards; // AICards[]
         public string[] AuraCurseImmune;
@@ -1235,15 +1235,6 @@ namespace Obeliskial_Essentials
         public int dust;
     }
     [Serializable]
-    public class WilburCard
-    {
-        public string target;
-        public string cost;
-        public string description;
-        public bool vanish;
-        public bool innate;
-    }
-    [Serializable]
     public class GameObjectRetexture
     {
         public string NewGameObjectID;
@@ -1293,30 +1284,26 @@ namespace Obeliskial_Essentials
         }
     }
     [Serializable]
-    public class WilburCardIDs
-    {
-        public List<string> IDs;
-        public List<string> RelatedIDs;
-    }
-    [Serializable]
-    public class PlayerDataText : DataText
+    public class PlayerProfileDataText : DataText
     {
         public string SteamUserID;
         public string[] LastUsedTeam;
         public int TownTutorialStep;
         public List<string> TutorialWatched;
+        public List<string> UnlockedNodes;
         public List<string> UnlockedHeroes;
         public List<string> UnlockedCards;
-        public List<string> UnlockedNodes;
+        public List<string> UnlockedCardbacks;
         public List<string> PlayerRuns;
-        public List<string> BossesKilledName;
-        public List<string> SupplyBought;
-        public bool NgUnlocked;
-        public int NgLevel;
+        // public List<string> PlayerHeroes; //unused?
         public int PlayerRankProgress;
-        public int MaxAdventureMadnessLevel;
+        public List<string> TreasuresClaimed;
+        public bool NgUnlocked; // not actually implemented? just checks if NgLevel > 0
+        public int NgLevel; // adventure mode madness level excluding corruptors
+        public int MaxAdventureMadnessLevel; // adventure mode madness level including corruptors
         public int ObeliskMadnessLevel;
         public int BossesKilled;
+        public List<string> BossesKilledName;
         public int MonstersKilled;
         public int ExpGained;
         public int CardsCrafted;
@@ -1324,15 +1311,54 @@ namespace Obeliskial_Essentials
         public int GoldGained;
         public int DustGained;
         public int BestScore;
-        public int PurchasedItems;
         public int SupplyGained;
         public int SupplyActual;
+        public List<string> SupplyBought;
+        public int PurchasedItems;
         public int CorruptionsCompleted;
-        public List<string> TreasuresClaimed;
-        public Dictionary<string, List<string>> UnlockedCardsByGame;
-        public Dictionary<string, int> HeroProgress;
-        public Dictionary<string, List<string>> HeroPerks;
         public Dictionary<string, string> SkinUsed;
         public Dictionary<string, string> CardbackUsed;
+        public Dictionary<string, List<string>> UnlockedCardsByGame;
+        public string[] TeamHeroes; // ??
+        public string[] TeamNPCs; // ??
+        public Dictionary<string, int> HeroProgress;
+        public Dictionary<string, List<string>> HeroPerks;
+        public string[] GameTeamHeroes; // ??
+        public PlayerDeckDataText PlayerSavedDeck;
+        public PlayerPerkDataText PlayerSavedPerk;
+        public List<string> AchievementsSent; // ?? used to store achievements before Steam activation, maybe?
+    }
+    [Serializable]
+    public class PlayerDeckDataText : DataText
+    {
+        public List<HeroDeckDataText> Heroes;
+    }
+    [Serializable]
+    public class HeroDeckDataText : DataText
+    {
+        public string SubclassID;
+        public List<SavedDeckDataText> SavedDecks;
+    }
+    public class SavedDeckDataText : DataText
+    {
+        public string Title;
+        public List<string> Cards;
+    }
+    [Serializable]
+    public class PlayerPerkDataText : DataText
+    {
+        public List<HeroPerkDataText> Heroes;
+    }
+    [Serializable]
+    public class HeroPerkDataText : DataText
+    {
+        public string SubclassID;
+        public List<SavedPerkDataText> SavedPerks;
+    }
+    public class SavedPerkDataText : DataText
+    {
+        public string Title;
+        public List<string> Perks;
+        public int Points;
     }
 }

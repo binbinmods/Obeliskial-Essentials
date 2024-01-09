@@ -48,6 +48,7 @@ namespace Obeliskial_Essentials
         [HarmonyPriority(Priority.First)]
         private static void CreateGameContentPostfix()
         {
+            LogDebug("Essentials CreateGameContent Postfix");
             // set up for Drop-Only Items, All The Pets
             Dictionary<string, CardData> medsCardsSource = Traverse.Create(Globals.Instance).Field("_CardsSource").GetValue<Dictionary<string, CardData>>();
             foreach (string cardID in medsCardsSource.Keys)
@@ -1499,12 +1500,15 @@ namespace Obeliskial_Essentials
                 _nodeName = DevTools.inputStartingNode.Text.ToLower();
         }
 
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(LogosManager), "Awake")]
+        public static void LogosManagerAwakePrefix(ref LogosManager __instance)
+        {
+            if (medsSkipLogos.Value)
+                __instance.srList.Clear();
+        }
 
-
-
-
-
-
+        
 
         // all of the below is just for testing
 

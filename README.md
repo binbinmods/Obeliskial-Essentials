@@ -25,6 +25,7 @@ This is an **Across the Obelisk** mod that enables my other mods to work and com
 | **Export Sprites**              | true    | Export sprites when exporting vanilla content.                                   |
 | **Show At Start**               | true    | Show the mod version window when the game loads.                                 |
 | **Disable Paradox Integration** | true    | Disable Paradox integration and telemetry (does not include launcher).           |
+| **Skip Logos**                  | false   | Skip logos on startup.                                                           |
 
 ## Support
 

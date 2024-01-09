@@ -31,7 +31,7 @@ namespace Obeliskial_Essentials
     [BepInProcess("AcrossTheObelisk.exe")]
     public class Essentials : BaseUnityPlugin
     {
-        internal const int ModDate = 20231219;
+        internal const int ModDate = 20240105;
         private readonly Harmony harmony = new(PluginInfo.PLUGIN_GUID);
         internal static ManualLogSource Log;
 
@@ -39,6 +39,7 @@ namespace Obeliskial_Essentials
         public static ConfigEntry<bool> medsExportSprites { get; private set; }
         public static ConfigEntry<bool> medsShowAtStart { get; private set; }
         public static ConfigEntry<bool> medsConsistency { get; private set; }
+        public static ConfigEntry<bool> medsSkipLogos { get; private set; }
         internal static Dictionary<string, string> medsNodeEvent = new();
         internal static Dictionary<string, int> medsNodeEventPercent = new();
         internal static Dictionary<string, int> medsNodeEventPriority = new();
@@ -75,6 +76,7 @@ namespace Obeliskial_Essentials
             medsExportSprites = Config.Bind(new ConfigDefinition("Debug", "Export Sprites"), true, new ConfigDescription("Export sprites when exporting JSON files."));
             medsShowAtStart = Config.Bind(new ConfigDefinition("Debug", "Show At Start"), true, new ConfigDescription("Show the mod version window when the game loads."));
             medsConsistency = Config.Bind(new ConfigDefinition("Should Be Vanilla", "Disable Paradox Integration"), true, new ConfigDescription("Disable Paradox integration and telemetry (does not include launcher)."));
+            medsSkipLogos = Config.Bind(new ConfigDefinition("Should Be Vanilla", "Skip Logos"), false, new ConfigDescription("Skip logos on startup."));
             UniverseLib.Universe.Init(1f, ObeliskialUI.InitUI, LogHandler, new()
             {
                 Disable_EventSystem_Override = false, // or null
@@ -845,7 +847,7 @@ namespace Obeliskial_Essentials
             }
         }
 
-        public static void FullCardSpriteOutput()
+        public static void FullCardSpriteOutput(bool toToKFolder = false)
         {
 
             if (!((UnityEngine.Object)CardScreenManager.Instance != (UnityEngine.Object)null))
@@ -864,7 +866,8 @@ namespace Obeliskial_Essentials
                 {
                     cardGO.transform.Find("BorderCard").gameObject.SetActive(false);
                     Texture2D snapshot = snapshotCamera.TakeObjectSnapshot(cardGO, UnityEngine.Color.clear, new Vector3(0, 0.008f, 1), Quaternion.Euler(new Vector3(0f, 0f, 0f)), new Vector3(0.78f, 0.78f, 0.78f), 297, 450);
-                    SnapshotCamera.SavePNG(snapshot, kvp.Key, Directory.CreateDirectory(Path.Combine(Application.dataPath, "../Card Images", DataTextConvert.ToString(kvp.Value.CardClass))).FullName);
+                    string path = toToKFolder ? Path.Combine(Paths.GameRootPath, "Tome of Knowledge", "card_images") : Path.Combine(Paths.GameRootPath, "Card Images", DataTextConvert.ToString(kvp.Value.CardClass));
+                    SnapshotCamera.SavePNG(snapshot, kvp.Key, Directory.CreateDirectory(path).FullName);
                     /*if (kvp.Value.CardType == CardType.Corruption)
                         SnapshotCamera.SavePNG(snapshot, kvp.Key, Directory.CreateDirectory(Path.Combine(Application.dataPath, "../Card Images", DataTextConvert.ToString(kvp.Value.CardType))).FullName);*/
                     UnityEngine.Object.Destroy(snapshot);
@@ -872,7 +875,7 @@ namespace Obeliskial_Essentials
                 }
             }
         }
-        public static void WilburCardJSONExportEvenMoreNewWhatHaveIBecome()
+        public static void TomeOfKnowledgeExport(bool exportImages = true)
         {
             List<string> doneList = new();
             foreach(string id in Globals.Instance.Cards.Keys)
@@ -893,6 +896,33 @@ namespace Obeliskial_Essentials
             }
             Dictionary<string, List<string>> cardIDs = new();
             Dictionary<string, List<string>> relatedIDs = new();
+            // force order
+            cardIDs["Armageddon (Corruptor)"] = new();
+            cardIDs["Barrier"] = new();
+            cardIDs["Bonk Hammer (Item)"] = new();
+            cardIDs["Camouflage"] = new();
+            cardIDs["Charge Battery"] = new();
+            cardIDs["Death's Toll (Monster)"] = new();
+            cardIDs["Fire Blast"] = new();
+            cardIDs["Flash"] = new();
+            cardIDs["Foresight"] = new();
+            cardIDs["Frost Bolt"] = new();
+            cardIDs["Harley (Item)"] = new();
+            cardIDs["Heal"] = new();
+            cardIDs["Heal"] = new();
+            cardIDs["Holy Smite"] = new();
+            cardIDs["Intercept"] = new();
+            cardIDs["Mana Gem"] = new();
+            cardIDs["Poison Dart"] = new();
+            cardIDs["Quick Shot"] = new();
+            cardIDs["Rampage"] = new();
+            cardIDs["Sharpen"] = new();
+            cardIDs["Skillful"] = new();
+            cardIDs["Sneak Peek"] = new();
+            cardIDs["The Yogrinch (Corruptor)"] = new();
+            cardIDs["Thunderclap"] = new();
+            cardIDs["Toxic Blob (Item)"] = new();
+            cardIDs["Zap"] = new();
             foreach (string id in Globals.Instance.Cards.Keys)
             {
                 if (doneList.Contains(id))
@@ -955,20 +985,23 @@ namespace Obeliskial_Essentials
                     doneList.Add(id);
                 }
             }
-            string combined = "{";
-            string combinedNames = "const choices = [";
+            string combined = "{\n  \"cards\": {";
+            string combinedNames = "\n  \"choices\": [";
             foreach (string cardName in cardIDs.Keys)
             {
-                combined += "\n    \"" + cardName.ToLower() + "\": {\n        \"IDs\": [\"" + String.Join("\",\"", cardIDs[cardName]) + "\"]";
+                combined += "\n    \"" + cardName.ToLower() + "\": {\n      \"IDs\": [\"" + String.Join("\",\"", cardIDs[cardName]) + "\"]";
                 if (relatedIDs.ContainsKey(cardName))
-                    combined += ",\n        \"RelatedIDs\": [\"" + String.Join("\",\"", relatedIDs[cardName]) + "\"]";
+                    combined += ",\n      \"RelatedIDs\": [\"" + String.Join("\",\"", relatedIDs[cardName]) + "\"]";
                 combined += "\n    },";
                 combinedNames += "\n    \"" + cardName + "\",";
             }
-            combined = combined.Remove(combined.Length - 1) + "\n}";
-            combinedNames = combinedNames.Remove(combinedNames.Length - 1) + "\n];";
-            File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "Wilbur_card_export_core.json"), combined);
-            File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "Wilbur_card_export_names.json"), combinedNames);
+            combined = combined.Remove(combined.Length - 1) + "\n  }," + combinedNames.Remove(combinedNames.Length - 1) + "\n  ]\n}";
+            //combinedNames = combinedNames.Remove(combinedNames.Length - 1) + "\n]";
+            FolderCreate(Path.Combine(Paths.GameRootPath, "Tome of Knowledge"));
+            File.WriteAllText(Path.Combine(Paths.GameRootPath, "Tome of Knowledge", "cards.json"), combined);
+            if (exportImages)
+                FullCardSpriteOutput(true);
+            //File.WriteAllText(Path.Combine(Paths.GameRootPath, "Tome of Knowledge", "autocomplete.txt"), combinedNames);
         }
         public static List<string> GetRelatedCardIDs(CardData _card)
         {
@@ -987,230 +1020,6 @@ namespace Obeliskial_Essentials
             }
             return IDs;
         }
-        public static void WilburCardJSONExportNew()
-        {
-            string combined = "{\"cards\":{";
-            string names = "const choices = [";
-            foreach (string id in Globals.Instance.CardListNotUpgraded)
-            {
-                CardData card = Globals.Instance.GetCardData(id, false);
-                if (card != null)
-                {
-                    string cardname = card.CardName;
-                    if (card.CardType == CardType.Corruption)
-                        cardname += " (Corruptor)";
-                    else if (card.CardClass == CardClass.Monster)
-                        cardname += " (Monster)";
-                    else if (!card.Starter && card.CardType != CardType.Enchantment)
-                        cardname += " (Starter)";
-
-                    combined += "\n    \"" + card.CardName.ToLower() + (card.CardClass == CardClass.Monster ? " (monster)" : "") + "\": [\"" + card.Id + "\"";
-                    names += "\n    \"" + card.CardName + (card.CardClass == CardClass.Monster ? " (Monster)" : "") + "\",";
-                    // blue upgrade
-                    CardData upgrade1 = Globals.Instance.GetCardData(card.UpgradesTo1, false);
-                    if (upgrade1 != null)
-                        combined += ", \"" + upgrade1.Id + "\"";
-                    // yellow upgrade
-                    CardData upgrade2 = Globals.Instance.GetCardData(card.UpgradesTo2, false);
-                    if (upgrade2 != null)
-                        combined += ", \"" + upgrade2.Id + "\"";
-                    // purple upgrade
-                    if (card.UpgradesToRare != null)
-                        combined += ", \"" + card.UpgradesToRare.Id + "\"";
-                    combined += "],";
-                    LogDebug("Exported WilburCard " + id);
-                }
-                else
-                {
-                    LogWarning("WARNING: could not WilburExport card " + id + " (could not find in Globals.Instance.Cards)");
-                }
-            }
-            // remove trailing comma and write to file
-            combined = combined.Remove(combined.Length - 1) + "}}";
-            names = names.Remove(names.Length - 1) + "\n];";
-            File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "Wilbur_card_export_core.json"), combined);
-            File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "Wilbur_card_export_names.json"), names);
-            LogInfo("WilburExport complete!");
-        }
-        public static void WilburCardJSONExport()
-        {
-            string combinedCore = "{\"cards\":[";
-            string combinedBoonInjury = "{\"cards\":[";
-            string combinedItem = "{\"cards\":[";
-            string combinedEnchantment = "{\"cards\":[";
-            /*int h = 1; // counts hundreds for combined files
-            int a = 1;*/
-            foreach (string id in Globals.Instance.CardListNotUpgraded)
-            {
-                CardData card = Globals.Instance.GetCardData(id, false);
-                if ((UnityEngine.Object)card != (UnityEngine.Object)null)
-                {
-                    string combined = "{\"name\":\"" + card.CardName + "\",\"cardTypes\":[\"" + Texts.Instance.GetText(DataTextConvert.ToString(card.CardType)) + "\"";
-                    foreach (Enums.CardType t in card.CardTypeAux)
-                        combined += ",\"" + Texts.Instance.GetText(DataTextConvert.ToString(t)) + "\"";
-                    combined += "],\"versions\":{\"base\":" + WilburIndividualCardData(card);
-                    // blue upgrade
-                    CardData upgrade1 = Globals.Instance.GetCardData(card.UpgradesTo1);
-                    if ((UnityEngine.Object)upgrade1 != (UnityEngine.Object)null)
-                        combined += ",\"blue\":" + WilburIndividualCardData(upgrade1);
-                    // yellow upgrade
-                    CardData upgrade2 = Globals.Instance.GetCardData(card.UpgradesTo2);
-                    if ((UnityEngine.Object)upgrade2 != (UnityEngine.Object)null)
-                        combined += ",\"yellow\":" + WilburIndividualCardData(upgrade2);
-                    // purple upgrade
-                    if ((UnityEngine.Object)card.UpgradesToRare != (UnityEngine.Object)null)
-                    {
-                        // jank time? jank time.
-                        CardData upgradeRare = Globals.Instance.GetCardData(card.UpgradesToRare.Id);
-                        if ((UnityEngine.Object)upgradeRare != (UnityEngine.Object)null)
-                            combined += ",\"rare\":" + WilburIndividualCardData(upgradeRare);
-                    }
-                    combined += "}},";
-                    if (card.CardClass == Enums.CardClass.Warrior || card.CardClass == Enums.CardClass.Scout || card.CardClass == Enums.CardClass.Mage || card.CardClass == Enums.CardClass.Healer)
-                    {
-                        combinedCore += combined;
-                    }
-                    else if (card.CardClass == Enums.CardClass.Boon || card.CardClass == Enums.CardClass.Injury)
-                    {
-                        combinedBoonInjury += combined;
-                    }
-                    else if (card.CardClass == Enums.CardClass.Item || card.CardClass == Enums.CardClass.Enchantment || card.CardClass == Enums.CardClass.Special) // Enchantment cardClass isn't actually used, so this is just in case it _is_ used in the future
-                    {
-                        if ((UnityEngine.Object)card.ItemEnchantment != (UnityEngine.Object)null)
-                        {
-                            combinedEnchantment += combined;
-                        }
-                        else if ((UnityEngine.Object)card.Item != (UnityEngine.Object)null)
-                        {
-                            combinedItem += combined;
-                        }
-                        else
-                        {
-                            LogDebug("Did not export WilburCard " + id + " (invalid cardClass)");
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        LogDebug("Did not export WilburCard " + id + " (invalid cardClass)");
-                        continue;
-                    }
-                    LogDebug("Exported WilburCard " + id);
-                }
-                else
-                {
-                    LogWarning("WARNING: could not WilburExport card " + id + " (could not find in Globals.Instance.Cards)");
-                }
-            }
-            // remove trailing comma and write to file
-            combinedCore = combinedCore.Remove(combinedCore.Length - 1) + "]}";
-            File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "Wilbur_card_export_core.json"), combinedCore);
-            combinedBoonInjury = combinedBoonInjury.Remove(combinedBoonInjury.Length - 1) + "]}";
-            File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "Wilbur_card_export_booninjury.json"), combinedBoonInjury);
-            combinedItem = combinedItem.Remove(combinedItem.Length - 1) + "]}";
-            File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "Wilbur_card_export_item.json"), combinedItem);
-            combinedEnchantment = combinedEnchantment.Remove(combinedEnchantment.Length - 1) + "]}";
-            File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "Wilbur_card_export_enchantment.json"), combinedEnchantment);
-            LogInfo("WilburExport complete!");
-        }
-        public static string WilburIndividualCardData(CardData card)
-        {
-            WilburCard wc = new();
-            wc.target = card.Target;
-            wc.cost = card.EnergyCost.ToString() + "<:ato_energy:1017803954308001902>";
-            wc.description = WilburDescriptionCleaner(card.DescriptionNormalized);
-            wc.vanish = card.Vanish;
-            wc.innate = card.Innate;
-            string unwieldy = JsonUtility.ToJson(wc).Replace(",\"innate\":false", "").Replace(",\"vanish\":false", "").Replace(@"\n\n", @"\n").Replace(@"\n\n", @"\n").Replace(@"\n- ", @"\n").Replace(@" -""", @"""");
-            unwieldy = Regex.Replace(unwieldy, @"\\n(\d)", @" $1").Replace("  ", " ");
-            return unwieldy;
-        }
-        public static string WilburDescriptionCleaner(string desc)
-        {
-            string newDesc = desc;
-            // replace unused formatting tags (spacing, size, color, nobr, line height)
-            newDesc = Regex.Replace(newDesc, @"<line-height=15%>\s*<[brBR]*>\s*<\/line-height>", "");
-            newDesc = Regex.Replace(newDesc, @"<line-height=40%>\s*<[brBR]*>\s*<\/line-height>", "\n");
-            newDesc = Regex.Replace(newDesc, @"<\/*(voffset|line-height|space|size|nobr|color)(=[\d#ABCDEFabcdef%.+-]*)*>", "");
-            // replace <BR> with newline
-            newDesc = newDesc.Replace("<BR>", "\n");
-            newDesc = newDesc.Replace("<br>", "\n");
-            // replace sprites with emojis
-            newDesc = newDesc.Replace("<sprite name=bleed>", "<:ato_bleed:831708103178321941>");
-            newDesc = newDesc.Replace("<sprite name=bless>", "<:ato_bless:831707950984593438>");
-            newDesc = newDesc.Replace("<sprite name=block>", "<:ato_block:831707452901818368>");
-            newDesc = newDesc.Replace("<sprite name=blunt>", "<:ato_blunt:831707206629064704>");
-            newDesc = newDesc.Replace("<sprite name=buffer>", "<:ato_buffer:1017803855058182227>");
-            newDesc = newDesc.Replace("<sprite name=burn>", "<:ato_burn:831708488195506202>");
-            newDesc = newDesc.Replace("<sprite name=chill>", "<:ato_chill:831708639106170931>");
-            newDesc = newDesc.Replace("<sprite name=cold>", "<:ato_cold:831708619330027561>");
-            newDesc = newDesc.Replace("<sprite name=courage>", "<:ato_courage:1017803913040232488>");
-            newDesc = newDesc.Replace("<sprite name=crack>", "<:ato_crack:831709232339615805>");
-            newDesc = newDesc.Replace("<sprite name=dark>", "<:ato_dark:831708725571616788>");
-            newDesc = newDesc.Replace("<sprite name=decay>", "<:ato_decay:831711525269536768>");
-            newDesc = newDesc.Replace("<sprite name=disarm>", "<:ato_disarm:1017803928341065738>");
-            newDesc = newDesc.Replace("<sprite name=doom>", "<:ato_doom:1017803942614282250>");
-            newDesc = newDesc.Replace("<sprite name=energize>", "<:ato_energize:831710263631020072>");
-            newDesc = newDesc.Replace("<sprite name=energy>", "<:ato_energy:1017803954308001902>");
-            newDesc = newDesc.Replace("<sprite name=card>", "<:ato_card:1017803874498777118>");
-            newDesc = newDesc.Replace("<sprite name=cards>", "<:ato_card:1017803874498777118>");
-            newDesc = newDesc.Replace("<sprite name=evasion>", "<:ato_evasion:1017803990492254248>");
-            newDesc = newDesc.Replace("<sprite name=fast>", "<:ato_fast:831709865957130260>");
-            newDesc = newDesc.Replace("<sprite name=fatigue>", "<:ato_fatigue:1017804029348298882>");
-            newDesc = newDesc.Replace("<sprite name=fire>", "<:ato_fire:831708462093697024>");
-            newDesc = newDesc.Replace("<sprite name=fortify>", "<:ato_fortify:1017804040589017139>");
-            newDesc = newDesc.Replace("<sprite name=fury>", "<:ato_fury:1017804054333771827>");
-            newDesc = newDesc.Replace("<sprite name=heal>", "<:ato_heal:831708023822090292>");
-            newDesc = newDesc.Replace("<sprite name=holy>", "<:ato_holy:831707893559853076>");
-            newDesc = newDesc.Replace("<sprite name=health>", "<:ato_health:831711486132224070>");
-            newDesc = newDesc.Replace("<sprite name=insane>", "<:ato_insane:831708800276627516>");
-            newDesc = newDesc.Replace("<sprite name=inspire>", "<:ato_inspire:1017804069810741259>");
-            newDesc = newDesc.Replace("<sprite name=insulate>", "<:ato_insulate:1017804082406232115>");
-            newDesc = newDesc.Replace("<sprite name=invulnerable>", "<:ato_invulnerable:1017804093953159199>");
-            newDesc = newDesc.Replace("<sprite name=lightning>", "<:ato_lightning:831708386659139646>");
-            newDesc = newDesc.Replace("<sprite name=mark>", "<:ato_mark:831709147774320681>");
-            newDesc = newDesc.Replace("<sprite name=mind>", "<:ato_mind:831708773490884619>");
-            newDesc = newDesc.Replace("<sprite name=mitigate>", "<:ato_mitigate:1017804107995680848>");
-            newDesc = newDesc.Replace("<sprite name=paralyze>", "<:ato_paralyze:1017804120633131018>");
-            newDesc = newDesc.Replace("<sprite name=piercing>", "<:ato_piercing:831707237499797534>");
-            newDesc = newDesc.Replace("<sprite name=powerful>", "<:ato_powerful:1017804148260995102>");
-            newDesc = newDesc.Replace("<sprite name=poison>", "<:ato_poison:1017804131588657243>");
-            newDesc = newDesc.Replace("<sprite name=cardrandom>", "<:ato_random:1095706686016200714>");
-            newDesc = newDesc.Replace("<sprite name=regeneration>", "<:ato_regeneration:836680199109476392>");
-            newDesc = newDesc.Replace("<sprite name=reinforce>", "<:ato_reinforce:1017804164107079732>");
-            newDesc = newDesc.Replace("<sprite name=sanctify>", "<:ato_sanctify:831707981733298186>");
-            newDesc = newDesc.Replace("<sprite name=shackle>", "<:ato_shackle:1017804176492871715>");
-            newDesc = newDesc.Replace("<sprite name=shadow>", "<:ato_shadow:831708702981619783>");
-            newDesc = newDesc.Replace("<sprite name=sharp>", "<:ato_sharp:1017804192024383608>");
-            newDesc = newDesc.Replace("<sprite name=shield>", "<:ato_shield:831707596405997578>");
-            newDesc = newDesc.Replace("<sprite name=sight>", "<:ato_sight:831708916340490240>");
-            newDesc = newDesc.Replace("<sprite name=silence>", "<:ato_silence:1017804207732035665>");
-            newDesc = newDesc.Replace("<sprite name=slashing>", "<:ato_slash:831707157426602034>");
-            newDesc = newDesc.Replace("<sprite name=slow>", "<:ato_slow:831710190662844416>");
-            newDesc = newDesc.Replace("<sprite name=spark>", "<:ato_spark:831708425775480892>");
-            newDesc = newDesc.Replace("<sprite name=stanzai>", "<:ato_stanza1:831710428156395563>");
-            newDesc = newDesc.Replace("<sprite name=stanzaii>", "<:ato_stanza2:831710440731574283>");
-            newDesc = newDesc.Replace("<sprite name=stanzaiii>", "<:ato_stanza3:831710474202251265>");
-            newDesc = newDesc.Replace("<sprite name=stealth>", "<:ato_stealth:831709537592803358>");
-            newDesc = newDesc.Replace("<sprite name=stealthbonus>", "<:ato_stealth:831709537592803358>");
-            newDesc = newDesc.Replace("<sprite name=stress>", "<:ato_stress:1017804219270561792>");
-            newDesc = newDesc.Replace("<sprite name=thorns>", "<:ato_thorns:831709250656927805>");
-            newDesc = newDesc.Replace("<sprite name=taunt>", "<:ato_taunt:831711779494821898>");
-            newDesc = newDesc.Replace("<sprite name=vitality>", "<:ato_vitality:836679899904868384>");
-            newDesc = newDesc.Replace("<sprite name=vulnerable>", "<:ato_vulnerable:834829138488983563>");
-            newDesc = newDesc.Replace("<sprite name=weak>", "<:ato_weak:1017804231773790268>");
-            newDesc = newDesc.Replace("<sprite name=wet>", "<:ato_wet:1017804243526221884>");
-            newDesc = newDesc.Replace("<sprite name=scourge>", "<:ato_scourge:1142114629431087174>");
-            newDesc = newDesc.Replace("<sprite name=zeal>", "<:ato_zeal:1142114574544404552>");
-            // fix whitespace
-            newDesc = newDesc.Replace("  ", " ");
-            newDesc = newDesc.Replace("  ", " ");
-            newDesc = newDesc.Replace("\n ", "\n");
-            newDesc = newDesc.Replace(" \n", "\n");
-            newDesc = newDesc.Replace(" <:ato_", "<:ato_");
-            return newDesc.Trim();
-        }
-
         public static void MapNodeExport() // exports map node positions into text format
         {
             Node[] foundNodes = Resources.FindObjectsOfTypeAll<Node>();

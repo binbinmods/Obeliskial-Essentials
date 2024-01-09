@@ -1652,5 +1652,41 @@ namespace Obeliskial_Essentials
             }
             return text;
         }
+        public static PlayerDeckDataText ToText(PlayerDeck data)
+        {
+            PlayerDeckDataText PDDT = new();
+            foreach (string subclassID in data.DeckTitle.Keys)
+            {
+                HeroDeckDataText HDDT = new();
+                HDDT.SubclassID = subclassID;
+                for (int a = 0; a < data.DeckTitle[subclassID].Length; a++)
+                {
+                    SavedDeckDataText SDDT = new();
+                    SDDT.Title = data.DeckTitle[subclassID][a];
+                    SDDT.Cards = data.DeckCards[subclassID][a];
+                    HDDT.SavedDecks.Add(SDDT);
+                }
+                PDDT.Heroes.Add(HDDT);
+            }
+            return PDDT;
+        }
+        public static PlayerPerkDataText ToText(PlayerPerk data)
+        {
+            PlayerPerkDataText PPDT = new();
+            foreach (string subclassID in data.PerkConfigTitle.Keys)
+            {
+                HeroPerkDataText HPDT = new();
+                HPDT.SubclassID = subclassID;
+                for (int a = 0; a < data.PerkConfigTitle[subclassID].Length; a++)
+                {
+                    SavedPerkDataText SPDT = new();
+                    SPDT.Title = data.PerkConfigTitle[subclassID][a];
+                    SPDT.Perks = data.PerkConfigPerks[subclassID][a];
+                    SPDT.Points = data.PerkConfigPoints[subclassID][a];
+                }
+                PPDT.Heroes.Add(HPDT);
+            }
+            return PPDT;
+        }
     }
 }
