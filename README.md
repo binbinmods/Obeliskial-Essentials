@@ -25,7 +25,26 @@ This is an **Across the Obelisk** mod that enables my other mods to work and com
 | **Export Sprites**              | true    | Export sprites when exporting vanilla content.                                   |
 | **Show At Start**               | true    | Show the mod version window when the game loads.                                 |
 | **Disable Paradox Integration** | true    | Disable Paradox integration and telemetry (does not include launcher).           |
-| **Skip Logos**                  | false   | Skip logos on startup.                                                           |
+| **Skip Logos**                  | true    | Skip logos on startup.                                                           |
+
+## Developer Tools
+
+Press F2 to access the Developer Tools:
+* mouse position lookup (useful for placing nodes/roads when [developing custom content](https://code.secretsisters.gay/AtO_How_To));
+* toggle to disable AtO buttons (so you don't accidentally click on them while doing things!);
+* +150 party XP;
+* set enemy HP to 1;
+* change starting node (for testing custom Act 1);
+* card image export;
+* [Tome of Knowledge Discord bot](https://github.com/stiffmeds/Tome-of-Knowledge) data export;
+* activate event;
+* activate combat;
+* write Caravan shop to log (just a demo; expect this to be added to the [Seed Checker](https://code.secretsisters.gay/AtO_Seeds) at some point!); and
+* a profile editor (work in progress!):
+  * change supplies;
+  * lock/unlock heroes;
+  * change hero XP/rank progression; and
+  * lock/unlock cards (including items).
 
 ## Support
 

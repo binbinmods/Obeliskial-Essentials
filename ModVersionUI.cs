@@ -190,13 +190,19 @@ namespace Obeliskial_Essentials
             btnCloseAll.Component.onClick.AddListener(ChangeUIState);
 
             GameObject medsDevToolsGO = UIFactory.CreateVerticalGroup(ContentRoot, "medsDevTools", true, true, true, true, 5, new Vector4(4, 4, 4, 4), new Color32(18, 4, 20, 255), TextAnchor.UpperLeft);
-            
+
             // Mouse coordinates
             labelMouseXY = UIFactory.CreateLabel(medsDevToolsGO, "labelMouseX", "Mouse x: ", TextAnchor.UpperLeft);
             UIFactory.SetLayoutElement(labelMouseXY.gameObject, minWidth: 100);
 
+            // create scrollview
+            GameObject scrollView = UIFactory.CreateScrollView(medsDevToolsGO, "medsDevToolsScroll", out GameObject devToolsScrollContent, out _, new Color32(18, 4, 20, 255));
+            UIFactory.SetLayoutElement(scrollView, minWidth: 350, flexibleWidth: 9999);
+            UIFactory.SetLayoutGroup<VerticalLayoutGroup>(devToolsScrollContent, spacing: 5);
+
+
             // +150 Party XP
-            ButtonRef btnPartyXP = UIFactory.CreateButton(medsDevToolsGO, "btnPartyXP", "+150 Party XP");
+            ButtonRef btnPartyXP = UIFactory.CreateButton(devToolsScrollContent, "btnPartyXP", "+150 Party XP");
             UIFactory.SetLayoutElement(btnPartyXP.Component.gameObject, minWidth: 100, minHeight: 30);
             btnPartyXP.Component.onClick.AddListener(delegate
             {
@@ -220,7 +226,7 @@ namespace Obeliskial_Essentials
             });
 
             // Set Enemy HP to 1
-            ButtonRef btn1HPEnemies = UIFactory.CreateButton(medsDevToolsGO, "btn1HPEnemies", "Set Enemy HP to 1");
+            ButtonRef btn1HPEnemies = UIFactory.CreateButton(devToolsScrollContent, "btn1HPEnemies", "Set Enemy HP to 1");
             UIFactory.SetLayoutElement(btn1HPEnemies.Component.gameObject, minWidth: 100, minHeight: 30);
             btn1HPEnemies.Component.onClick.AddListener(delegate
             {
@@ -242,16 +248,16 @@ namespace Obeliskial_Essentials
             });
 
             // Starting Node
-            GameObject hStartingNode = UIFactory.CreateUIObject("hStartingNode", medsDevToolsGO);
+            GameObject hStartingNode = UIFactory.CreateUIObject("hStartingNode", devToolsScrollContent);
             UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(hStartingNode, false, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleLeft);
             Text labelStartingNode = UIFactory.CreateLabel(hStartingNode, "labelStartingNode", "Starting node:");
             UIFactory.SetLayoutElement(labelStartingNode.gameObject, minWidth: 60, minHeight: 30);
-            inputStartingNode = UIFactory.CreateInputField(hStartingNode, "inputStartingNode", "sen_1");
-            inputStartingNode.Component.SetTextWithoutNotify("sen_1");
+            inputStartingNode = UIFactory.CreateInputField(hStartingNode, "inputStartingNode", "sen_0");
+            inputStartingNode.Component.SetTextWithoutNotify("sen_0");
             UIFactory.SetLayoutElement(inputStartingNode.Component.gameObject, minWidth: 70, minHeight: 30);
 
             // Card Image Export
-            ButtonRef btnCardImageExport = UIFactory.CreateButton(medsDevToolsGO, "btnCardImageExport", "Card Image Export");
+            ButtonRef btnCardImageExport = UIFactory.CreateButton(devToolsScrollContent, "btnCardImageExport", "Card Image Export");
             UIFactory.SetLayoutElement(btnCardImageExport.Component.gameObject, minWidth: 100, minHeight: 30);
             btnCardImageExport.Component.onClick.AddListener(delegate
             {
@@ -269,7 +275,7 @@ namespace Obeliskial_Essentials
             });
 
             // Tome of Knowledge Discord bot data export
-            ButtonRef btnToKDataExport = UIFactory.CreateButton(medsDevToolsGO, "btnToKDataExport", "Tome of Knowledge bot data export");
+            ButtonRef btnToKDataExport = UIFactory.CreateButton(devToolsScrollContent, "btnToKDataExport", "Tome of Knowledge bot data export");
             UIFactory.SetLayoutElement(btnToKDataExport.Component.gameObject, minWidth: 100, minHeight: 30);
             btnToKDataExport.Component.onClick.AddListener(delegate
             {
@@ -287,7 +293,7 @@ namespace Obeliskial_Essentials
             });
 
             // Activate Event
-            GameObject hActivateEvent = UIFactory.CreateUIObject("hActivateEvent", medsDevToolsGO);
+            GameObject hActivateEvent = UIFactory.CreateUIObject("hActivateEvent", devToolsScrollContent);
             UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(hActivateEvent, false, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleLeft);
             ButtonRef btnActivateEvent = UIFactory.CreateButton(hActivateEvent, "btnActivateEvent", "Activate Event");
             UIFactory.SetLayoutElement(btnActivateEvent.Component.gameObject, minWidth: 150, minHeight: 30);
@@ -323,7 +329,7 @@ namespace Obeliskial_Essentials
 
 
             // Activate Combat
-            GameObject hActivateCombat = UIFactory.CreateUIObject("hActivateCombat", medsDevToolsGO);
+            GameObject hActivateCombat = UIFactory.CreateUIObject("hActivateCombat", devToolsScrollContent);
             UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(hActivateCombat, false, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleLeft);
             ButtonRef btnActivateCombat = UIFactory.CreateButton(hActivateCombat, "btnActivateCombat", "Activate Combat");
             UIFactory.SetLayoutElement(btnActivateCombat.Component.gameObject, minWidth: 150, minHeight: 30);
@@ -358,16 +364,24 @@ namespace Obeliskial_Essentials
                 }
             });
 
-            // Disable AtO Buttons
-            GameObject hDisableAtOButtons = UIFactory.CreateUIObject("hDisableAtOButtons", medsDevToolsGO);
-            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(hDisableAtOButtons, false, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleCenter);
-            lockAtOGO = UIFactory.CreateToggle(hDisableAtOButtons, "disableButtonsToggle", out lockAtOToggle, out Text lockAtOText);
-            lockAtOText.text = "Disable AtO Buttons";
-            lockAtOToggle.isOn = false;
-            UIFactory.SetLayoutElement(lockAtOGO, minWidth: 85, minHeight: 30);
+            // caravan shop logger
+            ButtonRef btnCaravanShopLog = UIFactory.CreateButton(devToolsScrollContent, "btnCaravanShopLog", "Write Caravan Shop to Log");
+            UIFactory.SetLayoutElement(btnCaravanShopLog.Component.gameObject, minWidth: 150, minHeight: 30);
+            btnCaravanShopLog.Component.onClick.AddListener(delegate
+            {
+                try
+                {
+                    LogShopItems();
+                    Globals.Instance.StartCoroutine(medsButtonTextRevert(btnCaravanShopLog, "Caravan items written to log!"));
+                }
+                catch (Exception e)
+                {
+                    Globals.Instance.StartCoroutine(medsButtonTextRevert(btnCaravanShopLog, "Error getting caravan shop items: " + e.Message));
+                }
+            });
             
             // Profile Editor
-            btnProfileEditor = UIFactory.CreateButton(medsDevToolsGO, "btnProfileEditor", "Profile Editor");
+            btnProfileEditor = UIFactory.CreateButton(devToolsScrollContent, "btnProfileEditor", "Profile Editor");
             UIFactory.SetLayoutElement(btnProfileEditor.Component.gameObject, minWidth: 100, minHeight: 30);
             RuntimeHelper.SetColorBlock(btnProfileEditor.Component, UniversalUI.DisabledButtonColor, UniversalUI.DisabledButtonColor * 1.2f);
             btnProfileEditor.Component.onClick.AddListener(delegate
@@ -378,6 +392,14 @@ namespace Obeliskial_Essentials
                 }
                 catch (Exception e) { LogDebug("Failed to open profile editor: " + e.Message); };
             });
+
+            // Disable AtO Buttons
+            GameObject hDisableAtOButtons = UIFactory.CreateUIObject("hDisableAtOButtons", medsDevToolsGO);
+            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(hDisableAtOButtons, false, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleCenter);
+            lockAtOGO = UIFactory.CreateToggle(hDisableAtOButtons, "disableButtonsToggle", out lockAtOToggle, out Text lockAtOText);
+            lockAtOText.text = "Disable AtO Buttons";
+            lockAtOToggle.isOn = false;
+            UIFactory.SetLayoutElement(lockAtOGO, minWidth: 85, minHeight: 30);
 
             Canvas.ForceUpdateCanvases();
         }

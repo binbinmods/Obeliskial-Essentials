@@ -1485,11 +1485,113 @@ namespace Obeliskial_Essentials
             return true;
         }
 
+        /* devs patched this method in version 1.3.02
         [HarmonyPrefix]
         [HarmonyPatch(typeof(GameManager), "Awake")]
         public static void GameManagerAwakePrefix(ref GameManager __instance)
         {
             Traverse.Create(__instance).Field("pDXEnabled").SetValue(!(medsConsistency.Value));
+        }*/
+
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(MainMenuManager), "CreatePDXDropdowns")]
+        public static bool CreatePDXDropdownsPrefix(ref MainMenuManager __instance)
+        {
+            if (medsConsistency.Value)
+            {
+                __instance.ResetPDXScreens();
+                __instance.paradoxT.gameObject.SetActive(false);
+                return false; // do not run original method
+            }
+            return true; // run original method
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(MainMenuManager), "ShowPDXPreLogin")]
+        public static bool ShowPDXPreLoginPrefix(ref MainMenuManager __instance)
+        {
+            if (medsConsistency.Value)
+            {
+                __instance.ResetPDXScreens();
+                __instance.paradoxT.gameObject.SetActive(false);
+                return false; // do not run original method
+            }
+            return true; // run original method
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(MainMenuManager), "ShowPDXLogin")]
+        public static bool ShowPDXLoginPrefix(ref MainMenuManager __instance)
+        {
+            if (medsConsistency.Value)
+            {
+                __instance.ResetPDXScreens();
+                __instance.paradoxT.gameObject.SetActive(false);
+                return false; // do not run original method
+            }
+            return true; // run original method
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(MainMenuManager), "ShowPDXLogged")]
+        public static bool ShowPDXLoggedPrefix(ref MainMenuManager __instance)
+        {
+            if (medsConsistency.Value)
+            {
+                __instance.ResetPDXScreens();
+                __instance.paradoxT.gameObject.SetActive(false);
+                return false; // do not run original method
+            }
+            return true; // run original method
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Paradox.Startup), "ShowDocumentFromStartup")]
+        public static bool ShowDocumentFromStartupPrefix()
+        {
+            if (medsConsistency.Value)
+            {
+                Paradox.Startup.waitingForLoginDocuments = false;
+                MainMenuManager.Instance.paradoxDocumentPopup.gameObject.SetActive(false);
+                return false; // do not run original method
+            }
+            return true; // run original method
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Paradox.Telemetry), "SendStartGame")]
+        public static bool SendStartGamePrefix()
+        {
+            return !medsConsistency.Value; // do not run original method if Consistency is enabled
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Paradox.Telemetry), "SendPlaysessionStart")]
+        public static bool SendPlaysessionStartPrefix()
+        {
+            return !medsConsistency.Value; // do not run original method if Consistency is enabled
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Paradox.Telemetry), "SendPlaysessionEnd")]
+        public static bool SendPlaysessionEndPrefix()
+        {
+            return !medsConsistency.Value; // do not run original method if Consistency is enabled
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Paradox.Telemetry), "SendActStart")]
+        public static bool SendActStartPrefix()
+        {
+            return !medsConsistency.Value; // do not run original method if Consistency is enabled
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Paradox.Telemetry), "SendUnlock")]
+        public static bool SendUnlockPrefix()
+        {
+            return !medsConsistency.Value; // do not run original method if Consistency is enabled
         }
 
         [HarmonyPrefix]
