@@ -1,3 +1,9 @@
+# 1.2.0
+
+Developer Tools (F2): change starting node, card image export, Tome of Knowledge Discord bot data export, activate event, activate combat and write Caravan shop to log.
+Profile Editor (F2): change supplies, lock/unlock heroes, change hero XP/rank progression and lock/unlock cards.
+Updated Consistency option to work for AtO v1.3.02.
+
 # 1.1.0
 
 Developer Tools (F2): +150 party XP; set enemy HP to 1; disable AtO buttons.
