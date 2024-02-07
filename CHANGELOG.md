@@ -1,3 +1,7 @@
+# 1.2.1
+
+Developer Tools (F2): Calculate Checksums.
+
 # 1.2.0
 
 Developer Tools (F2): change starting node, card image export, Tome of Knowledge Discord bot data export, activate event, activate combat and write Caravan shop to log.

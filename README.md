@@ -39,7 +39,8 @@ Press F2 to access the Developer Tools:
 * [Tome of Knowledge Discord bot](https://github.com/stiffmeds/Tome-of-Knowledge) data export;
 * activate event;
 * activate combat;
-* write Caravan shop to log (just a demo; expect this to be added to the [Seed Checker](https://code.secretsisters.gay/AtO_Seeds) at some point!); and
+* write Caravan shop to log (just a demo; expect this to be added to the [Seed Checker](https://code.secretsisters.gay/AtO_Seeds) at some point!); 
+* a checksum calculator to confirm if you have the same content as someone else (work- in progress!); and
 * a profile editor (work in progress!):
   * change supplies;
   * lock/unlock heroes;
