@@ -393,6 +393,20 @@ namespace Obeliskial_Essentials
                 catch (Exception e) { LogDebug("Failed to open profile editor: " + e.Message); };
             });
 
+            // Calculate Checksums
+            ButtonRef btnCalculateChecksums = UIFactory.CreateButton(devToolsScrollContent, "btnCalculateChecksums", "Calculate Checksums");
+            UIFactory.SetLayoutElement(btnCalculateChecksums.Component.gameObject, minWidth: 100, minHeight: 30);
+            btnCalculateChecksums.Component.onClick.AddListener(delegate
+            {
+                try
+                {
+                    btnCalculateChecksums.ButtonText.text = "Please wait...";
+                    CalculateChecksums();
+                    btnCalculateChecksums.ButtonText.text = "Done! config\\CHECKSUMS.txt";
+                }
+                catch (Exception e) { LogDebug("Failed to calculate checksums: " + e.Message); };
+            });
+
             // Disable AtO Buttons
             GameObject hDisableAtOButtons = UIFactory.CreateUIObject("hDisableAtOButtons", medsDevToolsGO);
             UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(hDisableAtOButtons, false, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleCenter);

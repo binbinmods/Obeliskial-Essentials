@@ -526,7 +526,7 @@ namespace Obeliskial_Essentials
             text.UpgradesToRare = ToString(data.UpgradesToRare);
             text.Vanish = data.Vanish;
             text.Visible = data.Visible;
-            if (data.Sprite != null && medsExportSprites.Value)
+            if (data.Sprite != null && medsExportJSON.Value && medsExportSprites.Value)
                 ExportSprite(data.Sprite, "card", text.CardClass);
             return text;
         }
@@ -640,7 +640,7 @@ namespace Obeliskial_Essentials
             text.Trait3B = ToString(data.Trait3B);
             text.Trait4A = ToString(data.Trait4A);
             text.Trait4B = ToString(data.Trait4B);
-            if (medsExportSprites.Value)
+            if (medsExportJSON.Value && medsExportSprites.Value)
             {
                 if (data.SpriteBorderLocked != null)
                     ExportSprite(data.SpriteBorderLocked, "subclass", data.Id);
@@ -810,7 +810,7 @@ namespace Obeliskial_Essentials
             text.UsedEnergy = data.UsedEnergy;
             text.UseTheNextInsteadWhenYouPlay = data.UseTheNextInsteadWhenYouPlay;
             text.Vanish = data.Vanish;
-            if (data.SpriteBossDrop != null && medsExportSprites.Value)
+            if (data.SpriteBossDrop != null && medsExportJSON.Value && medsExportSprites.Value)
                 ExportSprite(data.SpriteBossDrop, "item", "SpriteBossDrop");
             return text;
         }
@@ -875,9 +875,9 @@ namespace Obeliskial_Essentials
             text.TierMob = ToString(data.TierMob);
             text.TierReward = ToString(data.TierReward);
             text.UpgradedMob = ToString(data.UpgradedMob);
-            LogDebug("exporting NPC: " + text.ID);
-            if (medsExportSprites.Value)
+            if (medsExportJSON.Value && medsExportSprites.Value)
             {
+                LogDebug("exporting NPC: " + text.ID);
                 if (data.GameObjectAnimated != null)
                     foreach (SpriteRenderer SR in data.GameObjectAnimated.GetComponentsInChildren<SpriteRenderer>(true))
                         if (SR.sprite != null)
@@ -915,7 +915,7 @@ namespace Obeliskial_Essentials
             text.ResistModifiedValue = data.ResistModifiedValue;
             text.Row = data.Row;
             text.SpeedQuantity = data.SpeedQuantity;
-            if (data.Icon != null && medsExportSprites.Value)
+            if (data.Icon != null && medsExportJSON.Value && medsExportSprites.Value)
                 ExportSprite(data.Icon, "perk");
             return text;
         }
@@ -1049,7 +1049,7 @@ namespace Obeliskial_Essentials
             text.Sprite = ToString(data.Sprite);
             text.Stealth = data.Stealth;
             text.Taunt = data.Taunt;
-            if (data.Sprite != null && medsExportSprites.Value)
+            if (data.Sprite != null && medsExportJSON.Value && medsExportSprites.Value)
                 ExportSprite(data.Sprite, "auraCurse");
             return text;
         }
@@ -1081,7 +1081,7 @@ namespace Obeliskial_Essentials
             text.TravelDestination = data.TravelDestination;
             text.VisibleIfNotRequirement = data.VisibleIfNotRequirement;
             text.SourceNodeName = data.SourceNodeName; // #XMAS
-            if (data.NodeBackgroundImg != null && medsExportSprites.Value)
+            if (data.NodeBackgroundImg != null && medsExportJSON.Value && medsExportSprites.Value)
                 ExportSprite(data.NodeBackgroundImg, "node");
             return text;
         }
@@ -1135,7 +1135,7 @@ namespace Obeliskial_Essentials
             text.Row = data.Row;
             text.Sprite = ToString(data.Sprite);
             text.Type = data.Type;
-            if (data.Sprite != null && medsExportSprites.Value)
+            if (data.Sprite != null && medsExportJSON.Value && medsExportSprites.Value)
                 ExportSprite(data.Sprite, "perkNode");
             return text;
         }
@@ -1166,7 +1166,7 @@ namespace Obeliskial_Essentials
             text.IsMadnessTrait = data.IsMadnessTrait;
             text.Name = data.Name;
             text.Order = data.Order;
-            if (data.Icon != null && medsExportSprites.Value)
+            if (data.Icon != null && medsExportJSON.Value && medsExportSprites.Value)
                 ExportSprite(data.Icon, "challengeTrait");
             return text;
         }
@@ -1224,7 +1224,7 @@ namespace Obeliskial_Essentials
             }
             text.RequiredClass = ToString(data.RequiredClass);
             text.Requirement = ToString(data.Requirement);
-            if (medsExportSprites.Value)
+            if (medsExportJSON.Value && medsExportSprites.Value)
             {
                 if (data.EventSpriteBook != null)
                     ExportSprite(data.EventSpriteBook, "event", "EventSpriteBook");
@@ -1248,7 +1248,7 @@ namespace Obeliskial_Essentials
             text.ItemTrack = data.ItemTrack;
             // get requirementzonefinishtrack with reflections #TODO: find out if there's some benefit to using traditional reflections vs harmony traverse.create??
             text.RequirementZoneFinishTrack = ToString(Traverse.Create(data).Field("requirementZoneFinishTrack").GetValue<Enums.Zone>());
-            if (medsExportSprites.Value)
+            if (medsExportJSON.Value && medsExportSprites.Value)
             {
                 if (data.ItemSprite != null)
                     ExportSprite(data.ItemSprite, "eventRequirement", "ItemSprite");
@@ -1549,7 +1549,7 @@ namespace Obeliskial_Essentials
             text.ShowIfLocked = data.ShowIfLocked;
             text.Sku = data.Sku;
             text.SteamStat = data.SteamStat;
-            if (data.CardbackSprite != null && medsExportSprites.Value)
+            if (data.CardbackSprite != null && medsExportJSON.Value && medsExportSprites.Value)
                 ExportSprite(data.CardbackSprite, "cardback");
             return text;
         }
@@ -1569,7 +1569,7 @@ namespace Obeliskial_Essentials
             text.SpriteSilueta = ToString(data.SpriteSilueta);
             text.SpriteSiluetaGrande = ToString(data.SpriteSiluetaGrande);
             text.SteamStat = data.SteamStat;
-            if (medsExportSprites.Value)
+            if (medsExportJSON.Value && medsExportSprites.Value)
             {
                 if (data.SkinGo != null)
                     foreach (SpriteRenderer SR in data.SkinGo.GetComponentsInChildren<SpriteRenderer>(true))
@@ -1626,7 +1626,7 @@ namespace Obeliskial_Essentials
             text.ExistsSku = data.ExistsSku;
             text.GoToTown = data.GoToTown;
             text.NodeBackgroundImg = ToString(data.NodeBackgroundImg);
-            if ((UnityEngine.Object)data.NodeBackgroundImg != (UnityEngine.Object)null && medsExportSprites.Value)
+            if ((UnityEngine.Object)data.NodeBackgroundImg != (UnityEngine.Object)null && medsExportJSON.Value && medsExportSprites.Value)
                 ExportSprite(data.NodeBackgroundImg, "node");
             text.NodeCombat = ToString(data.NodeCombat);
             text.NodeCombatTier = ToString(data.NodeCombatTier);

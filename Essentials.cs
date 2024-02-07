@@ -31,7 +31,7 @@ namespace Obeliskial_Essentials
     [BepInProcess("AcrossTheObelisk.exe")]
     public class Essentials : BaseUnityPlugin
     {
-        internal const int ModDate = 20240117;
+        internal const int ModDate = 20240207;
         private readonly Harmony harmony = new(PluginInfo.PLUGIN_GUID);
         internal static ManualLogSource Log;
 
@@ -1715,5 +1715,238 @@ namespace Obeliskial_Essentials
                     LogInfo(card.CardName + (card.CardUpgraded == CardUpgraded.Rare ? " (Corrupted)" : (card.CardUpgraded == CardUpgraded.A ? " (Blue)" : (card.CardUpgraded == CardUpgraded.B ? " (Yellow)" : ""))) + " [" + card.Id + "]");
             }
         }
+        internal static void CalculateChecksums()
+        {
+            LogInfo("CALCULATING CHECKSUMS");
+            File.WriteAllText(Path.Combine(Paths.ConfigPath, "CHECKSUMS.txt"), "CHECKSUMS");
+
+
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_SubClassSource").GetValue<Dictionary<string, SubClassData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_TraitsSource").GetValue<Dictionary<string, TraitData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_CardsSource").GetValue<Dictionary<string, CardData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_PerksSource").GetValue<Dictionary<string, PerkData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_AurasCursesSource").GetValue<Dictionary<string, AuraCurseData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_NPCsSource").GetValue<Dictionary<string, NPCData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_NodeDataSource").GetValue<Dictionary<string, NodeData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_LootDataSource").GetValue<Dictionary<string, LootData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_PerksNodesSource").GetValue<Dictionary<string, PerkNodeData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_WeeklyDataSource").GetValue<Dictionary<string, ChallengeData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_ChallengeTraitsSource").GetValue<Dictionary<string, ChallengeTrait>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_CombatDataSource").GetValue<Dictionary<string, CombatData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_Events").GetValue<Dictionary<string, EventData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_Requirements").GetValue<Dictionary<string, EventRequirementData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_ZoneDataSource").GetValue<Dictionary<string, ZoneData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Globals.Instance.KeyNotes.Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_PackDataSource").GetValue<Dictionary<string, PackData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_CardPlayerPackDataSource").GetValue<Dictionary<string, CardPlayerPackData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_ItemDataSource").GetValue<Dictionary<string, ItemData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_CardbackDataSource").GetValue<Dictionary<string, CardbackData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_SkinDataSource").GetValue<Dictionary<string, SkinData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_CorruptionPackDataSource").GetValue<Dictionary<string, CorruptionPackData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_Cinematics").GetValue<Dictionary<string, CinematicData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_TierRewardDataSource").GetValue<Dictionary<int, TierRewardData>>().Select(item => item.Value).ToArray());
+            ActualChecksums(Traverse.Create(Globals.Instance).Field("_CardPlayerPairsPackDataSource").GetValue<Dictionary<string, CardPlayerPairsPackData>>().Select(item => item.Value).ToArray());
+        }
+        public static void ActualChecksums<T>(T[] data)
+        {
+            string type = "";
+            for (int a = 1; a <= data.Length; a++)
+            {
+                string id = "";
+                string text = "";
+                if (data[a - 1].GetType() == typeof(SubClassData))
+                {
+                    type = "subclass";
+                    SubClassData d = (SubClassData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(TraitData))
+                {
+                    type = "trait";
+                    TraitData d = (TraitData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(CardData))
+                {
+                    type = "card";
+                    CardData d = (CardData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(PerkData))
+                {
+                    type = "perk";
+                    PerkData d = (PerkData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(AuraCurseData))
+                {
+                    type = "auraCurse";
+                    AuraCurseData d = (AuraCurseData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(NPCData))
+                {
+                    type = "npc";
+                    NPCData d = (NPCData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(NodeData))
+                {
+                    type = "node";
+                    NodeData d = (NodeData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(LootData))
+                {
+                    type = "loot";
+                    LootData d = (LootData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(PerkNodeData))
+                {
+                    type = "perkNode";
+                    PerkNodeData d = (PerkNodeData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(ChallengeData))
+                {
+                    type = "challengeData";
+                    ChallengeData d = (ChallengeData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(ChallengeTrait))
+                {
+                    type = "challengeTrait";
+                    ChallengeTrait d = (ChallengeTrait)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(CombatData))
+                {
+                    type = "combatData";
+                    CombatData d = (CombatData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(EventData))
+                {
+                    type = "event";
+                    EventData d = (EventData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(EventReplyDataText))
+                {
+                    type = "eventReply";
+                    EventReplyDataText d = (EventReplyDataText)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(d).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(EventRequirementData))
+                {
+                    type = "eventRequirement";
+                    EventRequirementData d = (EventRequirementData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(ZoneData))
+                {
+                    type = "zone";
+                    ZoneData d = (ZoneData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(KeyNotesData))
+                {
+                    type = "keynote";
+                    KeyNotesData d = (KeyNotesData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(PackData))
+                {
+                    type = "pack";
+                    PackData d = (PackData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(CardPlayerPackData))
+                {
+                    type = "cardPlayerPack";
+                    CardPlayerPackData d = (CardPlayerPackData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(CardPlayerPairsPackData))
+                {
+                    type = "pairsPack";
+                    CardPlayerPairsPackData d = (CardPlayerPairsPackData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(ItemData))
+                {
+                    type = "item";
+                    ItemData d = (ItemData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(CardbackData))
+                {
+                    type = "cardback";
+                    CardbackData d = (CardbackData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(SkinData))
+                {
+                    type = "skin";
+                    SkinData d = (SkinData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(CorruptionPackData))
+                {
+                    type = "corruptionPack";
+                    CorruptionPackData d = (CorruptionPackData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(CinematicData))
+                {
+                    type = "cinematic";
+                    CinematicData d = (CinematicData)(object)data[a - 1];
+                    id = DataTextConvert.ToString(d);
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else if (data[a - 1].GetType() == typeof(TierRewardData))
+                {
+                    type = "tierReward";
+                    TierRewardData d = (TierRewardData)(object)data[a - 1];
+                    id = d.TierNum.ToString();
+                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
+                }
+                else
+                {
+                    Log.LogError("Unknown type while extracting data: " + data[a - 1].GetType());
+                    return;
+                }
+                if (a == 1)
+                    File.AppendAllText(Path.Combine(Paths.ConfigPath, "CHECKSUMS.txt"), "\n\n=================================================================================\n" + data.Length.ToString() + " " + type);
+                File.AppendAllText(Path.Combine(Paths.ConfigPath, "CHECKSUMS.txt"), "\n" + id + ": " + text);
+            }
+        }
+
+
     }
 }

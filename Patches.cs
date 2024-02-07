@@ -123,7 +123,8 @@ namespace Obeliskial_Essentials
                 ExtractData(Traverse.Create(Globals.Instance).Field("_CorruptionPackDataSource").GetValue<Dictionary<string, CorruptionPackData>>().Select(item => item.Value).ToArray());
                 ExtractData(Traverse.Create(Globals.Instance).Field("_Cinematics").GetValue<Dictionary<string, CinematicData>>().Select(item => item.Value).ToArray());
                 ExtractData(Traverse.Create(Globals.Instance).Field("_TierRewardDataSource").GetValue<Dictionary<int, TierRewardData>>().Select(item => item.Value).ToArray());
-                ExtractData(Traverse.Create(Globals.Instance).Field("_CardPlayerPairsPackDataSource").GetValue<Dictionary<string, CardPlayerPairsPackData>>().Select(item => item.Value).ToArray()); ExtractData(medsEventReplyDataText.Select(item => item.Value).ToArray());
+                ExtractData(Traverse.Create(Globals.Instance).Field("_CardPlayerPairsPackDataSource").GetValue<Dictionary<string, CardPlayerPairsPackData>>().Select(item => item.Value).ToArray());
+                ExtractData(medsEventReplyDataText.Select(item => item.Value).ToArray());
                 //Plugin.FullNodeDataExport();
                 medsExportJSON.Value = false; // turn off after exporting*/
                 LogInfo("OUR PRAYERS WERE ANSWERED");
@@ -1610,7 +1611,19 @@ namespace Obeliskial_Essentials
                 __instance.srList.Clear();
         }
 
-        
+        /*[HarmonyPrefix]
+        [HarmonyPatch(typeof(SaveManager), "SaveGame")]
+        public static void SaveGamePrefix()
+        {
+
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(SaveManager), "SaveGameTurn")]
+        public static void SaveGameTurnPrefix()
+        {
+
+        }*/
 
         // all of the below is just for testing
 
