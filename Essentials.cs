@@ -31,7 +31,7 @@ namespace Obeliskial_Essentials
     [BepInProcess("AcrossTheObelisk.exe")]
     public class Essentials : BaseUnityPlugin
     {
-        internal const int ModDate = 20240207;
+        internal const int ModDate = 20240215;
         private readonly Harmony harmony = new(PluginInfo.PLUGIN_GUID);
         internal static ManualLogSource Log;
 

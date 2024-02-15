@@ -1,3 +1,7 @@
+# 1.2.2
+
+Fixed references to Mac rather than Windows!
+
 # 1.2.1
 
 Developer Tools (F2): Calculate Checksums.
