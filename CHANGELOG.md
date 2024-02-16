@@ -1,3 +1,7 @@
+# 1.2.4
+
+Fixed the same issue as 1.2.3, but for gold/experience!
+
 # 1.2.3
 
 Fixed a vanilla (!) issue where no hellmodemob could bug card rewards.

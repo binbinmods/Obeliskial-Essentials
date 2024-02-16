@@ -1622,22 +1622,84 @@ namespace Obeliskial_Essentials
                 if (teamNPCAtO[index] != null && teamNPCAtO[index] != "")
                 {
                     NPCData npcData = Globals.Instance.GetNPC(teamNPCAtO[index]);
-                    if (npcData == null)
-                        return false; // do not run original method
-                    if ((UnityEngine.Object)npcData != (UnityEngine.Object)null && __instance.PlayerHasRequirement(Globals.Instance.GetRequirementData("_tier2")) && (UnityEngine.Object)npcData.UpgradedMob != (UnityEngine.Object)null)
-                        npcData = npcData.UpgradedMob;
-                    if ((UnityEngine.Object)npcData != (UnityEngine.Object)null && __instance.GetNgPlus() > 0 && npcData.NgPlusMob != null)
-                        npcData = npcData.NgPlusMob;
-                    if (npcData != null && MadnessManager.Instance.IsMadnessTraitActive("despair") && (UnityEngine.Object)npcData.HellModeMob != (UnityEngine.Object)null)
-                        npcData = npcData.HellModeMob;
-                    if ((UnityEngine.Object)npcData != (UnityEngine.Object)null && (UnityEngine.Object)npcData.TierReward != (UnityEngine.Object)null && npcData.TierReward.TierNum > num)
-                        num = npcData.TierReward.TierNum;
+                    if (npcData != null)
+                    {
+                        if ((UnityEngine.Object)npcData != (UnityEngine.Object)null && __instance.PlayerHasRequirement(Globals.Instance.GetRequirementData("_tier2")) && (UnityEngine.Object)npcData.UpgradedMob != (UnityEngine.Object)null)
+                            npcData = npcData.UpgradedMob;
+                        if ((UnityEngine.Object)npcData != (UnityEngine.Object)null && __instance.GetNgPlus() > 0 && npcData.NgPlusMob != null)
+                            npcData = npcData.NgPlusMob;
+                        if (npcData != null && MadnessManager.Instance.IsMadnessTraitActive("despair") && (UnityEngine.Object)npcData.HellModeMob != (UnityEngine.Object)null)
+                            npcData = npcData.HellModeMob;
+                        if ((UnityEngine.Object)npcData != (UnityEngine.Object)null && (UnityEngine.Object)npcData.TierReward != (UnityEngine.Object)null && npcData.TierReward.TierNum > num)
+                            num = npcData.TierReward.TierNum;
+                    }
                 }
             }
             __result = Globals.Instance.GetTierRewardData(num);
             return false; // do not run original method
         }
 
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(AtOManager), "GetGoldFromCombat")]
+        public static bool GetGoldFromCombatPrefix(ref int __result, ref AtOManager __instance)
+        {
+            int goldFromCombat = 0;
+            string[] teamNPCAtO = __instance.GetTeamNPC();
+            if (teamNPCAtO != null)
+            {
+                for (int index = 0; index < teamNPCAtO.Length; ++index)
+                {
+                    if (teamNPCAtO[index] != null && teamNPCAtO[index] != "")
+                    {
+                        NPCData npcData = Globals.Instance.GetNPC(teamNPCAtO[index]);
+                        if (npcData != null)
+                        {
+                            if ((UnityEngine.Object)npcData != (UnityEngine.Object)null && __instance.PlayerHasRequirement(Globals.Instance.GetRequirementData("_tier2")) && (UnityEngine.Object)npcData.UpgradedMob != (UnityEngine.Object)null)
+                                npcData = npcData.UpgradedMob;
+                            if ((UnityEngine.Object)npcData != (UnityEngine.Object)null && __instance.GetNgPlus() > 0 && npcData.NgPlusMob != null)
+                                npcData = npcData.NgPlusMob;
+                            if (npcData != null && MadnessManager.Instance.IsMadnessTraitActive("despair") && (UnityEngine.Object)npcData.HellModeMob != (UnityEngine.Object)null)
+                                npcData = npcData.HellModeMob;
+                            if ((UnityEngine.Object)npcData != (UnityEngine.Object)null && npcData.GoldReward > 0)
+                                goldFromCombat += npcData.GoldReward;
+                        }
+                    }
+                }
+            }
+            __result = goldFromCombat;
+            return false; // do not run original method
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(AtOManager), "GetExperienceFromCombat")]
+        public static bool GetExperienceFromCombatPrefix(ref int __result, ref AtOManager __instance)
+        {
+            int experienceFromCombat = 0;
+            string[] teamNPCAtO = __instance.GetTeamNPC();
+            if (teamNPCAtO != null)
+            {
+                for (int index = 0; index < teamNPCAtO.Length; ++index)
+                {
+                    if (teamNPCAtO[index] != null && teamNPCAtO[index] != "")
+                    {
+                        NPCData npcData = Globals.Instance.GetNPC(teamNPCAtO[index]);
+                        if (npcData != null)
+                        {
+                            if ((UnityEngine.Object)npcData != (UnityEngine.Object)null && __instance.PlayerHasRequirement(Globals.Instance.GetRequirementData("_tier2")) && (UnityEngine.Object)npcData.UpgradedMob != (UnityEngine.Object)null)
+                                npcData = npcData.UpgradedMob;
+                            if ((UnityEngine.Object)npcData != (UnityEngine.Object)null && __instance.GetNgPlus() > 0 && npcData.NgPlusMob != null)
+                                npcData = npcData.NgPlusMob;
+                            if (npcData != null && MadnessManager.Instance.IsMadnessTraitActive("despair") && (UnityEngine.Object)npcData.HellModeMob != (UnityEngine.Object)null)
+                                npcData = npcData.HellModeMob;
+                            if ((UnityEngine.Object)npcData != (UnityEngine.Object)null && npcData.ExperienceReward > 0)
+                                experienceFromCombat += npcData.ExperienceReward;
+                        }
+                    }
+                }
+            }
+            __result = experienceFromCombat;
+            return false; // do not run original method
+        }
         /*[HarmonyPrefix]
         [HarmonyPatch(typeof(SaveManager), "SaveGame")]
         public static void SaveGamePrefix()
