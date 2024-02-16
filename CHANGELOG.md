@@ -1,3 +1,7 @@
+# 1.2.3
+
+Fixed a vanilla (!) issue where no hellmodemob could bug card rewards.
+
 # 1.2.2
 
 Fixed references to Mac rather than Windows!
