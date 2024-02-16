@@ -1611,6 +1611,33 @@ namespace Obeliskial_Essentials
                 __instance.srList.Clear();
         }
 
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(AtOManager), "GetTeamNPCReward")]
+        public static bool GetTeamNPCRewardPrefix(ref TierRewardData __result, ref AtOManager __instance)
+        {
+            int num = 0;
+            string[] teamNPCAtO = __instance.GetTeamNPC();
+            for (int index = 0; index < teamNPCAtO.Length; ++index)
+            {
+                if (teamNPCAtO[index] != null && teamNPCAtO[index] != "")
+                {
+                    NPCData npcData = Globals.Instance.GetNPC(teamNPCAtO[index]);
+                    if (npcData == null)
+                        return false; // do not run original method
+                    if ((UnityEngine.Object)npcData != (UnityEngine.Object)null && __instance.PlayerHasRequirement(Globals.Instance.GetRequirementData("_tier2")) && (UnityEngine.Object)npcData.UpgradedMob != (UnityEngine.Object)null)
+                        npcData = npcData.UpgradedMob;
+                    if ((UnityEngine.Object)npcData != (UnityEngine.Object)null && __instance.GetNgPlus() > 0 && npcData.NgPlusMob != null)
+                        npcData = npcData.NgPlusMob;
+                    if (npcData != null && MadnessManager.Instance.IsMadnessTraitActive("despair") && (UnityEngine.Object)npcData.HellModeMob != (UnityEngine.Object)null)
+                        npcData = npcData.HellModeMob;
+                    if ((UnityEngine.Object)npcData != (UnityEngine.Object)null && (UnityEngine.Object)npcData.TierReward != (UnityEngine.Object)null && npcData.TierReward.TierNum > num)
+                        num = npcData.TierReward.TierNum;
+                }
+            }
+            __result = Globals.Instance.GetTierRewardData(num);
+            return false; // do not run original method
+        }
+
         /*[HarmonyPrefix]
         [HarmonyPatch(typeof(SaveManager), "SaveGame")]
         public static void SaveGamePrefix()
