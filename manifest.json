@@ -1,6 +1,6 @@
 {
     "name": "Obeliskial_Essentials",
-    "version_number": "1.2.4",
+    "version_number": "1.2.5",
     "website_url": "https://github.com/stiffmeds/Obeliskial-Essentials",
     "description": "Essential reference classes and methods for Across the Obelisk modding.",
     "dependencies": [

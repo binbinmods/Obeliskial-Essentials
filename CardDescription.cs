@@ -269,18 +269,12 @@ namespace Obeliskial_Essentials
                     }
                     if (__instance.DispelAuras > 0)
                     {
-                        if (__instance.TargetSide == Enums.CardTargetSide.Enemy)
-                            stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsPurge"), (object)__instance.DispelAuras));
-                        else
-                            stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsDispel"), (object)__instance.DispelAuras));
+                        stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsPurge"), (object)medsColorTextArray("aura", __instance.DispelAuras.ToString())));
                         stringBuilder1.Append("\n");
                     }
-                    if (__instance.DispelAuras == -1)
+                    else if (__instance.DispelAuras == -1)
                     {
-                        if (__instance.TargetSide == Enums.CardTargetSide.Enemy)
-                            stringBuilder1.Append(Texts.Instance.GetText("cardsPurgeAll"));
-                        else
-                            stringBuilder1.Append(Texts.Instance.GetText("cardsDispelAll"));
+                        stringBuilder1.Append(Texts.Instance.GetText("cardsPurgeAll"));
                         stringBuilder1.Append("\n");
                     }
                     num1 = 0;
@@ -328,18 +322,12 @@ namespace Obeliskial_Essentials
                         }
                         if (__instance.HealCurses > 0)
                         {
-                            if (__instance.TargetSide == Enums.CardTargetSide.Enemy)
-                                stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsPurge"), (object)medsColorTextArray("aura", medsNumFormatItem(__instance.HealCurses))));
-                            else
-                                stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsDispel"), (object)medsColorTextArray("curse", medsNumFormatItem(__instance.HealCurses))));
+                            stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsDispel"), (object)medsColorTextArray("curse", __instance.HealCurses.ToString())));
                             stringBuilder1.Append("\n");
                         }
                         if (__instance.HealCurses == -1)
                         {
-                            if (__instance.TargetSide == Enums.CardTargetSide.Enemy)
-                                stringBuilder1.Append(Texts.Instance.GetText("cardsPurgeAll"));
-                            else
-                                stringBuilder1.Append(Texts.Instance.GetText("cardsDispelAll"));
+                            stringBuilder1.Append(Texts.Instance.GetText("cardsDispelAll"));
                             stringBuilder1.Append("\n");
                         }
                         if ((UnityEngine.Object)__instance.HealAuraCurseSelf != (UnityEngine.Object)null)

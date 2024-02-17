@@ -1,3 +1,7 @@
+# 1.2.5
+
+Card description fix for Tabula Rasa.
+
 # 1.2.4
 
 Fixed the same issue as 1.2.3, but for gold/experience!
