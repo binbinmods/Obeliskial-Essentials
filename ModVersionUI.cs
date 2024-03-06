@@ -256,6 +256,19 @@ namespace Obeliskial_Essentials
             inputStartingNode.Component.SetTextWithoutNotify("sen_0");
             UIFactory.SetLayoutElement(inputStartingNode.Component.gameObject, minWidth: 70, minHeight: 30);
 
+            // Weekly 
+            // export weekly data
+            // force weekly week
+            /* export cards
+            GameObject hWeekly = UIFactory.CreateUIObject("hWeekly", devToolsScrollContent);
+            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(hWeekly, false, false, true, true, 5, 0, 0, 0, 0, TextAnchor.MiddleLeft);
+            Text labelWeeklyWeek = UIFactory.CreateLabel(hWeekly, "labelWeeklyWeek", "Starting node:");
+            UIFactory.SetLayoutElement(labelWeeklyWeek.gameObject, minWidth: 60, minHeight: 30);
+            inputStartingNode = UIFactory.CreateInputField(hWeekly, "inputStartingNode", "sen_0");
+            inputStartingNode.Component.SetTextWithoutNotify("sen_0");
+            UIFactory.SetLayoutElement(inputStartingNode.Component.gameObject, minWidth: 70, minHeight: 30);
+            */
+
             // Card Image Export
             ButtonRef btnCardImageExport = UIFactory.CreateButton(devToolsScrollContent, "btnCardImageExport", "Card Image Export");
             UIFactory.SetLayoutElement(btnCardImageExport.Component.gameObject, minWidth: 100, minHeight: 30);
@@ -405,6 +418,20 @@ namespace Obeliskial_Essentials
                     btnCalculateChecksums.ButtonText.text = "Done! config\\CHECKSUMS.txt";
                 }
                 catch (Exception e) { LogDebug("Failed to calculate checksums: " + e.Message); };
+            });
+
+            // Calculate Checksums (FALO ROWI EDITION)
+            ButtonRef btnCalculateChecksumsFaloRowi = UIFactory.CreateButton(devToolsScrollContent, "btnCalculateChecksumsFaloRowi", "Checksums (FALO ROWI EDITION)");
+            UIFactory.SetLayoutElement(btnCalculateChecksumsFaloRowi.Component.gameObject, minWidth: 100, minHeight: 30);
+            btnCalculateChecksumsFaloRowi.Component.onClick.AddListener(delegate
+            {
+                try
+                {
+                    btnCalculateChecksumsFaloRowi.ButtonText.text = "Please wait...";
+                    CalculateChecksums(true);
+                    btnCalculateChecksumsFaloRowi.ButtonText.text = "Done! config\\CHECKSUMS" + (GameManager.Instance != null && GameManager.Instance.IsMultiplayer() ? "_MP" : "") + ".txt";
+                }
+                catch (Exception e) { LogDebug("Failed to calculate checksums (FALO ROWI EDITION): " + e.Message); };
             });
 
             // Disable AtO Buttons

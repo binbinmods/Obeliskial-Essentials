@@ -1,3 +1,7 @@
+# 1.2.6
+
+New checksum method and Falo Rowi-specific checksums.
+
 # 1.2.5
 
 Card description fix for Tabula Rasa.

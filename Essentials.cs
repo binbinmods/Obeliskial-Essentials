@@ -10,14 +10,9 @@ using TMPro;
 using static Enums;
 using Steamworks.Data;
 using Steamworks;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System;
-using UnityEngine.UIElements;
-using UnityEngine.UI;
-using static Unity.Audio.Handle;
 using System.Text;
-using Steamworks.Ugc;
 
 
 /*
@@ -31,7 +26,7 @@ namespace Obeliskial_Essentials
     [BepInProcess("AcrossTheObelisk.exe")]
     public class Essentials : BaseUnityPlugin
     {
-        internal const int ModDate = 20240218;
+        internal const int ModDate = 20240306;
         private readonly Harmony harmony = new(PluginInfo.PLUGIN_GUID);
         internal static ManualLogSource Log;
 
@@ -68,6 +63,7 @@ namespace Obeliskial_Essentials
         public static string medsCloneFour = "";
         public static Dictionary<string, List<string>> medsBaseCardsListSearch = new();
         public static List<string> medsF2UIOpen = new();
+        public static List<string> medsCheckSummary = new();
         private void Awake()
         {
             Log = Logger;
@@ -1715,41 +1711,57 @@ namespace Obeliskial_Essentials
                     LogInfo(card.CardName + (card.CardUpgraded == CardUpgraded.Rare ? " (Corrupted)" : (card.CardUpgraded == CardUpgraded.A ? " (Blue)" : (card.CardUpgraded == CardUpgraded.B ? " (Yellow)" : ""))) + " [" + card.Id + "]");
             }
         }
-        internal static void CalculateChecksums()
+        internal static void CalculateChecksums(bool _FaloRowi = false)
         {
             LogInfo("CALCULATING CHECKSUMS");
-            File.WriteAllText(Path.Combine(Paths.ConfigPath, "CHECKSUMS.txt"), "CHECKSUMS");
-
-
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_SubClassSource").GetValue<Dictionary<string, SubClassData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_TraitsSource").GetValue<Dictionary<string, TraitData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_CardsSource").GetValue<Dictionary<string, CardData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_PerksSource").GetValue<Dictionary<string, PerkData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_AurasCursesSource").GetValue<Dictionary<string, AuraCurseData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_NPCsSource").GetValue<Dictionary<string, NPCData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_NodeDataSource").GetValue<Dictionary<string, NodeData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_LootDataSource").GetValue<Dictionary<string, LootData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_PerksNodesSource").GetValue<Dictionary<string, PerkNodeData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_WeeklyDataSource").GetValue<Dictionary<string, ChallengeData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_ChallengeTraitsSource").GetValue<Dictionary<string, ChallengeTrait>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_CombatDataSource").GetValue<Dictionary<string, CombatData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_Events").GetValue<Dictionary<string, EventData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_Requirements").GetValue<Dictionary<string, EventRequirementData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_ZoneDataSource").GetValue<Dictionary<string, ZoneData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Globals.Instance.KeyNotes.Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_PackDataSource").GetValue<Dictionary<string, PackData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_CardPlayerPackDataSource").GetValue<Dictionary<string, CardPlayerPackData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_ItemDataSource").GetValue<Dictionary<string, ItemData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_CardbackDataSource").GetValue<Dictionary<string, CardbackData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_SkinDataSource").GetValue<Dictionary<string, SkinData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_CorruptionPackDataSource").GetValue<Dictionary<string, CorruptionPackData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_Cinematics").GetValue<Dictionary<string, CinematicData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_TierRewardDataSource").GetValue<Dictionary<int, TierRewardData>>().Select(item => item.Value).ToArray());
-            ActualChecksums(Traverse.Create(Globals.Instance).Field("_CardPlayerPairsPackDataSource").GetValue<Dictionary<string, CardPlayerPairsPackData>>().Select(item => item.Value).ToArray());
+            medsCheckSummary = new();
+            string sPath = Path.Combine(Paths.ConfigPath, "CHECKSUMS" + (GameManager.Instance != null && GameManager.Instance.IsMultiplayer() ? "_MP" : "") + ".txt");
+            List<string> checksums = new(){
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_SubClassSource").GetValue<Dictionary<string, SubClassData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_TraitsSource").GetValue<Dictionary<string, TraitData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_CardsSource").GetValue<Dictionary<string, CardData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_PerksSource").GetValue<Dictionary<string, PerkData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_AurasCursesSource").GetValue<Dictionary<string, AuraCurseData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_NPCsSource").GetValue<Dictionary<string, NPCData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_NodeDataSource").GetValue<Dictionary<string, NodeData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_LootDataSource").GetValue<Dictionary<string, LootData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_PerksNodesSource").GetValue<Dictionary<string, PerkNodeData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_WeeklyDataSource").GetValue<Dictionary<string, ChallengeData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_ChallengeTraitsSource").GetValue<Dictionary<string, ChallengeTrait>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_CombatDataSource").GetValue<Dictionary<string, CombatData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_Events").GetValue<Dictionary<string, EventData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_Requirements").GetValue<Dictionary<string, EventRequirementData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_ZoneDataSource").GetValue<Dictionary<string, ZoneData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Globals.Instance.KeyNotes.Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_PackDataSource").GetValue<Dictionary<string, PackData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_CardPlayerPackDataSource").GetValue<Dictionary<string, CardPlayerPackData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_ItemDataSource").GetValue<Dictionary<string, ItemData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_CardbackDataSource").GetValue<Dictionary<string, CardbackData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_SkinDataSource").GetValue<Dictionary<string, SkinData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_CorruptionPackDataSource").GetValue<Dictionary<string, CorruptionPackData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_Cinematics").GetValue<Dictionary<string, CinematicData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_TierRewardDataSource").GetValue<Dictionary<int, TierRewardData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_CardPlayerPairsPackDataSource").GetValue<Dictionary<string, CardPlayerPairsPackData>>().Select(item => item.Value).ToArray())
+            };
+            File.WriteAllText(sPath, "CHECKSUMS\nSUMMARY:\n" + String.Join("\n", medsCheckSummary) + "\n\n=================================================================================\n" + (medsVersionText.Split("\n").Length).ToString() + " mods with overall checksum " + medsVersionText.GetHashCode().ToString() + "\n" + medsVersionText);
+            foreach (string _checksum in checksums)
+                File.AppendAllText(sPath, _checksum);
+            if (_FaloRowi)
+            {
+                File.AppendAllText(sPath, "\n\nArchitect's Ring CARD\n" + JsonUtility.ToJson(DataTextConvert.ToText(Globals.Instance.GetCardData("architectsring"))));
+                File.AppendAllText(sPath, "\n\nArchitect's Ring ITEM\n" + JsonUtility.ToJson(DataTextConvert.ToText(Globals.Instance.GetItemData("architectsring"))));
+                File.AppendAllText(sPath, "\n\nSacred Axe CARD\n" + JsonUtility.ToJson(DataTextConvert.ToText(Globals.Instance.GetCardData("sacredaxe"))));
+                File.AppendAllText(sPath, "\n\nSacred Axe ITEM\n" + JsonUtility.ToJson(DataTextConvert.ToText(Globals.Instance.GetItemData("sacredaxe"))));
+                File.AppendAllText(sPath, "\n\nTurban CARD\n" + JsonUtility.ToJson(DataTextConvert.ToText(Globals.Instance.GetCardData("turban"))));
+                File.AppendAllText(sPath, "\n\nTurban ITEM\n" + JsonUtility.ToJson(DataTextConvert.ToText(Globals.Instance.GetItemData("turban"))));
+                File.AppendAllText(sPath, "\n\nTurban (rare) CARD\n" + JsonUtility.ToJson(DataTextConvert.ToText(Globals.Instance.GetCardData("turbanrare"))));
+                File.AppendAllText(sPath, "\n\nTurban (rare) ITEM\n" + JsonUtility.ToJson(DataTextConvert.ToText(Globals.Instance.GetItemData("turbanrare"))));
+            }
         }
-        public static void ActualChecksums<T>(T[] data)
+        public static string ActualChecksums<T>(T[] data)
         {
             string type = "";
+            string result = "";
             for (int a = 1; a <= data.Length; a++)
             {
                 string id = "";
@@ -1939,12 +1951,13 @@ namespace Obeliskial_Essentials
                 else
                 {
                     Log.LogError("Unknown type while extracting data: " + data[a - 1].GetType());
-                    return;
+                    return result;
                 }
-                if (a == 1)
-                    File.AppendAllText(Path.Combine(Paths.ConfigPath, "CHECKSUMS.txt"), "\n\n=================================================================================\n" + data.Length.ToString() + " " + type);
-                File.AppendAllText(Path.Combine(Paths.ConfigPath, "CHECKSUMS.txt"), "\n" + id + ": " + text);
+                result += "\n" + id + ": " + text;
             }
+            medsCheckSummary.Add(type + " (" + data.Length.ToString() + "): " + result.GetHashCode().ToString());
+            result = "\n\n=================================================================================\n" + data.Length.ToString() + " " + type + " with overall checksum " + result.GetHashCode().ToString() + result;
+            return result;
         }
 
 
