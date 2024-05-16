@@ -1,3 +1,7 @@
+# 1.3.0
+
+Initial update for AtO v1.4.
+
 # 1.2.6
 
 New checksum method and Falo Rowi-specific checksums.
