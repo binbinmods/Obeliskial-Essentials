@@ -582,7 +582,7 @@ namespace Obeliskial_Essentials
         {
             SubClassDataText text = new();
             text.ID = data.Id;
-            text.ActionSound = ToString(data.ActionSound);
+            text.ActionSound = ToString(data.ActionSound); // surprised this didn't break in 1.4.0?
             text.Cards = ToString(data.Cards);
             text.ChallengePack0 = ToString(data.ChallengePack0);
             text.ChallengePack1 = ToString(data.ChallengePack1);
@@ -596,14 +596,14 @@ namespace Obeliskial_Essentials
             text.CharacterName = data.CharacterName;
             text.Energy = data.Energy;
             text.EnergyTurn = data.EnergyTurn;
-            text.ExpansionCharacter = data.ExpansionCharacter;
+            // removed in 1.4.0     text.ExpansionCharacter = data.ExpansionCharacter;
             text.Female = data.Female;
             text.FluffOffsetX = data.FluffOffsetX;
             text.FluffOffsetY = data.FluffOffsetY;
             //text.GameObjectAnimated = ToString(data.GameObjectAnimated);
             text.HeroClass = ToString(data.HeroClass);
             text.HeroClassSecondary = ToString(data.HeroClassSecondary);
-            text.HitSound = ToString(data.HitSound);
+            text.HitSound = ToString(data.GetHitSound());
             text.HP = data.Hp;
             text.MaxHP = data.MaxHp;
             text.OrderInList = data.OrderInList;
@@ -849,7 +849,7 @@ namespace Obeliskial_Essentials
             text.GameObjectAnimated = ToString(data.GameObjectAnimated);
             text.GoldReward = data.GoldReward;
             text.HellModeMob = ToString(data.HellModeMob);
-            text.HitSound = ToString(data.HitSound);
+            //#TODO #BUG needs update for 1.4.0     text.HitSound = ToString(data.HitSound);
             text.HP = data.Hp;
             text.ID = data.Id;
             text.IsBoss = data.IsBoss;

@@ -261,6 +261,8 @@ namespace Obeliskial_Essentials
             Traverse.Create(HeroSelectionManager.Instance).Field("boxHero").SetValue(boxHero);
             HeroSelectionManager.Instance.ShowDrag(false, Vector3.zero);
             LogDebug("about to begin looping through subclasses");
+            int length = 5;
+            int num1 = 5;
             foreach (KeyValuePair<string, SubClassData> keyValuePair in Globals.Instance.SubClass)
             {
                 LogDebug("kvp: " + keyValuePair.Key);
@@ -269,12 +271,12 @@ namespace Obeliskial_Essentials
                     if (!nonHistorySubclassDictionary.ContainsKey(keyValuePair.Key))
                         nonHistorySubclassDictionary.Add(keyValuePair.Key, Globals.Instance.SubClass[keyValuePair.Key]);
                 }
-                else if (keyValuePair.Value.ExpansionCharacter)
+                else if (keyValuePair.Value.IsMultiClass())
                 {
                     string key = "dlc";
                     // wouldn't everything just be SO much easier if the subclassdictionary was composed of string, List<string> pairs instead?
                     if (!subclassDictionary.ContainsKey(key))
-                        subclassDictionary.Add(key, new SubClassData[4]);
+                        subclassDictionary.Add(key, new SubClassData[length]);
                     if (Globals.Instance.SubClass[keyValuePair.Key].OrderInList >= subclassDictionary[key].Length)
                     {
                         SubClassData[] tempSCD = new SubClassData[Globals.Instance.SubClass[keyValuePair.Key].OrderInList + 1];
@@ -292,7 +294,7 @@ namespace Obeliskial_Essentials
                 {
                     string key = Enum.GetName(typeof(Enums.HeroClass), (object)Globals.Instance.SubClass[keyValuePair.Key].HeroClass).ToLower().Replace(" ", "");
                     if (!subclassDictionary.ContainsKey(key))
-                        subclassDictionary.Add(key, new SubClassData[4]);
+                        subclassDictionary.Add(key, new SubClassData[length]);
                     if (Globals.Instance.SubClass[keyValuePair.Key].OrderInList >= subclassDictionary[key].Length)
                     {
                         SubClassData[] tempSCD = new SubClassData[Globals.Instance.SubClass[keyValuePair.Key].OrderInList + 1];
@@ -327,10 +329,13 @@ namespace Obeliskial_Essentials
             HeroSelectionManager.Instance._ClassMages.color = Functions.HexToColor(Globals.Instance.ClassColor["mage"]);
             HeroSelectionManager.Instance._ClassScouts.color = Functions.HexToColor(Globals.Instance.ClassColor["scout"]);
             HeroSelectionManager.Instance._ClassMagicKnights.color = Functions.HexToColor(Globals.Instance.ClassColor["magicknight"]);
+            float num2 = 0.95f;
+            float num3 = 0.55f;
+            float num4 = 1.75f;
+            float y = -0.65f;
             LogDebug("about to begin looping through subclassDictionary");
             for (int index1 = 0; index1 < 5; ++index1)
             {
-                int num1 = 4; // loop through ALL entries in each subclass, not just 4 :D
                 switch (index1)
                 {
                     case 0:
@@ -388,7 +393,8 @@ namespace Obeliskial_Essentials
                     if (!((UnityEngine.Object)_subclassdata == (UnityEngine.Object)null))
                     {
                         GameObject gameObject2 = UnityEngine.Object.Instantiate<GameObject>(HeroSelectionManager.Instance.heroSelectionPrefab, Vector3.zero, Quaternion.identity, gameObject1.transform);
-                        gameObject2.transform.localPosition = new Vector3((float)(1.4800000238418579 * (double)index2), -0.65f, 0.0f);
+                        gameObject2.transform.localPosition = new Vector3(num3 + num4 * (float)index2, y, 0.0f);
+                        gameObject2.transform.localScale = new Vector3(num2, num2, 1f);
                         gameObject2.name = _subclassdata.SubClassName.ToLower();
                         HeroSelection component = gameObject2.transform.Find("Portrait").transform.GetComponent<HeroSelection>();
                         HeroSelectionManager.Instance.heroSelectionDictionary.Add(gameObject2.name, component);
@@ -405,7 +411,7 @@ namespace Obeliskial_Essentials
                                 component.blocked = false;
                         }
                         component.SetSubclass(_subclassdata);
-                        component.SetSprite(_subclassdata.SpriteSpeed, _subclassdata.SpriteBorderSmall, _subclassdata.SpriteBorderLocked);
+                        //component.SetSprite(_subclassdata.SpriteSpeed, _subclassdata.SpriteBorderSmall, _subclassdata.SpriteBorderLocked);
                         string activeSkin = PlayerManager.Instance.GetActiveSkin(_subclassdata.Id);
                         if (activeSkin != "")
                         {
@@ -420,6 +426,8 @@ namespace Obeliskial_Essentials
                             // end
                             component.SetSprite(skinData.SpritePortrait, skinData.SpriteSilueta, _subclassdata.SpriteBorderLocked);
                         }
+                        else
+                            component.SetSprite(_subclassdata.SpriteSpeed, _subclassdata.SpriteBorderSmall, _subclassdata.SpriteBorderLocked);
                         component.SetName(_subclassdata.CharacterName);
                         component.Init();
                         if ((UnityEngine.Object)_subclassdata.SpriteBorderLocked != (UnityEngine.Object)null && _subclassdata.SpriteBorderLocked.name == "regularBorderSmall")
@@ -432,20 +440,25 @@ namespace Obeliskial_Essentials
                 }
             }
             LogDebug("FINISHED looping through subclassDictionary");
-            foreach (KeyValuePair<string, SubClassData> nonHistorySubclass in nonHistorySubclassDictionary)
+
+
+            if (GameManager.Instance.IsMultiplayer() && GameManager.Instance.IsLoadingGame())
             {
-                SubClassData _subclassdata = nonHistorySubclass.Value;
-                GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(HeroSelectionManager.Instance.heroSelectionPrefab, Vector3.zero, Quaternion.identity);
-                gameObject.transform.localPosition = new Vector3(-10f, -10f, -100f);
-                gameObject.name = _subclassdata.SubClassName.ToLower();
-                HeroSelection component = gameObject.transform.Find("Portrait").transform.GetComponent<HeroSelection>();
-                HeroSelectionManager.Instance.heroSelectionDictionary.Add(gameObject.name, component);
-                component.blocked = true;
-                component.SetSubclass(_subclassdata);
-                component.SetSprite(_subclassdata.SpriteSpeed, _subclassdata.SpriteBorderSmall, _subclassdata.SpriteBorderLocked);
-                component.SetName(_subclassdata.CharacterName);
-                component.Init();
-                SubclassByName.Add(_subclassdata.Id, _subclassdata.SubClassName);
+                foreach (KeyValuePair<string, SubClassData> nonHistorySubclass in nonHistorySubclassDictionary)
+                {
+                    SubClassData _subclassdata = nonHistorySubclass.Value;
+                    GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(HeroSelectionManager.Instance.heroSelectionPrefab, Vector3.zero, Quaternion.identity);
+                    gameObject.transform.localPosition = new Vector3(-10f, -10f, 100f);
+                    gameObject.name = _subclassdata.SubClassName.ToLower();
+                    HeroSelection component = gameObject.transform.Find("Portrait").transform.GetComponent<HeroSelection>();
+                    HeroSelectionManager.Instance.heroSelectionDictionary.Add(gameObject.name, component);
+                    component.blocked = true;
+                    component.SetSubclass(_subclassdata);
+                    component.SetSprite(_subclassdata.SpriteSpeed, _subclassdata.SpriteBorderSmall, _subclassdata.SpriteBorderLocked);
+                    component.SetName(_subclassdata.CharacterName);
+                    component.Init();
+                    SubclassByName.Add(_subclassdata.Id, _subclassdata.SubClassName);
+                }
             }
             Traverse.Create(HeroSelectionManager.Instance).Field("SubclassByName").SetValue(SubclassByName);
             if (!GameManager.Instance.IsObeliskChallenge() && AtOManager.Instance.IsFirstGame() && !GameManager.Instance.IsMultiplayer())
@@ -502,11 +515,11 @@ namespace Obeliskial_Essentials
                             }
                             else if (SaveManager.PrefsHasKey("madnessLevelCoop") && SaveManager.PrefsHasKey("madnessCorruptorsCoop"))
                             {
-                                int num2 = SaveManager.LoadPrefsInt("madnessLevelCoop");
+                                int num5 = SaveManager.LoadPrefsInt("madnessLevelCoop");
                                 string str = SaveManager.LoadPrefsString("madnessCorruptorsCoop");
-                                if (PlayerManager.Instance.NgLevel >= num2)
+                                if (PlayerManager.Instance.NgLevel >= num5)
                                 {
-                                    ngValueMaster = ngValue = num2;
+                                    ngValueMaster = ngValue = num5;
                                     if (str != "")
                                         ngCorruptors = str;
                                 }
@@ -524,11 +537,11 @@ namespace Obeliskial_Essentials
                     }
                     else if (SaveManager.PrefsHasKey("madnessLevel") && SaveManager.PrefsHasKey("madnessCorruptors"))
                     {
-                        int num3 = SaveManager.LoadPrefsInt("madnessLevel");
+                        int num6 = SaveManager.LoadPrefsInt("madnessLevel");
                         string str = SaveManager.LoadPrefsString("madnessCorruptors");
-                        if (PlayerManager.Instance.NgLevel >= num3)
+                        if (PlayerManager.Instance.NgLevel >= num6)
                         {
-                            ngValueMaster = ngValue = num3;
+                            ngValueMaster = ngValue = num6;
                             if (str != "")
                                 ngCorruptors = str;
                         }
@@ -559,8 +572,8 @@ namespace Obeliskial_Essentials
                             }
                             else if (SaveManager.PrefsHasKey("obeliskMadnessCoop"))
                             {
-                                int num4 = SaveManager.LoadPrefsInt("obeliskMadnessCoop");
-                                obeliskMadnessValue = PlayerManager.Instance.ObeliskMadnessLevel < num4 ? (obeliskMadnessValueMaster = 0) : (obeliskMadnessValueMaster = num4);
+                                int num7 = SaveManager.LoadPrefsInt("obeliskMadnessCoop");
+                                obeliskMadnessValue = PlayerManager.Instance.ObeliskMadnessLevel < num7 ? (obeliskMadnessValueMaster = 0) : (obeliskMadnessValueMaster = num7);
                                 Traverse.Create(HeroSelectionManager.Instance).Field("obeliskMadnessValue").SetValue(obeliskMadnessValue);
                                 Traverse.Create(HeroSelectionManager.Instance).Field("obeliskMadnessValueMaster").SetValue(obeliskMadnessValueMaster);
                                 HeroSelectionManager.Instance.SetObeliskMadnessLevel();
@@ -569,8 +582,8 @@ namespace Obeliskial_Essentials
                     }
                     else if (SaveManager.PrefsHasKey("obeliskMadness"))
                     {
-                        int num5 = SaveManager.LoadPrefsInt("obeliskMadness");
-                        obeliskMadnessValue = PlayerManager.Instance.ObeliskMadnessLevel < num5 ? (obeliskMadnessValueMaster = 0) : (obeliskMadnessValueMaster = num5);
+                        int num8 = SaveManager.LoadPrefsInt("obeliskMadness");
+                        obeliskMadnessValue = PlayerManager.Instance.ObeliskMadnessLevel < num8 ? (obeliskMadnessValueMaster = 0) : (obeliskMadnessValueMaster = num8);
                         Traverse.Create(HeroSelectionManager.Instance).Field("obeliskMadnessValue").SetValue(obeliskMadnessValue);
                         Traverse.Create(HeroSelectionManager.Instance).Field("obeliskMadnessValueMaster").SetValue(obeliskMadnessValueMaster);
                         HeroSelectionManager.Instance.SetObeliskMadnessLevel();
@@ -1836,6 +1849,22 @@ namespace Obeliskial_Essentials
             Log.LogDebug("GetMapNodesPrefix, worldtransform children: " + __instance.worldTransform.childCount);
 
         }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(TraitRollOver), "OnMouseEnter")]
+        public static void TraitRollOverOnMouseEnter()
+        {
+            Log.LogDebug("TrailRollOver OnMouseEnter Prefix");
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(TraitRollOver), "OnMouseEnter")]
+        public static void TraitRollOverOnMouseEnter(ref TraitRollOver __instance)
+        {
+            Log.LogDebug("TrailRollOver OnMouseEnter Prefix");
+            //if (__instance.td)
+        }
+
 
         /*
         [HarmonyPrefix]
