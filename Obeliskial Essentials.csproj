@@ -4,22 +4,81 @@
         <TargetFramework>netstandard2.1</TargetFramework>
         <RootNamespace>Obeliskial_Essentials</RootNamespace>
         <AssemblyName>com.stiffmeds.obeliskialessentials</AssemblyName>
-        <Product>Obeliskial Essentials</Product>
+        <Product>Obeliskial_Essentials</Product>
         <Description>Essential reference classes and methods for Across the Obelisk modding.</Description>
-        <Version>1.3.0</Version>
+        <Version>1.4.1</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <RunPostBuildEvent>Always</RunPostBuildEvent>
-	    <Title>Obeliskial Essentials</Title>
+	    <Title>Obeliskial_Essentials</Title>
     </PropertyGroup>
 
 	<Choose>
 		<When Condition="($(OS) == 'Unix' OR $(OS) == 'OSX') AND $(GamePath) == ''">
 			<PropertyGroup>
 				<GamePath Condition="!Exists('$(GamePath)')">$(HOME)/.steam/steam/steamapps/common/Across the Obelisk</GamePath>
-				<GamePath Condition="!Exists('$(GamePath)')">$(HOME)/Library/Application Support/Steam/steamapps/common/Across the Obelisk/Contents/MacOS</GamePath>
+				<GamePath Condition="!Exists('$(GamePath)')">$(HOME)/Library/Application Support/Steam/steamapps/common/Across the Obelisk</GamePath>
 			</PropertyGroup>
+
+			<ItemGroup>
+				<PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
+				<PackageReference Include="BepInEx.Core" Version="5.*" />
+				<PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
+				<PackageReference Include="UnityEngine.Modules" Version="2022.2.13" IncludeAssets="compile" />
+				<PackageReference Include="UniverseLib.Mono" Version="1.5.1" />
+			</ItemGroup>
+		
+			<ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
+				<PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
+			</ItemGroup>
+			
+			<ItemGroup>
+				<Reference Include="Assembly-CSharp">
+					<HintPath>$(GamePath)/Contents/Resources/Data/Managed/Assembly-CSharp.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+				<Reference Include="0Harmony">
+					<HintPath>$(GamePath)/BepInEx/core/0Harmony.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+				<Reference Include="BepInEx">
+					<HintPath>$(GamePath)/BepInEx/core/BepInEx.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+				<Reference Include="Facepunch.Steamworks.Win64">
+					<HintPath>../!libs/Facepunch.Steamworks.Win64.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+				<Reference Include="PhotonRealtime">
+					<HintPath>$(GamePath)/Contents/Resources/Data/Managed/PhotonRealtime.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+				<Reference Include="PhotonUnityNetworking">
+					<HintPath>$(GamePath)/Contents/Resources/Data/Managed/PhotonUnityNetworking.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+				<Reference Include="Unity.InputSystem">
+					<HintPath>$(GamePath)/Contents/Resources/Data/Managed/Unity.InputSystem.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+				<Reference Include="Unity.TextMeshPro">
+					<HintPath>$(GamePath)/Contents/Resources/Data/Managed/Unity.TextMeshPro.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+				<Reference Include="UnityEngine">
+					<HintPath>$(GamePath)/Contents/Resources/Data/Managed/UnityEngine.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+				<Reference Include="UnityEngine.InputModule">
+					<HintPath>$(GamePath)/Contents/Resources/Data/Managed/UnityEngine.InputModule.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+				<Reference Include="UnityEngine.UI">
+					<HintPath>$(GamePath)/Contents/Resources/Data/Managed/UnityEngine.UI.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+			</ItemGroup>
 		</When>
 		<When Condition="($(OS) == 'Windows_NT') AND $(GamePath) == ''">
 			<PropertyGroup>
@@ -30,67 +89,70 @@
 				<GamePath Condition="!Exists('$(GamePath)')">C:\Program Files (x86)\Steam\steamapps\common\Across the Obelisk</GamePath>
 				<GamePath Condition="!Exists('$(GamePath)')">D:\Steam Games\steamapps\common\Across the Obelisk</GamePath>
 			</PropertyGroup>
+			
+			<ItemGroup>
+				<PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
+				<PackageReference Include="BepInEx.Core" Version="5.*" />
+				<PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
+				<PackageReference Include="UnityEngine.Modules" Version="2022.2.13" IncludeAssets="compile" />
+				<PackageReference Include="UniverseLib.Mono" Version="1.5.1" />
+			</ItemGroup>
+		
+			<ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
+				<PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
+			</ItemGroup>
+		
+			<ItemGroup>
+				<Reference Include="Assembly-CSharp">
+					<HintPath>$(GamePath)\AcrossTheObelisk_Data\Managed\Assembly-CSharp.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+				<Reference Include="0Harmony">
+					<HintPath>$(GamePath)\BepInEx\core\0Harmony.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+				<Reference Include="BepInEx">
+					<HintPath>$(GamePath)\BepInEx\core\BepInEx.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+				<Reference Include="Facepunch.Steamworks.Win64">
+					<HintPath>$(GamePath)\AcrossTheObelisk_Data\Managed\Facepunch.Steamworks.Win64.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+				<Reference Include="PhotonRealtime">
+					<HintPath>$(GamePath)\AcrossTheObelisk_Data\Managed\PhotonRealtime.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+				<Reference Include="PhotonUnityNetworking">
+					<HintPath>$(GamePath)\AcrossTheObelisk_Data\Managed\PhotonUnityNetworking.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+				<Reference Include="Unity.InputSystem">
+					<HintPath>$(GamePath)\AcrossTheObelisk_Data\Managed\Unity.InputSystem.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+				<Reference Include="Unity.TextMeshPro">
+					<HintPath>$(GamePath)\AcrossTheObelisk_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+				<Reference Include="UnityEngine">
+					<HintPath>$(GamePath)\AcrossTheObelisk_Data\Managed\UnityEngine.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+				<Reference Include="UnityEngine.InputModule">
+					<HintPath>$(GamePath)\AcrossTheObelisk_Data\Managed\UnityEngine.InputModule.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+				<Reference Include="UnityEngine.UI">
+					<HintPath>$(GamePath)\AcrossTheObelisk_Data\Managed\UnityEngine.UI.dll</HintPath>
+					<Private>False</Private>
+				</Reference>
+			</ItemGroup>
+						
 		</When>
 	</Choose>
 	
-    <ItemGroup>
-        <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
-        <PackageReference Include="BepInEx.Core" Version="5.*" />
-        <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
-        <PackageReference Include="UnityEngine.Modules" Version="2022.2.13" IncludeAssets="compile" />
-	    <PackageReference Include="UniverseLib.Mono" Version="1.5.1" />
-    </ItemGroup>
-  
-    <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
-        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
-    </ItemGroup>
-  
-    <ItemGroup>
-		<Reference Include="Assembly-CSharp">
-			<HintPath>$(GamePath)\AcrossTheObelisk_Data\Managed\Assembly-CSharp.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="0Harmony">
-			<HintPath>$(GamePath)\BepInEx\core\0Harmony.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="BepInEx">
-			<HintPath>$(GamePath)\BepInEx\core\BepInEx.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="Facepunch.Steamworks.Win64">
-			<HintPath>$(GamePath)\AcrossTheObelisk_Data\Managed\Facepunch.Steamworks.Win64.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="PhotonRealtime">
-			<HintPath>$(GamePath)\AcrossTheObelisk_Data\Managed\PhotonRealtime.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="PhotonUnityNetworking">
-			<HintPath>$(GamePath)\AcrossTheObelisk_Data\Managed\PhotonUnityNetworking.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="Unity.InputSystem">
-			<HintPath>$(GamePath)\AcrossTheObelisk_Data\Managed\Unity.InputSystem.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="Unity.TextMeshPro">
-			<HintPath>$(GamePath)\AcrossTheObelisk_Data\Managed\Unity.TextMeshPro.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="UnityEngine">
-			<HintPath>$(GamePath)\AcrossTheObelisk_Data\Managed\UnityEngine.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="UnityEngine.InputModule">
-			<HintPath>$(GamePath)\AcrossTheObelisk_Data\Managed\UnityEngine.InputModule.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="UnityEngine.UI">
-			<HintPath>$(GamePath)\AcrossTheObelisk_Data\Managed\UnityEngine.UI.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-    </ItemGroup>
+    
 
 	<ItemGroup>
 		<None Update="README.md">
@@ -100,6 +162,9 @@
 	</ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Exec Command="call &quot;C:\!!\dev\AtO\Obeliskial Essentials\bin\Debug\netstandard2.1\!move.bat&quot;" />
-	</Target>
+		<Copy SourceFiles="$(TargetPath)" DestinationFolder="../../plugins" />
+		<Copy SourceFiles="$(TargetPath)" DestinationFolder="meds-Obeliskial_Essentials/BepInEx/plugins" />
+  	</Target>
+
+	
 </Project>

@@ -1009,8 +1009,8 @@ namespace Obeliskial_Essentials
             text.IncreasedDamageReceivedType2 = ToString(data.IncreasedDamageReceivedType2);
             text.IncreasedDirectDamageChargesMultiplierNeededForOne = data.IncreasedDirectDamageChargesMultiplierNeededForOne;
             text.IncreasedDirectDamageChargesMultiplierNeededForOne2 = data.IncreasedDirectDamageChargesMultiplierNeededForOne2;
-            text.IncreasedDirectDamageReceivedPerStack = data.IncreasedDirectDamageReceivedPerStack;
-            text.IncreasedDirectDamageReceivedPerStack2 = data.IncreasedDirectDamageReceivedPerStack2;
+            text.IncreasedDirectDamageReceivedPerStack = (int) data.IncreasedDirectDamageReceivedPerStack;
+            text.IncreasedDirectDamageReceivedPerStack2 = (int) data.IncreasedDirectDamageReceivedPerStack2;
             text.IncreasedDirectDamageReceivedPerTurn = data.IncreasedDirectDamageReceivedPerTurn;
             text.IncreasedDirectDamageReceivedPerTurn2 = data.IncreasedDirectDamageReceivedPerTurn2;
             text.IncreasedPercentDamageReceivedPerStack = data.IncreasedPercentDamageReceivedPerStack;

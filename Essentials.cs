@@ -458,12 +458,14 @@ namespace Obeliskial_Essentials
             FolderCreate(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", exportType));
             File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", exportType, exportID + ".json"), exportText);
         }
+        
         public static bool IsHost()
         {
             if ((GameManager.Instance.IsMultiplayer() && NetworkManager.Instance.IsMaster()) || !GameManager.Instance.IsMultiplayer())
                 return true;
             return false;
         }
+
         public static int TeamHeroToInt(Hero[] medsTeam)
         {
             int team = 0;
@@ -1721,7 +1723,7 @@ namespace Obeliskial_Essentials
                 ActualChecksums(Traverse.Create(Globals.Instance).Field("_TraitsSource").GetValue<Dictionary<string, TraitData>>().Select(item => item.Value).ToArray()),
                 ActualChecksums(Traverse.Create(Globals.Instance).Field("_CardsSource").GetValue<Dictionary<string, CardData>>().Select(item => item.Value).ToArray()),
                 ActualChecksums(Traverse.Create(Globals.Instance).Field("_PerksSource").GetValue<Dictionary<string, PerkData>>().Select(item => item.Value).ToArray()),
-                ActualChecksums(Traverse.Create(Globals.Instance).Field("_AurasCursesSource").GetValue<Dictionary<string, AuraCurseData>>().Select(item => item.Value).ToArray()),
+                //ActualChecksums(Traverse.Create(Globals.Instance).Field("_AurasCursesSource").GetValue<Dictionary<string, AuraCurseData>>().Select(item => item.Value).ToArray()),
                 ActualChecksums(Traverse.Create(Globals.Instance).Field("_NPCsSource").GetValue<Dictionary<string, NPCData>>().Select(item => item.Value).ToArray()),
                 ActualChecksums(Traverse.Create(Globals.Instance).Field("_NodeDataSource").GetValue<Dictionary<string, NodeData>>().Select(item => item.Value).ToArray()),
                 ActualChecksums(Traverse.Create(Globals.Instance).Field("_LootDataSource").GetValue<Dictionary<string, LootData>>().Select(item => item.Value).ToArray()),
