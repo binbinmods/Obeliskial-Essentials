@@ -131,6 +131,14 @@ namespace Obeliskial_Essentials
             }
 
         }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(HeroSelectionManager), "Awake")]
+        public static void AwakePostfix()
+        {
+            LogDebug("AwakePostfix");
+        }
+
         [HarmonyPrefix]
         [HarmonyPatch(typeof(HeroSelectionManager), "Start")]
         private static bool HSMStartPrefix(ref HeroSelectionManager __instance)
@@ -157,8 +165,60 @@ namespace Obeliskial_Essentials
             subclassDictionary = Traverse.Create(__instance).Field("subclassDictionary").GetValue<Dictionary<string, SubClassData[]>>();
             nonHistorySubclassDictionary = Traverse.Create(__instance).Field("nonHistorySubclassDictionary").GetValue<Dictionary<string, SubClassData>>();
             SubclassByName = Traverse.Create(__instance).Field("SubclassByName").GetValue<Dictionary<string, string>>();
+            BinbinReorderSubclasses();
             __instance.StartCoroutine(medsHeroSelectionStartCo());
             return false;
+        }
+
+        private static void BinbinReorderSubclasses()
+        {
+            // Alphabetizes heroes in hero selection to make it ordered when scrolling.
+            LogDebug("Reordering Subclasses");
+
+            // Reorders Multiclass
+            List<SubClassData> multiclass = Globals.Instance.SubClass.Values
+                .Where(subclass => subclass.HeroClassSecondary != Enums.HeroClass.None)
+                .OrderBy(subclass => subclass.CharacterName)
+                .ToList();
+            LogDebug(string.Join(", ", multiclass));
+
+            // Reorders SoloClass
+            var soloclass = Globals.Instance.SubClass.Values
+                .Where(subclass => subclass.HeroClassSecondary == Enums.HeroClass.None)
+                .OrderBy(subclass => subclass.CharacterName)
+                .GroupBy(subclass => subclass.HeroClass)
+                .ToList();
+
+            List<string> excludedHeroes = ["youngbinks", "youngcharls", "youngheiner", "youngmagnus", "youngottis", "youngyogger"];
+            
+            // Assign values
+            int orderNumber = 0;
+            foreach (SubClassData subclass in multiclass)
+            {
+                string subclassId = subclass.Id;
+                if (excludedHeroes.Contains(subclassId))
+                    continue;
+                Globals.Instance.SubClass[subclassId].OrderInList = orderNumber++;
+                LogDebug($"Setting OrderInList for {subclassId} to {orderNumber}");
+            }
+
+            foreach (var heroClass in soloclass)
+            {
+                orderNumber = 0;
+                foreach (var subclass in heroClass)
+                {
+                    string subclassId = subclass.Id;
+                    if (excludedHeroes.Contains(subclassId))
+                        continue;
+
+                    Globals.Instance.SubClass[subclassId].OrderInList = orderNumber++;
+                    LogDebug($"Setting OrderInList for {subclassId} to {orderNumber}");
+                }
+            }
+
+
+            // For each class, assign order numbers starting from 1
+
         }
         private static IEnumerator medsHeroSelectionStartCo()
         {
@@ -409,7 +469,7 @@ namespace Obeliskial_Essentials
                             ChallengeData weeklyData = Globals.Instance.GetWeeklyData(Functions.GetCurrentWeeklyWeek());
                             if ((UnityEngine.Object)weeklyData != (UnityEngine.Object)null && (_subclassdata.Id == weeklyData.Hero1.Id || _subclassdata.Id == weeklyData.Hero2.Id || _subclassdata.Id == weeklyData.Hero3.Id || _subclassdata.Id == weeklyData.Hero4.Id))
                                 component.blocked = false;
-                        }
+                        }                        
                         component.SetSubclass(_subclassdata);
                         //component.SetSprite(_subclassdata.SpriteSpeed, _subclassdata.SpriteBorderSmall, _subclassdata.SpriteBorderLocked);
                         string activeSkin = PlayerManager.Instance.GetActiveSkin(_subclassdata.Id);
@@ -1748,7 +1808,7 @@ namespace Obeliskial_Essentials
         public static void BeginRoundPrefix()
         {
             LogDebug("BeginRound");
-        }           
+        }
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(NPC), "CreateOverDeck")]
@@ -2020,6 +2080,48 @@ namespace Obeliskial_Essentials
                 }
             }
         }*/
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(SteamManager), "SetObeliskScore")]
+        public static bool SetObeliskScorePrefix(ref SteamManager __instance, int score, bool singleplayer = true)
+        {
+            return false;
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(SteamManager), "SetScore")]
+        public static bool SetScorePrefix(ref SteamManager __instance, int score, bool singleplayer = true)
+        {
+            return false;
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(SteamManager), "SetSingularityScore")]
+        public static bool SetSingularityScorePrefix(ref SteamManager __instance, int score, bool singleplayer = true)
+        {
+            return false;
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(SteamManager), "SetObeliskScoreLeaderboard")]
+        public static bool SetObeliskScoreLeaderboardPrefix(ref SteamManager __instance, int score, bool singleplayer = true)
+        {
+            return false;
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(SteamManager), "SetScoreLeaderboard")]
+        public static bool SetScoreLeaderboardPrefix(ref SteamManager __instance, int score, bool singleplayer = true)
+        {
+            return false;
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(SteamManager), "SetSingularityScoreLeaderboard")]
+        public static bool SetSingularityScoreLeaderboardPrefix(ref SteamManager __instance, int score, bool singleplayer = true)
+        {
+            return false;
+        }
 
     }
 }

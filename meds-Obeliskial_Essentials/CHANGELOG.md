@@ -1,3 +1,15 @@
+# 1.4.4
+
+Alphabetized hero selection and added scroll. All modded heroes will now be present regardless of their original OrderInList property.
+
+# 1.4.3 
+
+Fixed a bug where the game would crash when completing a run.
+
+# 1.4.2
+
+Updated text on "Reduce cost by -1" to be "Increase Cost by 1"
+
 # 1.4.1
 
 Hopefully fixed the bug where the game would crash on Windows after completing a run.

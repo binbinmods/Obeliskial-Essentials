@@ -13,6 +13,7 @@ using Steamworks;
 using System.Threading.Tasks;
 using System;
 using System.Text;
+using UnityEngine.UI;
 
 
 /*
@@ -103,6 +104,8 @@ namespace Obeliskial_Essentials
         {
             Log.LogInfo(msg);
         }
+
+        
         internal static void LogWarning(string msg)
         {
             Log.LogWarning(msg);
@@ -1961,6 +1964,7 @@ namespace Obeliskial_Essentials
             result = "\n\n=================================================================================\n" + data.Length.ToString() + " " + type + " with overall checksum " + result.GetHashCode().ToString() + result;
             return result;
         }
+        
 
 
     }
