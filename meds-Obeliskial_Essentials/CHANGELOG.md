@@ -4,6 +4,8 @@ Alphabetized hero selection and added scroll. All modded heroes will now be pres
 
 Multiple dispels are now displayed when special values are used.
 
+Text is now properly combined for dual damage cards when damage is transformed
+
 # 1.4.3 
 
 Fixed a bug where the game would crash when completing a run.

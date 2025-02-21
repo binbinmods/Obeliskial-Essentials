@@ -33,12 +33,17 @@ namespace Obeliskial_Essentials
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(CardData), "SetDescriptionNew")]
-        public static bool SetDescriptionNewPrefix(ref CardData __instance, bool forceDescription = false, Character character = null, bool includeInSearch = true)
+        public static bool SetDescriptionNewPrefix(ref CardData __instance, 
+                                                   int ___damagePreCalculated,
+                                                   int ___damagePreCalculatedCombined, 
+                                                   int ___damagePreCalculatedCombined2, 
+                                                   bool forceDescription = false, Character character = null, bool includeInSearch = true)
         {
             string medsDescriptionID = Traverse.Create(__instance).Field("descriptionId").GetValue<string>();
             int medsHealPreCalculated = Traverse.Create(__instance).Field("healPreCalculated").GetValue<int>();
             int medsHealSelfPreCalculated = Traverse.Create(__instance).Field("healSelfPreCalculated").GetValue<int>();
             int medsEnchantDamagePreCalculated = Traverse.Create(__instance).Field("enchantDamagePreCalculated").GetValue<int>();
+            // int damagePreCalculatedCombined = 
             if (medsCustomCardDescriptions.ContainsKey(__instance.Id))
                 __instance.DescriptionNormalized = medsCustomCardDescriptions[__instance.Id];
             else if (forceDescription || !Globals.Instance.CardsDescriptionNormalized.ContainsKey(__instance.Id))
@@ -62,7 +67,7 @@ namespace Obeliskial_Essentials
                     bool flag1 = false;
                     bool flag2 = false;
                     bool flag3 = true;
-                    bool flag4 = false;
+                    // bool flag4 = false;
                     StringBuilder stringBuilder3 = new StringBuilder();
                     if (__instance.Damage > 0 || __instance.Damage2 > 0 || __instance.DamageSelf > 0 || __instance.DamageSelf2 > 0)
                         flag3 = false;
@@ -399,38 +404,56 @@ namespace Obeliskial_Essentials
                         stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsReduceCurse"), (object)__instance.ReduceCurses.ToString()));
                         stringBuilder1.Append("\n");
                     }
-                    int num3 = 0;
-                    if (__instance.Damage > 0 && !__instance.DamageSpecialValue1 && !__instance.DamageSpecialValue2 && !__instance.DamageSpecialValueGlobal)
+                    bool flag4 = false;
+                    if (__instance.Damage > 0)
                     {
-                        ++num3;
-                        stringBuilder2.Append(medsColorTextArray("damage", medsNumFormat(__instance.DamagePreCalculated), medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)__instance.DamageType))));
-                        if (__instance.Damage2 > 0 && __instance.DamageType == __instance.DamageType2 && (__instance.Damage2SpecialValue1 || __instance.Damage2SpecialValue2 || __instance.Damage2SpecialValueGlobal))
+                        if (__instance.Damage > 0 && __instance.Damage2 > 0 && __instance.DamageType == __instance.DamageType2 && !__instance.DamageSpecialValueGlobal && !__instance.DamageSpecialValue1 && !__instance.DamageSpecialValue2 && !__instance.Damage2SpecialValueGlobal && !__instance.Damage2SpecialValue1 && !__instance.Damage2SpecialValue2)
                         {
-                            stringBuilder2.Append("<space=-.3>");
-                            stringBuilder2.Append("+");
-                            stringBuilder2.Append(medsColorTextArray("damage", "X", medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)__instance.DamageType))));
+                            stringBuilder2.Append(medsColorTextArray("damage", medsNumFormat(___damagePreCalculatedCombined), medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)__instance.DamageType))));
+                            flag4 = true;
                         }
-                    }
-                    if (__instance.Damage2 > 0 && !__instance.Damage2SpecialValue1 && !__instance.Damage2SpecialValue2 && !__instance.Damage2SpecialValueGlobal)
-                    {
-                        ++num3;
-                        stringBuilder2.Append(medsColorTextArray("damage", medsNumFormat(__instance.DamagePreCalculated2), medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)__instance.DamageType2))));
-                    }
-                    if (num3 > 0)
-                    {
-                        if (flag4 && num3 > 1)
+                        else
                         {
-                            stringBuilder2.Insert(0, str1);
-                            stringBuilder2.Insert(0, "\n");
+                            if (__instance.Damage == 1 && (__instance.DamageSpecialValueGlobal || __instance.DamageSpecialValue1 || __instance.DamageSpecialValue2))
+                                stringBuilder2.Append(medsColorTextArray("damage", "X", medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)__instance.DamageType))));
+                            else
+                                stringBuilder2.Append(medsColorTextArray("damage", medsNumFormat(___damagePreCalculated), medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)__instance.DamageType))));
+                            if (__instance.Damage2 > 0)
+                            {
+                                flag4 = true;
+                                if (__instance.Damage2 == 1 && (__instance.Damage2SpecialValue1 || __instance.Damage2SpecialValue2 || __instance.Damage2SpecialValueGlobal))
+                                {
+                                    if (__instance.DamageType == __instance.DamageType2)
+                                    {
+                                        stringBuilder2.Append("<space=-.3>");
+                                        stringBuilder2.Append("+");
+                                        stringBuilder2.Append(medsColorTextArray("damage", "X", medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)__instance.DamageType))));
+                                    }
+                                    else
+                                        stringBuilder2.Append(medsColorTextArray("damage", "X", medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)__instance.DamageType2))));
+                                }
+                                else
+                                    stringBuilder2.Append(medsColorTextArray("damage", medsNumFormat(__instance.DamagePreCalculated2), medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)__instance.DamageType2))));
+                            }
                         }
                         stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsDealDamage"), (object)stringBuilder2.ToString()));
                         stringBuilder1.Append("\n");
                         stringBuilder2.Clear();
                     }
-                    int num4 = 0;
+                    if (!flag4 && __instance.Damage2 > 0)
+                    {
+                        if (__instance.Damage2 == 1 && (__instance.Damage2SpecialValueGlobal || __instance.Damage2SpecialValue1 || __instance.Damage2SpecialValue2))
+                            stringBuilder2.Append(medsColorTextArray("damage", "X", medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)__instance.DamageType2))));
+                        else
+                            stringBuilder2.Append(medsColorTextArray("damage", medsNumFormat(__instance.DamagePreCalculated2), medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)__instance.DamageType2))));
+                        stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsDealDamage"), (object)stringBuilder2.ToString()));
+                        stringBuilder1.Append("\n");
+                        stringBuilder2.Clear();
+                    }
+                    int num3 = 0;
                     if (__instance.DamageSelf > 0)
                     {
-                        ++num4;
+                        ++num3;
                         if (__instance.DamageSpecialValueGlobal || __instance.DamageSpecialValue1 || __instance.DamageSpecialValue2)
                             stringBuilder2.Append(medsColorTextArray("damage", "X", medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)__instance.DamageType))));
                         else
@@ -438,15 +461,15 @@ namespace Obeliskial_Essentials
                     }
                     if (__instance.DamageSelf2 > 0)
                     {
-                        ++num4;
+                        ++num3;
                         if (__instance.Damage2SpecialValueGlobal || __instance.Damage2SpecialValue1 || __instance.Damage2SpecialValue2)
                             stringBuilder2.Append(medsColorTextArray("damage", "X", medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)__instance.DamageType2))));
                         else
                             stringBuilder2.Append(medsColorTextArray("damage", medsNumFormat(__instance.DamageSelfPreCalculated2), medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)__instance.DamageType2))));
                     }
-                    if (num4 > 0)
+                    if (num3 > 0)
                     {
-                        if (num4 > 2)
+                        if (num3 > 2)
                         {
                             stringBuilder2.Insert(0, str1);
                             stringBuilder2.Insert(0, "\n");
