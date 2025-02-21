@@ -874,19 +874,54 @@ namespace Obeliskial_Essentials
                             stringBuilder1.Append(str3);
                             stringBuilder1.Append("\n");
                             stringBuilder2.Clear();
+                            StringBuilder stringBuilder4 = new StringBuilder();
+                            StringBuilder stringBuilder5 = new StringBuilder();
                             if ((UnityEngine.Object)__instance.HealAuraCurseName != (UnityEngine.Object)null)
                             {
-                                if (__instance.TargetSide == Enums.CardTargetSide.Self)
-                                {
-                                    if (__instance.HealAuraCurseName.IsAura)
-                                        stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsPurgeYour"), (object)medsSpriteText(__instance.HealAuraCurseName.ACName)));
-                                    else
-                                        stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsDispelYour"), (object)medsSpriteText(__instance.HealAuraCurseName.ACName)));
-                                }
-                                else if (__instance.HealAuraCurseName.IsAura)
-                                    stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsPurge"), (object)medsSpriteText(__instance.HealAuraCurseName.ACName)));
+                                if (__instance.HealAuraCurseName.IsAura)
+                                    stringBuilder4.Append(medsSpriteText(__instance.HealAuraCurseName.ACName));
                                 else
-                                    stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsDispel"), (object)medsSpriteText(__instance.HealAuraCurseName.ACName)));
+                                    stringBuilder5.Append(medsSpriteText(__instance.HealAuraCurseName.ACName));
+                            }
+                            if ((UnityEngine.Object)__instance.HealAuraCurseName2 != (UnityEngine.Object)null)
+                            {
+                                if (__instance.HealAuraCurseName2.IsAura)
+                                    stringBuilder4.Append(medsSpriteText(__instance.HealAuraCurseName2.ACName));
+                                else
+                                    stringBuilder5.Append(medsSpriteText(__instance.HealAuraCurseName2.ACName));
+                            }
+                            if ((UnityEngine.Object)__instance.HealAuraCurseName3 != (UnityEngine.Object)null)
+                            {
+                                if (__instance.HealAuraCurseName3.IsAura)
+                                    stringBuilder4.Append(medsSpriteText(__instance.HealAuraCurseName3.ACName));
+                                else
+                                    stringBuilder5.Append(medsSpriteText(__instance.HealAuraCurseName3.ACName));
+                            }
+                            if ((UnityEngine.Object)__instance.HealAuraCurseName4 != (UnityEngine.Object)null)
+                            {
+                                if (__instance.HealAuraCurseName4.IsAura)
+                                    stringBuilder4.Append(medsSpriteText(__instance.HealAuraCurseName4.ACName));
+                                else
+                                    stringBuilder5.Append(medsSpriteText(__instance.HealAuraCurseName4.ACName));
+                            }
+                            if (stringBuilder4.Length > 0)
+                            {
+                                stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsPurge"), (object)stringBuilder4.ToString()));
+                                stringBuilder1.Append("\n");
+                            }
+                            if (stringBuilder5.Length > 0)
+                            {
+                                stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsDispel"), (object)stringBuilder5.ToString()));
+                                stringBuilder1.Append("\n");
+                            }
+                            if (__instance.HealCurses > 0)
+                            {
+                                stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsDispel"), (object)medsColorTextArray("curse", __instance.HealCurses.ToString())));
+                                stringBuilder1.Append("\n");
+                            }
+                            if (__instance.HealCurses == -1)
+                            {
+                                stringBuilder1.Append(Texts.Instance.GetText("cardsDispelAll"));
                                 stringBuilder1.Append("\n");
                             }
                             if ((UnityEngine.Object)__instance.HealAuraCurseSelf != (UnityEngine.Object)null)

@@ -2,6 +2,8 @@
 
 Alphabetized hero selection and added scroll. All modded heroes will now be present regardless of their original OrderInList property.
 
+Multiple dispels are now displayed when special values are used.
+
 # 1.4.3 
 
 Fixed a bug where the game would crash when completing a run.
