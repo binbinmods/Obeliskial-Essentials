@@ -2009,48 +2009,88 @@ namespace Obeliskial_Essentials
                         }
                         if (itemData.CardsReduced > 0)
                         {
-                            num21 = itemData.CardsReduced;
-                            string str29 = "<color=#5E3016>" + num21.ToString() + "</color>";
-                            string str30 = "<color=#5E3016>" + Texts.Instance.GetText(Enum.GetName(typeof(Enums.CardType), (object)itemData.CardToReduceType)) + "</color>";
-                            if (itemData.CardToReduceType == Enums.CardType.None)
-                                str30 = "  <sprite name=cards>";
-                            num21 = itemData.CostReduceReduction;
-                            string str31 = "<color=#111111>" + num21.ToString() + "</color>";
-                            string str32 = "<space=-.2>";
-                            if (itemData.CostReduceEnergyRequirement > 0)
-                                str32 = "<color=#444><size=-.2>" + string.Format(Texts.Instance.GetText("itemReduceCost"), (object)itemData.CostReduceEnergyRequirement) + "</size></color>";
-                            if (itemData.CostReducePermanent && itemData.ReduceHighestCost)
+                            StringBuilder stringBuilder21 = new StringBuilder();
+                            stringBuilder21.Append("<color=#5E3016>");
+                            stringBuilder21.Append(itemData.CardsReduced);
+                            stringBuilder21.Append("</color>");
+                            string text17 = stringBuilder21.ToString();
+                            string text18;
+                            if ((int)itemData.CardToReduceType == 0)
                             {
-                                string str33;
-                                if (itemData.CardsReduced == 1)
-                                {
-                                    str33 = "";
-                                }
-                                else
-                                {
-                                    num21 = itemData.CardsReduced;
-                                    str33 = "<color=#111111>(" + num21.ToString() + ")</color> ";
-                                }
-                                stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemReduceHighestPermanent"), (object)str33, (object)str30, (object)str31, (object)str32));
-                            }
-                            else if (itemData.CostReducePermanent)
-                                stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemReduce"), (object)str29, (object)str30, (object)str31, (object)str32));
-                            else if (itemData.ReduceHighestCost)
-                            {
-                                string str34;
-                                if (itemData.CardsReduced == 1)
-                                {
-                                    str34 = "";
-                                }
-                                else
-                                {
-                                    num21 = itemData.CardsReduced;
-                                    str34 = "<color=#111111>(" + num21.ToString() + ")</color> ";
-                                }
-                                stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemReduceHighestTurn"), (object)str34, (object)str30, (object)str31, (object)str32));
+                                text18 = "  <sprite name=cards>";
                             }
                             else
-                                stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemReduceTurn"), (object)str29, (object)str30, (object)str31, (object)str32));
+                            {
+                                stringBuilder21.Clear();
+                                stringBuilder21.Append("<color=#5E3016>");
+                                stringBuilder21.Append(Texts.Instance.GetText(Enum.GetName(typeof(Enums.CardType), itemData.CardToReduceType), ""));
+                                stringBuilder21.Append("</color>");
+                                text18 = stringBuilder21.ToString();
+                            }
+                            stringBuilder21.Clear();
+                            stringBuilder21.Append("<color=#111111>");
+                            stringBuilder21.Append(Mathf.Abs(itemData.CostReduceReduction));
+                            stringBuilder21.Append("</color>");
+                            string text19 = stringBuilder21.ToString();
+                            string text20 = ((itemData.CostReduceEnergyRequirement <= 0) ? "<space=-.2>" : ("<color=#444><size=-.2>" + string.Format(Texts.Instance.GetText("itemReduceCost", ""), itemData.CostReduceEnergyRequirement) + "</size></color>"));
+                            if (itemData.CostReducePermanent && itemData.ReduceHighestCost)
+                            {
+                                text17 = ((itemData.CardsReduced != 1) ? ("<color=#111111>(" + itemData.CardsReduced + ")</color> ") : "");
+                                stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemReduceHighestPermanent", ""), text17, text18, text19, text20));
+                            }
+                            else if (itemData.CostReducePermanent)
+                            {
+                                if (itemData.CardsReduced != 10)
+                                {
+                                    if (itemData.CostReduceReduction > 0)
+                                    {
+                                        stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemReduce", ""), text17, text18, text19, text20));
+                                    }
+                                    else
+                                    {
+                                        stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemIncrease", ""), text17, text18, text19, text20));
+                                    }
+                                }
+                                else if (itemData.CostReduceReduction > 0)
+                                {
+                                    stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemReduceAll", ""), text18, text19, text20));
+                                }
+                                else
+                                {
+                                    stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemIncreaseAll", ""), text18, text19, text20));
+                                }
+                            }
+                            else if (itemData.ReduceHighestCost)
+                            {
+                                text17 = ((itemData.CardsReduced != 1) ? ("<color=#111111>(" + itemData.CardsReduced + ")</color> ") : "");
+                                if (itemData.CostReduceReduction > 0)
+                                {
+                                    stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemReduceHighestTurn", ""), text17, text18, text19, text20));
+                                }
+                                else
+                                {
+                                    stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemIncreaseHighestDiscarded", ""), text17, text18, text19, text20));
+                                }
+                            }
+                            else if (itemData.CardsReduced != 10)
+                            {
+                                if (itemData.CostReduceReduction > 0)
+                                {
+                                    stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemReduceTurn", ""), text17, text18, text19, text20));
+                                }
+                                else
+                                {
+                                    stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemIncreaseTurn", ""), text17, text18, text19, text20));
+                                }
+                            }
+                            else if (itemData.CostReduceReduction > 0)
+                            {
+                                stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemReduceTurnAll", ""), text18, text19, text20));
+                            }
+                            else
+                            {
+                                stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemIncreaseTurnAll", ""), text18, text19, text20));
+                            }
                             stringBuilder1.Append("\n");
                         }
                     }

@@ -16,6 +16,7 @@ using Photon.Realtime;
 using System.Reflection;
 using UnityEngine.InputSystem;
 using System.Text;
+using UnityEngine.UI;
 
 /*
 FULL LIST OF ATO CLASSES->METHODS THAT ARE PATCHED:
@@ -190,7 +191,7 @@ namespace Obeliskial_Essentials
                 .ToList();
 
             List<string> excludedHeroes = ["youngbinks", "youngcharls", "youngheiner", "youngmagnus", "youngottis", "youngyogger"];
-            
+
             // Assign values
             int orderNumber = 0;
             foreach (SubClassData subclass in multiclass)
@@ -428,6 +429,7 @@ namespace Obeliskial_Essentials
                         case 0:
                             _subclassdata = subclassDictionary["warrior"][index2];
                             gameObject1 = HeroSelectionManager.Instance.warriorsGO;
+                            CreateScrollRect("warriorScrollRect", gameObject1.transform);
                             break;
                         case 1:
                             _subclassdata = subclassDictionary["scout"][index2];
@@ -450,6 +452,8 @@ namespace Obeliskial_Essentials
                             }
                             break;
                     }
+                    
+                    // gameObject1.AddComponent();
                     if (!((UnityEngine.Object)_subclassdata == (UnityEngine.Object)null))
                     {
                         GameObject gameObject2 = UnityEngine.Object.Instantiate<GameObject>(HeroSelectionManager.Instance.heroSelectionPrefab, Vector3.zero, Quaternion.identity, gameObject1.transform);
@@ -469,7 +473,7 @@ namespace Obeliskial_Essentials
                             ChallengeData weeklyData = Globals.Instance.GetWeeklyData(Functions.GetCurrentWeeklyWeek());
                             if ((UnityEngine.Object)weeklyData != (UnityEngine.Object)null && (_subclassdata.Id == weeklyData.Hero1.Id || _subclassdata.Id == weeklyData.Hero2.Id || _subclassdata.Id == weeklyData.Hero3.Id || _subclassdata.Id == weeklyData.Hero4.Id))
                                 component.blocked = false;
-                        }                        
+                        }
                         component.SetSubclass(_subclassdata);
                         //component.SetSprite(_subclassdata.SpriteSpeed, _subclassdata.SpriteBorderSmall, _subclassdata.SpriteBorderLocked);
                         string activeSkin = PlayerManager.Instance.GetActiveSkin(_subclassdata.Id);
@@ -495,7 +499,9 @@ namespace Obeliskial_Essentials
                         SubclassByName.Add(_subclassdata.Id, _subclassdata.SubClassName);
                         if (GameManager.Instance.IsWeeklyChallenge())
                             component.blocked = true;
+
                         HeroSelectionManager.Instance.menuController.Add(component.transform);
+                        
                     }
                 }
             }
@@ -2121,6 +2127,106 @@ namespace Obeliskial_Essentials
         public static bool SetSingularityScoreLeaderboardPrefix(ref SteamManager __instance, int score, bool singleplayer = true)
         {
             return false;
+        }
+
+        // public static GameObject ScrollRectObject { get; set; }
+        
+        
+        public static void CreateScrollRect(string name, Transform parent)
+        {
+            // Create the main ScrollRect GameObject
+            GameObject ScrollRectObject = new GameObject(name);
+            RectTransform ContentTransform = new RectTransform();
+            RectTransform scrollRectTransform = ScrollRectObject.AddComponent<RectTransform>();
+            ScrollRect scrollRect = ScrollRectObject.AddComponent<ScrollRect>();
+            Image scrollRectImage = ScrollRectObject.AddComponent<Image>();
+
+            // Set the RectTransform properties
+            scrollRectTransform.anchorMin = Vector2.zero;
+            scrollRectTransform.anchorMax = Vector2.one;
+            scrollRectTransform.sizeDelta = Vector2.zero;
+            scrollRectTransform.anchoredPosition = Vector2.zero;
+
+            // Create the Viewport
+            GameObject viewportObj = new GameObject("Viewport");
+            RectTransform viewportTransform = viewportObj.AddComponent<RectTransform>();
+            Image viewportImage = viewportObj.AddComponent<Image>();
+            Mask viewportMask = viewportObj.AddComponent<Mask>();
+            viewportObj.transform.SetParent(ScrollRectObject.transform, false);
+
+            // Set viewport RectTransform properties
+            viewportTransform.anchorMin = Vector2.zero;
+            viewportTransform.anchorMax = Vector2.one;
+            viewportTransform.sizeDelta = Vector2.zero;
+            viewportTransform.anchoredPosition = Vector2.zero;
+
+            // Create the Content container
+            GameObject contentObj = new GameObject("Content");
+            ContentTransform = contentObj.AddComponent<RectTransform>();
+            VerticalLayoutGroup verticalLayout = contentObj.AddComponent<VerticalLayoutGroup>();
+            ContentSizeFitter contentSizeFitter = contentObj.AddComponent<ContentSizeFitter>();
+            contentObj.transform.SetParent(viewportObj.transform, false);
+
+            // Set content RectTransform properties
+            ContentTransform.anchorMin = new Vector2(0, 1);
+            ContentTransform.anchorMax = new Vector2(1, 1);
+            ContentTransform.pivot = new Vector2(0.5f, 1);
+            ContentTransform.anchoredPosition = Vector2.zero;
+
+            // Configure the ScrollRect component
+            scrollRect.viewport = viewportTransform;
+            scrollRect.content = ContentTransform;
+            scrollRect.horizontal = false;
+            scrollRect.vertical = true;
+
+            // Configure the VerticalLayoutGroup
+            verticalLayout.padding = new RectOffset(10, 10, 10, 10);
+            verticalLayout.spacing = 10;
+            verticalLayout.childForceExpandWidth = true;
+            verticalLayout.childForceExpandHeight = false;
+            verticalLayout.childControlHeight = true;
+            verticalLayout.childControlWidth = true;
+
+            // Configure the ContentSizeFitter
+            contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            // Set parent if provided
+            if (parent != null)
+            {
+                ScrollRectObject.transform.SetParent(parent, false);
+            }
+        }
+
+        public GameObject AddItem(GameObject itemToAdd, RectTransform ContentTransform)
+        {
+            // Create a new item
+            // GameObject itemObj = new GameObject($"Item_{itemText}");
+            RectTransform itemTransform = itemToAdd.AddComponent<RectTransform>();
+            // itemObj.AddComponent<Image>();  // Background image
+
+            // // Add text component
+            // GameObject textObj = new GameObject("Text");
+            // RectTransform textTransform = textObj.AddComponent<RectTransform>();
+            // Text text = textObj.AddComponent<Text>();
+            // textObj.transform.SetParent(itemObj.transform, false);
+
+            // // Configure text
+            // text.text = itemText;
+            // text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            // text.color = Color.black;
+            // text.alignment = TextAnchor.MiddleLeft;
+
+            // // Set transforms
+            // textTransform.anchorMin = Vector2.zero;
+            // textTransform.anchorMax = Vector2.one;
+            // textTransform.sizeDelta = Vector2.zero;
+            // textTransform.anchoredPosition = Vector2.zero;
+
+            // Add to scroll content
+            itemToAdd.transform.SetParent(ContentTransform, false);
+            itemTransform.sizeDelta = new Vector2(0, 50);  // Height of 50 pixels
+
+            return itemToAdd;
         }
 
     }
