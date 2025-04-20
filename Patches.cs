@@ -183,7 +183,7 @@ namespace Obeliskial_Essentials
                 .ToList();
             LogDebug(string.Join(", ", multiclass));
 
-            // Reorders SoloClass
+            // Reorders Soloclass
             var soloclass = Globals.Instance.SubClass.Values
                 .Where(subclass => subclass.HeroClassSecondary == Enums.HeroClass.None)
                 .OrderBy(subclass => subclass.CharacterName)
@@ -216,10 +216,6 @@ namespace Obeliskial_Essentials
                     LogDebug($"Setting OrderInList for {subclassId} to {orderNumber}");
                 }
             }
-
-
-            // For each class, assign order numbers starting from 1
-
         }
         private static IEnumerator medsHeroSelectionStartCo()
         {
@@ -390,13 +386,46 @@ namespace Obeliskial_Essentials
             HeroSelectionManager.Instance._ClassMages.color = Functions.HexToColor(Globals.Instance.ClassColor["mage"]);
             HeroSelectionManager.Instance._ClassScouts.color = Functions.HexToColor(Globals.Instance.ClassColor["scout"]);
             HeroSelectionManager.Instance._ClassMagicKnights.color = Functions.HexToColor(Globals.Instance.ClassColor["magicknight"]);
-            float num2 = 0.95f;
-            float num3 = 0.55f;
-            float num4 = 1.75f;
-            float y = -0.65f;
+            // float num2 = 0.95f;
+            // float num3 = 0.55f;
+            // float num4 = 1.75f;
+            // float y = -0.65f;
+
+
+            // GameObject scrollContainer = GameObject.Find("CharacterScrollContainer") ?? new GameObject("CharacterScrollContainer");
             LogDebug("about to begin looping through subclassDictionary");
+
+            // Modified version of your original code to integrate with scroll system
+            LogDebug("creating");
+            // Create a new GameObject for the scroll system if it doesn't exist
+            GameObject scrollSystemObject = GameObject.Find("HeroSelectionScrollSystem");
+            if (scrollSystemObject == null)
+            {
+                scrollSystemObject = new GameObject("HeroSelectionScrollSystem");
+            }
+
+            // Get or add the scroll system component
+            HeroSelectionScrollSystem scrollSystem = scrollSystemObject.GetComponent<HeroSelectionScrollSystem>();
+            if (scrollSystem == null)
+            {
+                scrollSystem = scrollSystemObject.AddComponent<HeroSelectionScrollSystem>();
+
+                // Create button prefabs
+                ScrollButtonCreator buttonCreator = scrollSystemObject.AddComponent<ScrollButtonCreator>();
+                scrollSystem.scrollLeftButtonPrefab = buttonCreator.CreateLeftButton();
+                scrollSystem.scrollRightButtonPrefab = buttonCreator.CreateRightButton();
+            }
+
+            float num2 = 0.95f;
+            float num3 = 0.55f; // Modified to position at origin, scrolling will handle positioning
+            float num4 = 1.75f;
+            float y = -0.65f; // Modified to position at origin, scrolling will handle positioning
+
+            LogDebug("Scroll Container created");
+
             for (int index1 = 0; index1 < 5; ++index1)
             {
+                // Loops over classes
                 switch (index1)
                 {
                     case 0:
@@ -419,17 +448,35 @@ namespace Obeliskial_Essentials
                         }
                         break;
                 }
-                //Plugin.Log.LogDebug("index1: " + index1.ToString() + " (num1: " + num1.ToString() + ")");
+
+                LogDebug("index1: " + index1.ToString() + " (num1: " + num1.ToString() + ")");
+
+                // Get the category name for the current index
+                string categoryName = "";
+                switch (index1)
+                {
+                    case 0: categoryName = "warrior"; break;
+                    case 1: categoryName = "scout"; break;
+                    case 2: categoryName = "mage"; break;
+                    case 3: categoryName = "healer"; break;
+                    case 4: categoryName = "dlc"; break;
+                }
+
+                // Get the scroll container for this category
+                Transform scrollContainer = scrollSystem.GetScrollContainerFor(categoryName);
+
+                // Loops over characters within each class
                 for (int index2 = 0; index2 < num1; ++index2)
                 {
                     SubClassData _subclassdata = (SubClassData)null;
                     GameObject gameObject1 = (GameObject)null;
+
+                    // GameObject1 is the template
                     switch (index1)
                     {
                         case 0:
                             _subclassdata = subclassDictionary["warrior"][index2];
                             gameObject1 = HeroSelectionManager.Instance.warriorsGO;
-                            CreateScrollRect("warriorScrollRect", gameObject1.transform);
                             break;
                         case 1:
                             _subclassdata = subclassDictionary["scout"][index2];
@@ -452,30 +499,41 @@ namespace Obeliskial_Essentials
                             }
                             break;
                     }
-                    
-                    // gameObject1.AddComponent();
+
                     if (!((UnityEngine.Object)_subclassdata == (UnityEngine.Object)null))
                     {
-                        GameObject gameObject2 = UnityEngine.Object.Instantiate<GameObject>(HeroSelectionManager.Instance.heroSelectionPrefab, Vector3.zero, Quaternion.identity, gameObject1.transform);
+                        // GameObject2 is the actual selection object
+                        // Modified to instantiate as a child of our scroll container
+                        GameObject gameObject2 = UnityEngine.Object.Instantiate<GameObject>(
+                            HeroSelectionManager.Instance.heroSelectionPrefab,
+                            Vector3.zero,
+                            Quaternion.identity,
+                            scrollContainer);
+
+                        // Position horizontally based on index, all at the same height
                         gameObject2.transform.localPosition = new Vector3(num3 + num4 * (float)index2, y, 0.0f);
                         gameObject2.transform.localScale = new Vector3(num2, num2, 1f);
                         gameObject2.name = _subclassdata.SubClassName.ToLower();
+
+                        // The rest of your code remains the same
                         HeroSelection component = gameObject2.transform.Find("Portrait").transform.GetComponent<HeroSelection>();
                         HeroSelectionManager.Instance.heroSelectionDictionary.Add(gameObject2.name, component);
                         component.blocked = !PlayerManager.Instance.IsHeroUnlocked(_subclassdata.Id);
                         if (component.blocked && GameManager.Instance.IsObeliskChallenge() && !GameManager.Instance.IsWeeklyChallenge())
                             component.blocked = false;
-                        /* no longer auto-unlock custom heroes!
-                        if (!(Plugin.medsSubclassList.Contains(_subclassdata.Id)))
-                            component.blocked = false;*/
+
                         if (component.blocked && GameManager.Instance.IsWeeklyChallenge())
                         {
                             ChallengeData weeklyData = Globals.Instance.GetWeeklyData(Functions.GetCurrentWeeklyWeek());
-                            if ((UnityEngine.Object)weeklyData != (UnityEngine.Object)null && (_subclassdata.Id == weeklyData.Hero1.Id || _subclassdata.Id == weeklyData.Hero2.Id || _subclassdata.Id == weeklyData.Hero3.Id || _subclassdata.Id == weeklyData.Hero4.Id))
+                            if ((UnityEngine.Object)weeklyData != (UnityEngine.Object)null &&
+                                (_subclassdata.Id == weeklyData.Hero1.Id ||
+                                 _subclassdata.Id == weeklyData.Hero2.Id ||
+                                 _subclassdata.Id == weeklyData.Hero3.Id ||
+                                 _subclassdata.Id == weeklyData.Hero4.Id))
                                 component.blocked = false;
                         }
+
                         component.SetSubclass(_subclassdata);
-                        //component.SetSprite(_subclassdata.SpriteSpeed, _subclassdata.SpriteBorderSmall, _subclassdata.SpriteBorderLocked);
                         string activeSkin = PlayerManager.Instance.GetActiveSkin(_subclassdata.Id);
                         if (activeSkin != "")
                         {
@@ -485,27 +543,29 @@ namespace Obeliskial_Essentials
                             if (skinData == (SkinData)null)
                                 Log.LogError("SKINDATA NULL AAAAH");
                             string lower = _subclassdata.Id.ToLower();
-                            // this.AddToPlayerHeroSkin(_subclassdata.Id, activeSkin);
                             HeroSelectionManager.Instance.playerHeroSkinsDict[lower] = activeSkin;
-                            // end
                             component.SetSprite(skinData.SpritePortrait, skinData.SpriteSilueta, _subclassdata.SpriteBorderLocked);
                         }
                         else
                             component.SetSprite(_subclassdata.SpriteSpeed, _subclassdata.SpriteBorderSmall, _subclassdata.SpriteBorderLocked);
+
                         component.SetName(_subclassdata.CharacterName);
                         component.Init();
-                        if ((UnityEngine.Object)_subclassdata.SpriteBorderLocked != (UnityEngine.Object)null && _subclassdata.SpriteBorderLocked.name == "regularBorderSmall")
+                        if ((UnityEngine.Object)_subclassdata.SpriteBorderLocked != (UnityEngine.Object)null &&
+                            _subclassdata.SpriteBorderLocked.name == "regularBorderSmall")
                             component.ShowComingSoon();
+
                         SubclassByName.Add(_subclassdata.Id, _subclassdata.SubClassName);
                         if (GameManager.Instance.IsWeeklyChallenge())
                             component.blocked = true;
 
                         HeroSelectionManager.Instance.menuController.Add(component.transform);
-                        
                     }
                 }
             }
-            LogDebug("FINISHED looping through subclassDictionary");
+
+            // After all heroes are created, refresh the scroll controllers
+            scrollSystem.RefreshAllScrollControllers();
 
 
             if (GameManager.Instance.IsMultiplayer() && GameManager.Instance.IsLoadingGame())
@@ -949,6 +1009,7 @@ namespace Obeliskial_Essentials
                 }
             }
         }
+
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Texts), "GetText")]
@@ -2130,8 +2191,62 @@ namespace Obeliskial_Essentials
         }
 
         // public static GameObject ScrollRectObject { get; set; }
-        
-        
+
+        private static void CreateRectangle(UnityEngine.Color color, int n)
+        {
+            // Create a new GameObject
+            GameObject rectangle = new GameObject("WhiteRectangle");
+
+            // Add RectTransform component
+            RectTransform rectTransform = rectangle.AddComponent<RectTransform>();
+            // Canvas canvas = rectangle.AddComponent<Canvas>();
+            // Add Image component and set its color to white
+            Image image = rectangle.AddComponent<Image>();
+            image.color = color;
+
+            LogDebug($"Creating rectangel with color: {color}");
+            // Set the rectangle's size and position
+            rectTransform.sizeDelta = new Vector2(200, 50 * n); // Width: 200, Height: 100
+            rectTransform.anchoredPosition = new Vector2(0, 0); // Centered
+            Transform parent = null;
+            // Set the rectangle's parent to HeroSelectionManager's canvas or a relevant parent
+            if (HeroSelectionManager.Instance != null)
+            {
+                parent = HeroSelectionManager.Instance.transform;
+
+            }
+            if (color == Color.black)
+            {
+                parent = GameManager.Instance.MaskWindow;
+            }
+            if (color == Color.red)
+            {
+                parent = GameManager.Instance.MaskWindow.transform;
+            }
+            if (color == Color.blue)
+            {
+                Canvas canvas = FindObjectOfType<Canvas>();
+                parent = canvas.transform;
+            }
+            if (color == Color.cyan)
+            {
+                parent = HeroSelectionManager.Instance.charContainerBg.transform;
+            }
+
+            LogDebug($"Parent: {parent.name}");
+
+
+            rectangle.transform.SetParent(parent);
+
+
+            UnityEngine.Object.DontDestroyOnLoad(rectangle.transform);
+            UnityEngine.Object.DontDestroyOnLoad(rectangle);
+            rectangle.SetActive(true);
+
+        }
+
+
+
         public static void CreateScrollRect(string name, Transform parent)
         {
             // Create the main ScrollRect GameObject
@@ -2195,6 +2310,9 @@ namespace Obeliskial_Essentials
             {
                 ScrollRectObject.transform.SetParent(parent, false);
             }
+
+            UnityEngine.Object.DontDestroyOnLoad(ScrollRectObject.transform);
+            ScrollRectObject.gameObject.SetActive(true);
         }
 
         public GameObject AddItem(GameObject itemToAdd, RectTransform ContentTransform)
@@ -2227,6 +2345,28 @@ namespace Obeliskial_Essentials
             itemTransform.sizeDelta = new Vector2(0, 50);  // Height of 50 pixels
 
             return itemToAdd;
+        }
+
+        public static void FindCanvases()
+        {
+            Canvas[] canvases = FindObjectsOfType<Canvas>(); // Get all Canvas components
+
+            if (canvases.Length > 0)
+            {
+                Debug.Log("Found " + canvases.Length + " canvases:");
+            }
+            else
+            {
+                Debug.Log("No canvases found in the scene.");
+            }
+
+            foreach (Canvas canvas in canvases)
+            {
+                Debug.Log(" - Canvas Name: " + canvas.gameObject.name);
+                // Add more information here if needed, e.g., render mode, etc.
+                Debug.Log("   Render Mode: " + canvas.renderMode);
+                Debug.Log("   Root Canvas: " + canvas.isRootCanvas);
+            }
         }
 
     }

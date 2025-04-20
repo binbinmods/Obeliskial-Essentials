@@ -392,7 +392,7 @@ namespace Obeliskial_Essentials
             text.DamageType = ToString(data.DamageType);
             text.DamageType2 = ToString(data.DamageType2);
             text.Description = data.Description;
-            // text.DescriptionID = data.descriptionid
+            text.DescriptionID = Traverse.Create(data).Field("descriptionId").GetValue<string>();
             text.DiscardCard = data.DiscardCard;
             text.DiscardCardAutomatic = data.DiscardCardAutomatic;
             text.DiscardCardPlace = ToString(data.DiscardCardPlace);
@@ -672,6 +672,7 @@ namespace Obeliskial_Essentials
             }
             text.AutoUnlock = data.InitialUnlock; // #XMAS
             text.SourceCharacterName = data.SourceCharacterName;// #XMAS
+            text.CardsSingularity = ToString(data.CardsSingularity); //
             return text;
         }
 

@@ -10,10 +10,10 @@ namespace Obeliskial_Essentials
     [HarmonyPatch]
     internal class CardDescription
     {
-        private static string medsColorUpgradePlain = "5E3016";
-        private static string medsColorUpgradeGold = "875700";
-        private static string medsColorUpgradeBlue = "215382";
-        private static string medsColorUpgradeRare = "7F15A6";
+        public static string medsColorUpgradePlain = "5E3016";
+        public static string medsColorUpgradeGold = "875700";
+        public static string medsColorUpgradeBlue = "215382";
+        public static string medsColorUpgradeRare = "7F15A6";
 
         /*  this is a copy of CardData.Instance.SetDescriptionNew() with some minor modifications:
                 gold/shards gain for enchantments
@@ -33,10 +33,10 @@ namespace Obeliskial_Essentials
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(CardData), "SetDescriptionNew")]
-        public static bool SetDescriptionNewPrefix(ref CardData __instance, 
+        public static bool SetDescriptionNewPrefix(ref CardData __instance,
                                                    int ___damagePreCalculated,
-                                                   int ___damagePreCalculatedCombined, 
-                                                   int ___damagePreCalculatedCombined2, 
+                                                   int ___damagePreCalculatedCombined,
+                                                   //    int ___damagePreCalculatedCombined2, 
                                                    bool forceDescription = false, Character character = null, bool includeInSearch = true)
         {
             string medsDescriptionID = Traverse.Create(__instance).Field("descriptionId").GetValue<string>();
@@ -1777,13 +1777,61 @@ namespace Obeliskial_Essentials
                                     stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsSuffer"), (object)stringBuilder2.ToString()));
                             }
                             else if (itemData.ItemTarget == Enums.ItemTarget.AllEnemy)
+                            {
+                                if ((UnityEngine.Object)itemData.AuraCurseSetted != (UnityEngine.Object)null && itemData.AuraCurseNumForOneEvent > 0)
+                                {
+                                    StringBuilder stringBuilder16 = stringBuilder1;
+                                    string text = Texts.Instance.GetText("itemForEveryCharge");
+                                    string[] strArray = new string[2];
+                                    string str14;
+                                    if (itemData.AuraCurseNumForOneEvent <= 1)
+                                    {
+                                        str14 = "";
+                                    }
+                                    else
+                                    {
+                                        num21 = itemData.AuraCurseNumForOneEvent;
+                                        str14 = num21.ToString();
+                                    }
+                                    strArray[0] = str14;
+                                    strArray[1] = medsSpriteText(itemData.AuraCurseSetted.Id);
+                                    string str15 = medsColorTextArray("curse", strArray);
+                                    string str16 = string.Format(text, (object)str15);
+                                    stringBuilder16.Append(str16);
+                                    stringBuilder16.Append(" ");
+                                }
                                 stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemApplyEnemies"), (object)stringBuilder2.ToString()));
+                            }
                             else if (itemData.ItemTarget == Enums.ItemTarget.AllHero)
                             {
                                 if (__instance.CardClass == Enums.CardClass.Monster)
                                     stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemApplyHeroesFromMonster"), (object)stringBuilder2.ToString()));
                                 else
+                                {
+                                    if ((UnityEngine.Object)itemData.AuraCurseSetted != (UnityEngine.Object)null && itemData.AuraCurseNumForOneEvent > 0)
+                                    {
+                                        StringBuilder stringBuilder16 = stringBuilder1;
+                                        string text = Texts.Instance.GetText("itemForEveryCharge");
+                                        string[] strArray = new string[2];
+                                        string str14;
+                                        if (itemData.AuraCurseNumForOneEvent <= 1)
+                                        {
+                                            str14 = "";
+                                        }
+                                        else
+                                        {
+                                            num21 = itemData.AuraCurseNumForOneEvent;
+                                            str14 = num21.ToString();
+                                        }
+                                        strArray[0] = str14;
+                                        strArray[1] = medsSpriteText(itemData.AuraCurseSetted.Id);
+                                        string str15 = medsColorTextArray("curse", strArray);
+                                        string str16 = string.Format(text, (object)str15);
+                                        stringBuilder16.Append(str16);
+                                        stringBuilder16.Append(" ");
+                                    }
                                     stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemApplyHeroes"), (object)stringBuilder2.ToString()));
+                                }
                             }
                             else if (itemData.ItemTarget == Enums.ItemTarget.RandomHero)
                             {
@@ -2204,7 +2252,7 @@ namespace Obeliskial_Essentials
         }
 
         //supporting
-        private static string medsNumFormatItem(int num, bool plus = false, bool percent = false)
+        public static string medsNumFormatItem(int num, bool plus = false, bool percent = false)
         {
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.Append(" <nobr>");
@@ -2226,7 +2274,7 @@ namespace Obeliskial_Essentials
             stringBuilder.Append("</color></size></nobr>");
             return stringBuilder.ToString();
         }
-        private static string medsNumFormat(int oldNum)
+        public static string medsNumFormat(int oldNum)
         {
             int num = oldNum;
             if (num < 0)
@@ -2237,7 +2285,7 @@ namespace Obeliskial_Essentials
             stringBuilder.Append("</size>");
             return stringBuilder.ToString();
         }
-        private static string medsColorTextArray(string type, params string[] text)
+        public static string medsColorTextArray(string type, params string[] text)
         {
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.Append("<nobr>");
@@ -2277,7 +2325,7 @@ namespace Obeliskial_Essentials
                     goto case "";
             }
         }
-        private static string medsSpriteText(string sprite)
+        public static string medsSpriteText(string sprite)
         {
             StringBuilder stringBuilder = new StringBuilder();
             string str = sprite.ToLower().Replace(" ", "");
@@ -2323,7 +2371,7 @@ namespace Obeliskial_Essentials
                     goto case "reinforce";
             }
         }
-        private static string medsColorFromCardDataRarity(CardData _cData)
+        public static string medsColorFromCardDataRarity(CardData _cData)
         {
             if (!((UnityEngine.Object)_cData != (UnityEngine.Object)null))
                 return "<color=#5E3016>";
@@ -2341,7 +2389,7 @@ namespace Obeliskial_Essentials
             return stringBuilder.ToString();
         }
 
-        private static int medsGetFinalAuraCharges(Enums.CardClass _cardClass, string acId, int charges, Character character = null) => character == null ? charges : charges + character.GetAuraCurseQuantityModification(acId, _cardClass);
+        public static int medsGetFinalAuraCharges(Enums.CardClass _cardClass, string acId, int charges, Character character = null) => character == null ? charges : charges + character.GetAuraCurseQuantityModification(acId, _cardClass);
 
 
         [HarmonyPrefix]

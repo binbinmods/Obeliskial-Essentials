@@ -6,6 +6,12 @@ Multiple dispels are now displayed when special values are used.
 
 Text is now properly combined for dual damage cards when damage is transformed
 
+Card Descriptions can now handle "When you apply X Aura/Curse Apply Y Aura/Curse to All Heroes/Enemies"
+
+Data export should now properly include descriptionIds.
+
+Data export/import now includes Singularity cards
+
 # 1.4.3 
 
 Fixed a bug where the game would crash when completing a run.

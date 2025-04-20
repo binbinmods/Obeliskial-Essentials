@@ -70,6 +70,7 @@ namespace Obeliskial_Essentials
         public string Trait4B; // typically an effect trait
         public bool AutoUnlock;
         public string SourceCharacterName;
+        public string[] CardsSingularity; // Just a list of card names
     }
 
     [Serializable]
