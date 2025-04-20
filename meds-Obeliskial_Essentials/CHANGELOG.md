@@ -12,6 +12,8 @@ Data export should now properly include descriptionIds.
 
 Data export/import now includes Singularity cards
 
+Profile Editor now can edit madness levels
+
 # 1.4.3 
 
 Fixed a bug where the game would crash when completing a run.

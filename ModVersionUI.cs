@@ -499,7 +499,7 @@ namespace Obeliskial_Essentials
         internal static InputFieldRef inputAllHeroesExperience;
         internal static InputFieldRef inputSupplies;
         internal static InputFieldRef inputAdventureMadness;
-        internal static InputFieldRef inputAdventureMadness2;
+        internal static InputFieldRef inputSingularityMadness;
         internal static InputFieldRef inputObeliskMadness;
         internal static GameObject profileScroll;
         internal static GameObject profileScrollContent;
@@ -587,6 +587,43 @@ namespace Obeliskial_Essentials
             UIFactory.SetLayoutElement(inputSupplies.Component.gameObject, minWidth: 40, minHeight: 30);
             inputSupplies.Component.textComponent.alignment = TextAnchor.MiddleRight;
             inputSupplies.Component.characterValidation = InputField.CharacterValidation.Integer;
+
+            GameObject binAdvMadness = UIFactory.CreateUIObject("binAdvMadness", profileScrollContent);
+            UIFactory.SetLayoutElement(binAdvMadness, minHeight: 30, flexibleWidth: 9999, flexibleHeight: 30);
+            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(binAdvMadness, false, false, true, true, 5, 2, childAlignment: TextAnchor.UpperLeft);
+
+            Text labelAdvMadness = UIFactory.CreateLabel(binAdvMadness, "labelAdvMadness", "Adventure Madness");
+            UIFactory.SetLayoutElement(labelAdvMadness.gameObject, minWidth: 60, minHeight: 30);
+
+            inputAdventureMadness = UIFactory.CreateInputField(binAdvMadness, "inputAdventureMadness", "0-10");
+            UIFactory.SetLayoutElement(inputAdventureMadness.Component.gameObject, minWidth: 40, minHeight: 30);
+            inputAdventureMadness.Component.textComponent.alignment = TextAnchor.MiddleRight;
+            inputAdventureMadness.Component.characterValidation = InputField.CharacterValidation.Integer;      
+
+            GameObject binObMadness = UIFactory.CreateUIObject("binObMadness", profileScrollContent);
+            UIFactory.SetLayoutElement(binObMadness, minHeight: 30, flexibleWidth: 9999, flexibleHeight: 30);
+            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(binObMadness, false, false, true, true, 5, 2, childAlignment: TextAnchor.UpperLeft);
+
+            Text labelObMadness = UIFactory.CreateLabel(binObMadness, "labelObMadness", "Obelisk Madness");
+            UIFactory.SetLayoutElement(labelObMadness.gameObject, minWidth: 60, minHeight: 30);
+
+            inputObeliskMadness = UIFactory.CreateInputField(binObMadness, "inputObeliskMadness", "0-10");
+            UIFactory.SetLayoutElement(inputObeliskMadness.Component.gameObject, minWidth: 40, minHeight: 30);
+            inputObeliskMadness.Component.textComponent.alignment = TextAnchor.MiddleRight;
+            inputObeliskMadness.Component.characterValidation = InputField.CharacterValidation.Integer;   
+
+            GameObject binSingMadness = UIFactory.CreateUIObject("binObMadness", profileScrollContent);
+            UIFactory.SetLayoutElement(binSingMadness, minHeight: 30, flexibleWidth: 9999, flexibleHeight: 30);
+            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(binSingMadness, false, false, true, true, 5, 2, childAlignment: TextAnchor.UpperLeft);
+
+            Text labelSingMadness = UIFactory.CreateLabel(binSingMadness, "labelSingMadness", "Singularity Madness");
+            UIFactory.SetLayoutElement(labelSingMadness.gameObject, minWidth: 60, minHeight: 30);
+
+            inputSingularityMadness = UIFactory.CreateInputField(binSingMadness, "inputObeliskMadness", "0-10");
+            UIFactory.SetLayoutElement(inputSingularityMadness.Component.gameObject, minWidth: 40, minHeight: 30);
+            inputSingularityMadness.Component.textComponent.alignment = TextAnchor.MiddleRight;
+            inputSingularityMadness.Component.characterValidation = InputField.CharacterValidation.Integer;   
+
 
             // heroes 
             // create container + accordion
@@ -967,6 +1004,16 @@ namespace Obeliskial_Essentials
             LogInfo("SAVING PROFILE");
             if (int.TryParse(inputSupplies.Text, out int newSupplies))
                 PlayerManager.Instance.SupplyActual = newSupplies;
+
+            if (int.TryParse(inputAdventureMadness.Text, out int adventure))
+                PlayerManager.Instance.NgLevel = adventure;
+
+            if (int.TryParse(inputObeliskMadness.Text, out int obeliskMadness))
+                PlayerManager.Instance.ObeliskMadnessLevel = obeliskMadness;
+
+            if (int.TryParse(inputSingularityMadness.Text, out int singularityMadness))
+                PlayerManager.Instance.SingularityMadnessLevel = singularityMadness;
+                
             List<string> unlockedHeroes = new();
             foreach (string scID in toggleHeroesUnlocked.Keys)
             {
