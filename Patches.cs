@@ -393,16 +393,11 @@ namespace Obeliskial_Essentials
 
 
             // GameObject scrollContainer = GameObject.Find("CharacterScrollContainer") ?? new GameObject("CharacterScrollContainer");
-            LogDebug("about to begin looping through subclassDictionary");
 
             // Modified version of your original code to integrate with scroll system
-            LogDebug("creating");
+            // LogDebug("creating");
             // Create a new GameObject for the scroll system if it doesn't exist
-            GameObject scrollSystemObject = GameObject.Find("HeroSelectionScrollSystem");
-            if (scrollSystemObject == null)
-            {
-                scrollSystemObject = new GameObject("HeroSelectionScrollSystem");
-            }
+            GameObject scrollSystemObject = GameObject.Find("HeroSelectionScrollSystem") ?? new GameObject("HeroSelectionScrollSystem");
 
             // Get or add the scroll system component
             HeroSelectionScrollSystem scrollSystem = scrollSystemObject.GetComponent<HeroSelectionScrollSystem>();
@@ -417,15 +412,15 @@ namespace Obeliskial_Essentials
             }
 
             float num2 = 0.95f;
-            float num3 = 0.55f; // Modified to position at origin, scrolling will handle positioning
+            float num3 = 0.55f;
             float num4 = 1.75f;
-            float y = -0.65f; // Modified to position at origin, scrolling will handle positioning
+            float y = -0.65f;
 
-            LogDebug("Scroll Container created");
+
+            LogDebug("about to begin looping through subclassDictionary");
 
             for (int index1 = 0; index1 < 5; ++index1)
             {
-                // Loops over classes
                 switch (index1)
                 {
                     case 0:
@@ -462,7 +457,6 @@ namespace Obeliskial_Essentials
                     case 4: categoryName = "dlc"; break;
                 }
 
-                // Get the scroll container for this category
                 Transform scrollContainer = scrollSystem.GetScrollContainerFor(categoryName);
 
                 // Loops over characters within each class
@@ -503,19 +497,16 @@ namespace Obeliskial_Essentials
                     if (!((UnityEngine.Object)_subclassdata == (UnityEngine.Object)null))
                     {
                         // GameObject2 is the actual selection object
-                        // Modified to instantiate as a child of our scroll container
                         GameObject gameObject2 = UnityEngine.Object.Instantiate<GameObject>(
                             HeroSelectionManager.Instance.heroSelectionPrefab,
                             Vector3.zero,
                             Quaternion.identity,
                             scrollContainer);
 
-                        // Position horizontally based on index, all at the same height
                         gameObject2.transform.localPosition = new Vector3(num3 + num4 * (float)index2, y, 0.0f);
                         gameObject2.transform.localScale = new Vector3(num2, num2, 1f);
                         gameObject2.name = _subclassdata.SubClassName.ToLower();
 
-                        // The rest of your code remains the same
                         HeroSelection component = gameObject2.transform.Find("Portrait").transform.GetComponent<HeroSelection>();
                         HeroSelectionManager.Instance.heroSelectionDictionary.Add(gameObject2.name, component);
                         component.blocked = !PlayerManager.Instance.IsHeroUnlocked(_subclassdata.Id);
@@ -564,7 +555,7 @@ namespace Obeliskial_Essentials
                 }
             }
 
-            // After all heroes are created, refresh the scroll controllers
+            LogDebug("Created All Scroll Controllers");
             scrollSystem.RefreshAllScrollControllers();
 
 

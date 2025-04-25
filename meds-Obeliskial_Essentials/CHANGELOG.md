@@ -1,3 +1,7 @@
+# 1.4.5
+
+Updated the Text system
+
 # 1.4.4
 
 Alphabetized hero selection and added scroll. All modded heroes will now be present regardless of their original OrderInList property.
@@ -14,7 +18,7 @@ Data export/import now includes Singularity cards
 
 Profile Editor now can edit madness levels
 
-# 1.4.3 
+# 1.4.3
 
 Fixed a bug where the game would crash when completing a run.
 

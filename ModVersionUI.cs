@@ -968,6 +968,9 @@ namespace Obeliskial_Essentials
         {
             LogInfo("LOADING PLAYER PROFILE!");
             inputSupplies.Component.SetTextWithoutNotify(PlayerManager.Instance.SupplyActual.ToString());
+            inputAdventureMadness.Component.SetTextWithoutNotify(PlayerManager.Instance.NgLevel.ToString());
+            inputObeliskMadness.Component.SetTextWithoutNotify(PlayerManager.Instance.ObeliskMadnessLevel.ToString());
+            inputSingularityMadness.Component.SetTextWithoutNotify(PlayerManager.Instance.SingularityMadnessLevel.ToString());
             btnAllHeroesLockUnlock.ButtonText.text = "Lock All";
             foreach (string scID in toggleHeroesUnlocked.Keys)
             {
@@ -1013,7 +1016,7 @@ namespace Obeliskial_Essentials
 
             if (int.TryParse(inputSingularityMadness.Text, out int singularityMadness))
                 PlayerManager.Instance.SingularityMadnessLevel = singularityMadness;
-                
+
             List<string> unlockedHeroes = new();
             foreach (string scID in toggleHeroesUnlocked.Keys)
             {

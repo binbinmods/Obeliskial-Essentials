@@ -673,6 +673,7 @@ namespace Obeliskial_Essentials
             text.AutoUnlock = data.InitialUnlock; // #XMAS
             text.SourceCharacterName = data.SourceCharacterName;// #XMAS
             text.CardsSingularity = ToString(data.CardsSingularity); //
+            // LogDebug($"subclassData CardsSingularity {data.Id}: " + text.CardsSingularity);
             return text;
         }
 
@@ -1010,8 +1011,8 @@ namespace Obeliskial_Essentials
             text.IncreasedDamageReceivedType2 = ToString(data.IncreasedDamageReceivedType2);
             text.IncreasedDirectDamageChargesMultiplierNeededForOne = data.IncreasedDirectDamageChargesMultiplierNeededForOne;
             text.IncreasedDirectDamageChargesMultiplierNeededForOne2 = data.IncreasedDirectDamageChargesMultiplierNeededForOne2;
-            text.IncreasedDirectDamageReceivedPerStack = (int) data.IncreasedDirectDamageReceivedPerStack;
-            text.IncreasedDirectDamageReceivedPerStack2 = (int) data.IncreasedDirectDamageReceivedPerStack2;
+            text.IncreasedDirectDamageReceivedPerStack = (int)data.IncreasedDirectDamageReceivedPerStack;
+            text.IncreasedDirectDamageReceivedPerStack2 = (int)data.IncreasedDirectDamageReceivedPerStack2;
             text.IncreasedDirectDamageReceivedPerTurn = data.IncreasedDirectDamageReceivedPerTurn;
             text.IncreasedDirectDamageReceivedPerTurn2 = data.IncreasedDirectDamageReceivedPerTurn2;
             text.IncreasedPercentDamageReceivedPerStack = data.IncreasedPercentDamageReceivedPerStack;
