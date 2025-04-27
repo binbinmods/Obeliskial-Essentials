@@ -31,8 +31,9 @@ namespace Obeliskial_Essentials
                 hero cards: target most HP monster
         */
 
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(CardData), "SetDescriptionNew")]
+
+        // [HarmonyPrefix]
+        // [HarmonyPatch(typeof(CardData), "SetDescriptionNew")]
         public static bool SetDescriptionNewPrefix(ref CardData __instance,
                                                    int ___damagePreCalculated,
                                                    int ___damagePreCalculatedCombined,

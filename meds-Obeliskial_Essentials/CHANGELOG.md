@@ -1,6 +1,6 @@
 # 1.4.5
 
-Updated the Text system
+Updated the Text system.
 
 # 1.4.4
 
