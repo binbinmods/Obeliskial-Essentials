@@ -9,7 +9,7 @@ using System.Collections.Generic;
 namespace Obeliskial_Essentials
 {
     [HarmonyPatch]
-    internal class CardDescriptionNew
+    public class CardDescriptionNew
     {
         public static string medsColorUpgradePlain = "5E3016";
         public static string medsColorUpgradeGold = "875700";
@@ -98,8 +98,8 @@ namespace Obeliskial_Essentials
         [HarmonyPrefix]
         [HarmonyPatch(typeof(CardData), "SetDescriptionNew")]
         public static bool SetDescriptionNewPrefix(ref CardData __instance,
-                                                   int ___damagePreCalculated,
-                                                   int ___damagePreCalculatedCombined,
+                                                   //    int ___damagePreCalculated,
+                                                   //    int ___damagePreCalculatedCombined,
                                                    //    int ___damagePreCalculatedCombined2, 
                                                    bool forceDescription = false, Character character = null, bool includeInSearch = true)
         {
@@ -108,6 +108,13 @@ namespace Obeliskial_Essentials
             int medsHealSelfPreCalculated = Traverse.Create(__instance).Field("healSelfPreCalculated").GetValue<int>();
             int medsEnchantDamagePreCalculated = Traverse.Create(__instance).Field("enchantDamagePreCalculated").GetValue<int>();
             int medsDamagePreCalculatedCombined = Traverse.Create(__instance).Field("damagePreCalculatedCombined").GetValue<int>();
+
+            string testCard = "bbbsplashpotionofhealingb";
+            if (__instance.Id == testCard)
+            {
+                LogDebug($"Testing Description for {testCard}");
+            }
+
             // int damagePreCalculatedCombined = 
             if (medsCustomCardDescriptions.ContainsKey(__instance.Id))
                 __instance.DescriptionNormalized = medsCustomCardDescriptions[__instance.Id];
@@ -1170,15 +1177,18 @@ namespace Obeliskial_Essentials
                         stringBuilder2.Clear();
                     }
                     // CHANGE: ADDED HEALSIDES
-                    if (__instance.HealSides != 0)
+                    if (__instance.HealSides > 0)
                     {
+                        // __instance.HealSpecialValueGlobal;
                         // LogDebug($"Current description for {__instance.Id}: {stringBuilder1}");
-                        LogDebug("Binbin Testing Text: HealSides");
+                        LogDebug($"Binbin Testing Text: HealSides for {__instance.Id}");
                         string healSprite = medsSpriteText("heal");
-                        string healAmount = medsColorTextArray("heal", medsNumFormatItem(__instance.HealSides, plus: false));
-                        stringBuilder1.Append($"Heal Sides {healAmount} {healSprite} \n");
-
+                        string healAmount = medsColorTextArray("heal", medsNumFormat(__instance.HealSides));
+                        string toAdd = $"Heal sides {healAmount} {healSprite} \n";
+                        LogDebug($"Binbin Testing Text: {toAdd}");
+                        stringBuilder1.Append(toAdd);
                     }
+
                     // END CHANGE
                     if (__instance.HealSelf > 0 && !__instance.HealSelfSpecialValue1 && !__instance.HealSelfSpecialValueGlobal)
                     {
@@ -1437,62 +1447,49 @@ namespace Obeliskial_Essentials
                         ++num15;
                     }
 
-                    // // CHANGE: Added Support for DamagePercentBonus2 and 3. Added support for other damageTypes.
-                    // if (itemData.DamagePercentBonus == Enums.DamageType.All)
-                    // {
-                    //     stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemAllDamages"), (object)medsNumFormatItem(Functions.FuncRoundToInt(itemData.DamagePercentBonusValue), true, true)));
-                    //     stringBuilder1.Append("\n");
-                    // }
-                    // else if (itemData.DamagePercentBonus != Enums.DamageType.None && itemData.DamagePercentBonusValue != 0)
-                    // {
-                    //     string dt = itemData.DamagePercentBonus.ToString().ToLower();
-                    //     string textToAdd = "<space=.3><size=+.1><sprite name=" + dt + "></size> damage  {0}";
-                    //     textToAdd = string.Format(textToAdd, (object)medsNumFormatItem(Functions.FuncRoundToInt(itemData.DamagePercentBonusValue), true, true));
-                    //     stringBuilder1.Append(textToAdd);
-                    //     stringBuilder1.Append("\n");
-                    // }
-                    // if (itemData.DamagePercentBonus == Enums.DamageType.All)
-                    // {
-                    //     stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemAllDamages"), (object)medsNumFormatItem(Functions.FuncRoundToInt(itemData.DamagePercentBonusValue), true, true)));
-                    //     stringBuilder1.Append("\n");
-                    // }
-                    // else if (itemData.DamagePercentBonus != Enums.DamageType.None && itemData.DamagePercentBonusValue != 0)
-                    // {
-                    //     string dt = itemData.DamagePercentBonus.ToString().ToLower();
-                    //     string textToAdd = "<space=.3><size=+.1><sprite name=" + dt + "></size> damage  {0}";
-                    //     textToAdd = string.Format(textToAdd, (object)medsNumFormatItem(Functions.FuncRoundToInt(itemData.DamagePercentBonusValue), true, true));
-                    //     stringBuilder1.Append(textToAdd);
-                    //     stringBuilder1.Append("\n");
-                    // }
+                    // CHANGE: Added Support for DamagePercentBonus2 and 3. Added support for other damageTypes.
+                    if (itemData.DamagePercentBonus == Enums.DamageType.All)
+                    {
+                        stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemAllDamages"), (object)medsNumFormatItem(Functions.FuncRoundToInt(itemData.DamagePercentBonusValue), true, true)));
+                        stringBuilder1.Append("\n");
+                    }
+                    else if (itemData.DamagePercentBonus != Enums.DamageType.None && itemData.DamagePercentBonusValue != 0)
+                    {
+                        string dt = itemData.DamagePercentBonus.ToString().ToLower();
+                        string textToAdd = "<space=.3><size=+.1><sprite name=" + dt + "></size> damage  {0}";
+                        textToAdd = string.Format(textToAdd, (object)medsNumFormatItem(Functions.FuncRoundToInt(itemData.DamagePercentBonusValue), true, true));
+                        stringBuilder1.Append(textToAdd);
+                        stringBuilder1.Append("\n");
+                    }
 
-                    // if (itemData.DamagePercentBonus2 == Enums.DamageType.All)
-                    // {
-                    //     stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemAllDamages"), (object)medsNumFormatItem(Functions.FuncRoundToInt(itemData.DamagePercentBonusValue2), true, true)));
-                    //     stringBuilder1.Append("\n");
-                    // }
-                    // else if (itemData.DamagePercentBonus2 != Enums.DamageType.None && itemData.DamagePercentBonusValue2 != 0)
-                    // {
-                    //     string dt = itemData.DamagePercentBonus2.ToString().ToLower();
-                    //     string textToAdd = "<space=.3><size=+.1><sprite name=" + dt + "></size> damage  {0}";
-                    //     textToAdd = string.Format(textToAdd, (object)medsNumFormatItem(Functions.FuncRoundToInt(itemData.DamagePercentBonusValue2), true, true));
-                    //     stringBuilder1.Append(textToAdd);
-                    //     stringBuilder1.Append("\n");
-                    // }
+                    if (itemData.DamagePercentBonus2 == Enums.DamageType.All)
+                    {
+                        stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemAllDamages"), (object)medsNumFormatItem(Functions.FuncRoundToInt(itemData.DamagePercentBonusValue2), true, true)));
+                        stringBuilder1.Append("\n");
+                    }
+                    else if (itemData.DamagePercentBonus2 != Enums.DamageType.None && itemData.DamagePercentBonusValue2 != 0)
+                    {
+                        string dt = itemData.DamagePercentBonus2.ToString().ToLower();
+                        string textToAdd = "<space=.3><size=+.1><sprite name=" + dt + "></size> damage  {0}";
+                        textToAdd = string.Format(textToAdd, (object)medsNumFormatItem(Functions.FuncRoundToInt(itemData.DamagePercentBonusValue2), true, true));
+                        stringBuilder1.Append(textToAdd);
+                        stringBuilder1.Append("\n");
+                    }
 
-                    // if (itemData.DamagePercentBonus3 == Enums.DamageType.All)
-                    // {
-                    //     stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemAllDamages"), (object)medsNumFormatItem(Functions.FuncRoundToInt(itemData.DamagePercentBonusValue3), true, true)));
-                    //     stringBuilder1.Append("\n");
-                    // }
-                    // else if (itemData.DamagePercentBonus3 != Enums.DamageType.None && itemData.DamagePercentBonusValue3 != 0)
-                    // {
-                    //     string dt = itemData.DamagePercentBonus3.ToString().ToLower();
-                    //     string textToAdd = "<space=.3><size=+.1><sprite name=" + dt + "></size> damage  {0}";
-                    //     textToAdd = string.Format(textToAdd, (object)medsNumFormatItem(Functions.FuncRoundToInt(itemData.DamagePercentBonusValue3), true, true));
-                    //     stringBuilder1.Append(textToAdd);
-                    //     stringBuilder1.Append("\n");
-                    // }
-                    // // END CHANGE
+                    if (itemData.DamagePercentBonus3 == Enums.DamageType.All)
+                    {
+                        stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemAllDamages"), (object)medsNumFormatItem(Functions.FuncRoundToInt(itemData.DamagePercentBonusValue3), true, true)));
+                        stringBuilder1.Append("\n");
+                    }
+                    else if (itemData.DamagePercentBonus3 != Enums.DamageType.None && itemData.DamagePercentBonusValue3 != 0)
+                    {
+                        string dt = itemData.DamagePercentBonus3.ToString().ToLower();
+                        string textToAdd = "<space=.3><size=+.1><sprite name=" + dt + "></size> damage  {0}";
+                        textToAdd = string.Format(textToAdd, (object)medsNumFormatItem(Functions.FuncRoundToInt(itemData.DamagePercentBonusValue3), true, true));
+                        stringBuilder1.Append(textToAdd);
+                        stringBuilder1.Append("\n");
+                    }
+                    // END CHANGE
 
 
                     if (num15 > 0)
@@ -2704,6 +2701,11 @@ namespace Obeliskial_Essentials
 
         public static void BinbinCustomText(TextLocation location, ref StringBuilder stringBuilder, CardData card)
         {
+            if (TextToAddAtLocations == null)
+            {
+                TextToAddAtLocations = [];
+            }
+
             if (TextToAddAtLocations.TryGetValue(location, out Dictionary<CardData, List<string>> cardsToAddTextTo))
             {
                 if (cardsToAddTextTo.TryGetValue(card, out List<string> textsToAdd))
@@ -2711,37 +2713,45 @@ namespace Obeliskial_Essentials
                     foreach (string text in textsToAdd)
                     {
                         stringBuilder.Append(text);
-                        stringBuilder.Append("\n");
+                        stringBuilder.Append(text.EndsWith("\n") ? "" : "\n");
                     }
 
                 }
             }
-            if (!TextToAddAtLocations.ContainsKey(location))
-            {
-                return;
-            }
-
+            // if (!TextToAddAtLocations.ContainsKey(location))
+            // {
+            //     return;
+            // }
             // Dictionary<CardData, List<string>> cardsToAddTextTo = TextToAddAtLocations[location];
-            if (!cardsToAddTextTo.ContainsKey(card))
-            {
-                return;
-            }
+            // if (!cardsToAddTextTo.ContainsKey(card))
+            // {
+            //     return;
+            // }
             // List<string> textsToAdd = cardsToAddTextTo[card];
 
         }
 
         public static void AddTextToCardDescription(string text, TextLocation location, CardData card)
         {
+            if (TextToAddAtLocations == null)
+            {
+                TextToAddAtLocations = [];
+            }
+
             if (!TextToAddAtLocations.ContainsKey(location))
             {
-                TextToAddAtLocations[location] = new Dictionary<CardData, List<string>>();
+                TextToAddAtLocations[location] = [];
             }
+
             Dictionary<CardData, List<string>> cardsToAddTextTo = TextToAddAtLocations[location];
+
             if (!cardsToAddTextTo.ContainsKey(card))
             {
-                cardsToAddTextTo[card] = new List<string>();
+                cardsToAddTextTo[card] = [];
             }
             cardsToAddTextTo[card].Add(text);
+
+            TextToAddAtLocations[location] = cardsToAddTextTo;
         }
 
         public static void AddTextToCardDescription(string text, TextLocation location, string card)
