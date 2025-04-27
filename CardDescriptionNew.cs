@@ -1046,15 +1046,18 @@ namespace Obeliskial_Essentials
                         stringBuilder2.Append(medsColorTextArray("system", medsNumFormat(__instance.EnergyRecharge), medsSpriteText("energy")));
                     }
 
-                    // CHANGE: Grant Energy replaced with Gain energy if targets enemies
-                    if (__instance.EnergyRecharge != 0 && __instance.TargetSide == Enums.CardTargetSide.Enemy)
-                    {
-                        // LogDebug($"Current description for {__instance.Id}: {stringBuilder1}");
-                        // string energySprite = medsSpriteText("energy");
-                        LogDebug("Binbin Testing Text: Gain Energy");
-                        stringBuilder2.Replace($"Grant", $"Gain");
-                    }
-                    // END CHANGE
+                    // // CHANGE: Grant Energy replaced with Gain energy if targets enemies
+                    // if (__instance.EnergyRecharge > 0 && __instance.TargetSide == Enums.CardTargetSide.Enemy)
+                    // {
+                    //     // LogDebug($"Current description for {__instance.Id}: {stringBuilder1}");
+                    //     // string energySprite = medsSpriteText("energy");
+                    //     LogDebug("Binbin Testing Text: Gain Energy");
+                    //     LogDebug($"Binbin Testing Text Pre sb2: {stringBuilder2}");
+                    //     LogDebug($"Binbin Testing Text Pre sb1: {stringBuilder1}");
+                    //     stringBuilder1.Replace($"Grant", $"Gain");
+                    //     LogDebug($"Binbin Testing TextPost: {stringBuilder1}");
+                    // }
+                    // // END CHANGE
 
 
                     if ((UnityEngine.Object)__instance.Aura != (UnityEngine.Object)null && __instance.AuraCharges > 0 && (UnityEngine.Object)__instance.Aura != (UnityEngine.Object)auraCurseData)

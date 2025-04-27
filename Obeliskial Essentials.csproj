@@ -176,6 +176,7 @@
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Copy SourceFiles="$(TargetPath)" DestinationFolder="../../plugins" />
 		<Copy SourceFiles="$(TargetPath)" DestinationFolder="meds-Obeliskial_Essentials/BepInEx/plugins" />
+		<Exec Command="/usr/bin/python3 &quot;$(ProjectDir)ship_mod.py&quot;" />
   	</Target>
 
 	
