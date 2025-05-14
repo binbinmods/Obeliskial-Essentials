@@ -2797,7 +2797,7 @@ namespace Obeliskial_Essentials
 
         }
 
-        public static void AddTextToCardDescription(string text, TextLocation location, string card)
+        public static void AddTextToCardDescription(string text, TextLocation location, string card, bool includeAB = false, bool includeRare = false)
         {
             TextToAddAtLocations ??= [];
 
@@ -2808,6 +2808,21 @@ namespace Obeliskial_Essentials
 
             Dictionary<string, List<string>> cardsToAddTextTo = TextToAddAtLocations[location];
 
+            AddCardToDict(text, location, card, cardsToAddTextTo);
+            if (includeAB)
+            {
+                AddCardToDict(text, location, card + "a", cardsToAddTextTo);
+                AddCardToDict(text, location, card + "b", cardsToAddTextTo);
+
+            }
+            if (includeRare)
+            {
+                AddCardToDict(text, location, card + "rare", cardsToAddTextTo);
+            }
+        }
+
+        public static void AddCardToDict(string text, TextLocation location, string card, Dictionary<string, List<string>> cardsToAddTextTo)
+        {
             if (!cardsToAddTextTo.ContainsKey(card))
             {
                 cardsToAddTextTo[card] = [];
@@ -2815,7 +2830,10 @@ namespace Obeliskial_Essentials
             cardsToAddTextTo[card].Add(text);
 
             TextToAddAtLocations[location] = cardsToAddTextTo;
-
+            if (ModifiedCards == null)
+            {
+                ModifiedCards = [];
+            }
             ModifiedCards.Add(card);
         }
 
@@ -2849,7 +2867,7 @@ namespace Obeliskial_Essentials
                 return;
             }
             string cardId = id.Split("_")[0];
-            bool needsUpdating = ModifiedCards.Contains(cardId);
+            bool needsUpdating = ModifiedCards?.Contains(cardId) ?? false;
             if (needsUpdating)
             {
 
