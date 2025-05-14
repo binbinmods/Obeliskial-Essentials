@@ -1,3 +1,13 @@
+# 1.4.6
+
+Fixed a text issue with "Dispel all" in the case where a card also has certain types of Special Values.
+
+Fixed a text issue with transforming more than one aura/curses
+
+Updated the adding text system
+
+Custom text should appear properly in combat (assuming the text system is used). This is still not updated to use precalculated values.
+
 # 1.4.5
 
 Updated the Text system.

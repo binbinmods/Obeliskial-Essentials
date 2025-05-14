@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using static Obeliskial_Essentials.Essentials;
 using System.Collections.Generic;
+using TMPro;
 
 namespace Obeliskial_Essentials
 {
@@ -49,7 +50,9 @@ namespace Obeliskial_Essentials
             End
         }
 
-        public static Dictionary<TextLocation, Dictionary<CardData, List<string>>> TextToAddAtLocations;
+        public static Dictionary<TextLocation, Dictionary<string, List<string>>> TextToAddAtLocations;
+
+        public static HashSet<string> ModifiedCards;
 
 
         /*  this is a copy of CardData.Instance.SetDescriptionNew() with some minor modifications:
@@ -93,6 +96,26 @@ namespace Obeliskial_Essentials
                             stringBuilder1.Append("</color>\n");
                         }
                         // END CUSTOM DESCRIPTION: GOLD/SHARDS
+
+                        // BEGIN CUSTOM DESCRIPTION - Multiplier for multiple Transforms
+
+                        // if (str7 != "")
+                        //     stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsTransformIntoAnd"), (object)str5, (object)stringBuilder2.ToString(), (object)str7));
+                        // else
+                        stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsTransformInto"), (object)str5, (object)stringBuilder2.ToString()));
+                        stringBuilder1.Append(str7);
+                        stringBuilder1.Append(thirdACSprite);
+                        if (str8 != "")
+                        {
+                            stringBuilder1.Append(" <c>");
+                            stringBuilder1.Append(str8);
+                            stringBuilder1.Append("</c>");
+                        }
+                        // END CUSTOM DESCRIPTION
+                        stringBuilder1.Append("\n");
+                        stringBuilder2.Clear();
+                        num2 = 0.0f;
+                        str8 = "";
         */
 
         [HarmonyPrefix]
@@ -109,15 +132,32 @@ namespace Obeliskial_Essentials
             int medsEnchantDamagePreCalculated = Traverse.Create(__instance).Field("enchantDamagePreCalculated").GetValue<int>();
             int medsDamagePreCalculatedCombined = Traverse.Create(__instance).Field("damagePreCalculatedCombined").GetValue<int>();
 
-            string testCard = "bbbsplashpotionofhealingb";
+            string testCard = "transmuterformula";
+            string testCard2 = "flashheal";
             if (__instance.Id == testCard)
             {
-                LogDebug($"Testing Description for {testCard}");
+                LogDebug($"Testing Description for {testCard},\n Normalized {__instance.DescriptionNormalized},\n Regular {__instance.Description}");
+            }
+            if (__instance.Id == testCard2)
+            {
+                LogDebug($"Testing Description for {testCard2},\n Normalized {__instance.DescriptionNormalized},\n Regular {__instance.Description}");
             }
 
             // int damagePreCalculatedCombined = 
             if (medsCustomCardDescriptions.ContainsKey(__instance.Id))
+            {
+                if (__instance.Id == testCard)
+                {
+                    LogDebug($"Testing Description Custom for {testCard},\n Normalized {__instance.DescriptionNormalized},\n Regular {__instance.Description}");
+                }
+                if (__instance.Id == testCard2)
+                {
+                    LogDebug($"Testing Description Custom for {testCard2},\n Normalized {__instance.DescriptionNormalized},\n Regular {__instance.Description}");
+                }
+
                 __instance.DescriptionNormalized = medsCustomCardDescriptions[__instance.Id];
+            }
+
             else if (forceDescription || !Globals.Instance.CardsDescriptionNormalized.ContainsKey(__instance.Id))
             {
                 StringBuilder stringBuilder1 = new StringBuilder();
@@ -131,21 +171,21 @@ namespace Obeliskial_Essentials
                 {
                     LogDebug($"Adding Custom Description to {__instance.Id}");
                     stringBuilder1.Append(Functions.FormatStringCard(Texts.Instance.GetText(medsDescriptionID)));
-
                 }
                 else if ((UnityEngine.Object)__instance.Item == (UnityEngine.Object)null && (UnityEngine.Object)__instance.ItemEnchantment == (UnityEngine.Object)null)
                 {
                     string str5 = "";
                     string str6 = "";
                     string str7 = "";
+                    string thirdACSprite = "";
                     float num2 = 0.0f;
                     string str8 = "";
                     bool flag1 = false;
                     bool flag2 = false;
                     bool flag3 = true;
 
-                    // Custom Text: Beginning
-                    BinbinCustomText(TextLocation.Beginning, ref stringBuilder1, __instance);
+                    // Custom Text: Beginning                   
+                    BinbinCustomText(TextLocation.Beginning, ref stringBuilder1, __instance.Id);
 
                     StringBuilder stringBuilder3 = new StringBuilder();
                     if (__instance.Damage > 0 || __instance.Damage2 > 0 || __instance.DamageSelf > 0 || __instance.DamageSelf2 > 0)
@@ -325,7 +365,7 @@ namespace Obeliskial_Essentials
                     }
 
                     // Custom Text: After Add/Discard/Draw
-                    BinbinCustomText(TextLocation.AfterAddDiscardDraw, ref stringBuilder1, __instance);
+                    BinbinCustomText(TextLocation.AfterAddDiscardDraw, ref stringBuilder1, __instance.Id);
 
                     num1 = 0;
                     if ((UnityEngine.Object)__instance.SummonUnit != (UnityEngine.Object)null && __instance.SummonUnitNum > 0)
@@ -451,7 +491,7 @@ namespace Obeliskial_Essentials
                         }
                     }
 
-                    BinbinCustomText(TextLocation.AfterDispelSummonBeforeTransfer, ref stringBuilder1, __instance);
+                    BinbinCustomText(TextLocation.AfterDispelSummonBeforeTransfer, ref stringBuilder1, __instance.Id);
 
                     if (__instance.TransferCurses > 0)
                     {
@@ -485,7 +525,7 @@ namespace Obeliskial_Essentials
                     }
 
                     // Custom Text: After Transfer/Steal/Increase/Reduce
-                    BinbinCustomText(TextLocation.AfterTransferIncreaseACBeforeDamage, ref stringBuilder1, __instance);
+                    BinbinCustomText(TextLocation.AfterTransferIncreaseACBeforeDamage, ref stringBuilder1, __instance.Id);
                     // Custom Text: Before Damage
                     bool flag4 = false;
                     if (__instance.Damage > 0)
@@ -571,7 +611,7 @@ namespace Obeliskial_Essentials
                     }
 
                     // Custom Text: After Damage Before Heal
-                    BinbinCustomText(TextLocation.AfterDamageBeforeHeal, ref stringBuilder1, __instance);
+                    BinbinCustomText(TextLocation.AfterDamageBeforeHeal, ref stringBuilder1, __instance.Id);
 
                     if (stringBuilder3.Length > 0)
                     {
@@ -611,6 +651,8 @@ namespace Obeliskial_Essentials
                                         str6 = medsSpriteText(__instance.Aura.ACName);
                                     if ((UnityEngine.Object)__instance.Aura2 != (UnityEngine.Object)null && __instance.AuraCharges2SpecialValueGlobal)
                                         str7 = medsSpriteText(__instance.Aura2.ACName);
+                                    if ((UnityEngine.Object)__instance.Aura3 != (UnityEngine.Object)null && __instance.AuraCharges3SpecialValue1)
+                                        thirdACSprite = medsSpriteText(__instance.Aura3.ACName);
                                 }
                                 else if (__instance.CurseChargesSpecialValueGlobal)
                                 {
@@ -618,6 +660,8 @@ namespace Obeliskial_Essentials
                                         str6 = medsSpriteText(__instance.Curse.ACName);
                                     if ((UnityEngine.Object)__instance.Curse2 != (UnityEngine.Object)null && __instance.CurseCharges2SpecialValueGlobal)
                                         str7 = medsSpriteText(__instance.Curse2.ACName);
+                                    if ((UnityEngine.Object)__instance.Curse3 != (UnityEngine.Object)null && __instance.CurseCharges3SpecialValue1)
+                                        thirdACSprite = medsSpriteText(__instance.Curse3.ACName);
                                 }
                             }
                             else if (__instance.SpecialValue1 == Enums.CardSpecialValue.AuraCurseTarget)
@@ -630,6 +674,8 @@ namespace Obeliskial_Essentials
                                         str6 = medsSpriteText(__instance.Aura.ACName);
                                     if ((UnityEngine.Object)__instance.Aura2 != (UnityEngine.Object)null && __instance.AuraCharges2SpecialValue1)
                                         str7 = medsSpriteText(__instance.Aura2.ACName);
+                                    if ((UnityEngine.Object)__instance.Curse3 != (UnityEngine.Object)null && __instance.CurseCharges3SpecialValue1)
+                                        thirdACSprite = medsSpriteText(__instance.Curse3.ACName);
                                 }
                                 else if (__instance.CurseChargesSpecialValue1)
                                 {
@@ -637,6 +683,8 @@ namespace Obeliskial_Essentials
                                         str6 = medsSpriteText(__instance.Curse.ACName);
                                     if ((UnityEngine.Object)__instance.Curse2 != (UnityEngine.Object)null && __instance.CurseCharges2SpecialValue1)
                                         str7 = medsSpriteText(__instance.Curse2.ACName);
+                                    if ((UnityEngine.Object)__instance.Curse3 != (UnityEngine.Object)null && __instance.CurseCharges3SpecialValue1)
+                                        thirdACSprite = medsSpriteText(__instance.Curse3.ACName);
                                 }
                             }
                             if (str5 != "" && str6 != "")
@@ -726,16 +774,21 @@ namespace Obeliskial_Essentials
                                         num2 = __instance.SpecialValueModifier1 / 100f;
                                     if ((double)num2 > 0.0 && (double)num2 != 1.0)
                                         str8 = "x " + num2.ToString();
+                                    // BEGIN CHANGE - Multiplier for multiple Transforms
+
+                                    // if (str7 != "")
+                                    //     stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsTransformIntoAnd"), (object)str5, (object)stringBuilder2.ToString(), (object)str7));
+                                    // else
+                                    stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsTransformInto"), (object)str5, (object)stringBuilder2.ToString()));
+                                    stringBuilder1.Append(str7);
+                                    stringBuilder1.Append(thirdACSprite);
                                     if (str8 != "")
                                     {
-                                        stringBuilder2.Append(" <c>");
-                                        stringBuilder2.Append(str8);
-                                        stringBuilder2.Append("</c>");
+                                        stringBuilder1.Append(" <c>");
+                                        stringBuilder1.Append(str8);
+                                        stringBuilder1.Append("</c>");
                                     }
-                                    if (str7 != "")
-                                        stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsTransformIntoAnd"), (object)str5, (object)stringBuilder2.ToString(), (object)str7));
-                                    else
-                                        stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsTransformInto"), (object)str5, (object)stringBuilder2.ToString()));
+                                    // END CHANGE
                                     stringBuilder1.Append("\n");
                                     stringBuilder2.Clear();
                                     num2 = 0.0f;
@@ -748,7 +801,7 @@ namespace Obeliskial_Essentials
                         stringBuilder2.Append(medsColorTextArray("aura", "X", medsSpriteText("energy")));
 
                     // Custom Text: Before Auras
-                    BinbinCustomText(TextLocation.AfterHealBeforeAuras, ref stringBuilder1, __instance);
+                    BinbinCustomText(TextLocation.AfterHealBeforeAuras, ref stringBuilder1, __instance.Id);
 
                     AuraCurseData auraCurseData = (AuraCurseData)null;
                     if (!flag1 && !flag2)
@@ -799,7 +852,7 @@ namespace Obeliskial_Essentials
                     }
 
                     // Custom Text: After Auras/BeforeCurses
-                    BinbinCustomText(TextLocation.AfterAurasBeforeCurses, ref stringBuilder1, __instance);
+                    BinbinCustomText(TextLocation.AfterAurasBeforeCurses, ref stringBuilder1, __instance.Id);
 
                     if (!flag1 && !flag2)
                     {
@@ -875,7 +928,7 @@ namespace Obeliskial_Essentials
                     int num7 = 0;
 
                     // Custom Text: After Curse Before SpecialValue
-                    BinbinCustomText(TextLocation.AfterCurseBeforeSpecialValue, ref stringBuilder1, __instance);
+                    BinbinCustomText(TextLocation.AfterCurseBeforeSpecialValue, ref stringBuilder1, __instance.Id);
 
                     if (__instance.Heal > 0 && (__instance.HealSpecialValue1 || __instance.HealSpecialValueGlobal))
                     {
@@ -1294,7 +1347,7 @@ namespace Obeliskial_Essentials
                     }
 
                     // Custom Text: After SpecialValue Before Repeat
-                    BinbinCustomText(TextLocation.AfterSpecialBeforeRepeat, ref stringBuilder1, __instance);
+                    BinbinCustomText(TextLocation.AfterSpecialBeforeRepeat, ref stringBuilder1, __instance.Id);
 
                     if (__instance.EffectRepeat > 1 || __instance.EffectRepeatMaxBonus > 0)
                     {
@@ -1356,7 +1409,7 @@ namespace Obeliskial_Essentials
                 {
 
                     // Custom Text: Item Beginning
-                    BinbinCustomText(TextLocation.ItemBeginning, ref stringBuilder1, __instance);
+                    BinbinCustomText(TextLocation.ItemBeginning, ref stringBuilder1, __instance.Id);
 
                     ItemData itemData = !((UnityEngine.Object)__instance.Item != (UnityEngine.Object)null) ? __instance.ItemEnchantment : __instance.Item;
                     if (itemData.MaxHealth != 0)
@@ -1401,7 +1454,7 @@ namespace Obeliskial_Essentials
                     }
 
                     // Custom Text: Item After HPResists Before Stats
-                    BinbinCustomText(TextLocation.ItemAfterHPResistsBeforeStats, ref stringBuilder1, __instance);
+                    BinbinCustomText(TextLocation.ItemAfterHPResistsBeforeStats, ref stringBuilder1, __instance.Id);
 
                     if (itemData.CharacterStatModified == Enums.CharacterStat.Speed)
                     {
@@ -1425,7 +1478,7 @@ namespace Obeliskial_Essentials
                     }
 
                     // Custom Text: Item After Stats Before DamageBonus
-                    BinbinCustomText(TextLocation.ItemAfterStatsBeforeDamageBonus, ref stringBuilder1, __instance);
+                    BinbinCustomText(TextLocation.ItemAfterStatsBeforeDamageBonus, ref stringBuilder1, __instance.Id);
                     if (itemData.DamageFlatBonus == Enums.DamageType.All)
                     {
                         stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemAllDamages"), (object)medsNumFormatItem(itemData.DamageFlatBonusValue, true)));
@@ -1502,7 +1555,7 @@ namespace Obeliskial_Essentials
                         stringBuilder2.Clear();
                     }
                     // Custom Text: After DamageBonus before heal                    
-                    BinbinCustomText(TextLocation.ItemAfterDamageBonusBeforeHeal, ref stringBuilder1, __instance);
+                    BinbinCustomText(TextLocation.ItemAfterDamageBonusBeforeHeal, ref stringBuilder1, __instance.Id);
                     if (itemData.UseTheNextInsteadWhenYouPlay && (double)itemData.HealPercentBonus != 0.0)
                     {
                         string str11 = "";
@@ -1552,7 +1605,7 @@ namespace Obeliskial_Essentials
                         stringBuilder1.Append("\n");
                     }
                     // Custom Text: Item After HealBonus before ACBonus 
-                    BinbinCustomText(TextLocation.ItemAfterHealBonusBeforeACBonus, ref stringBuilder1, __instance);
+                    BinbinCustomText(TextLocation.ItemAfterHealBonusBeforeACBonus, ref stringBuilder1, __instance.Id);
                     if ((UnityEngine.Object)itemData.AuracurseBonus1 != (UnityEngine.Object)null && itemData.AuracurseBonusValue1 > 0 && (UnityEngine.Object)itemData.AuracurseBonus2 != (UnityEngine.Object)null && itemData.AuracurseBonusValue2 > 0 && itemData.AuracurseBonusValue1 == itemData.AuracurseBonusValue2)
                     {
                         stringBuilder2.Append(medsSpriteText(itemData.AuracurseBonus1.ACName));
@@ -1575,7 +1628,7 @@ namespace Obeliskial_Essentials
                         }
                     }
                     // Custom Text: Item After ACBonus before MiscText
-                    BinbinCustomText(TextLocation.ItemAfterACBonusBeforeMiscText, ref stringBuilder1, __instance);
+                    BinbinCustomText(TextLocation.ItemAfterACBonusBeforeMiscText, ref stringBuilder1, __instance.Id);
                     int num17 = 0;
                     if ((UnityEngine.Object)itemData.AuracurseImmune1 != (UnityEngine.Object)null)
                     {
@@ -1628,7 +1681,7 @@ namespace Obeliskial_Essentials
                     {
 
                         // Custom Text: Enchantment Only Before Cast
-                        BinbinCustomText(TextLocation.ItemEnchantBeforeCast, ref stringBuilder1, __instance);
+                        BinbinCustomText(TextLocation.ItemEnchantBeforeCast, ref stringBuilder1, __instance.Id);
                         if (itemData.CastedCardType != Enums.CardType.None)
                         {
                             stringBuilder2.Append("<color=#5E3016>");
@@ -1663,7 +1716,7 @@ namespace Obeliskial_Essentials
                     }
 
                     // Custom Text: Item Before Activation
-                    BinbinCustomText(TextLocation.ItemBeforeActivation, ref stringBuilder1, __instance);
+                    BinbinCustomText(TextLocation.ItemBeforeActivation, ref stringBuilder1, __instance.Id);
                     if (itemData.Activation != Enums.EventActivation.None && itemData.Activation != Enums.EventActivation.PreBeginCombat)
                     {
                         if (stringBuilder1.Length > 0)
@@ -1796,7 +1849,7 @@ namespace Obeliskial_Essentials
 
 
                         // Custom Text: Item After Activation Before Event
-                        BinbinCustomText(TextLocation.ItemAfterActivationBeforeEvent, ref stringBuilder1, __instance);
+                        BinbinCustomText(TextLocation.ItemAfterActivationBeforeEvent, ref stringBuilder1, __instance.Id);
                         if (itemData.ChanceToDispel > 0 && itemData.ChanceToDispelNum > 0)
                         {
                             if (itemData.ChanceToDispel < 100)
@@ -1848,7 +1901,7 @@ namespace Obeliskial_Essentials
                             stringBuilder1.Append("<br>");
                         }
 
-                        BinbinCustomText(TextLocation.ItemActivationAfterGoldBeforeHeal, ref stringBuilder1, __instance);
+                        BinbinCustomText(TextLocation.ItemActivationAfterGoldBeforeHeal, ref stringBuilder1, __instance.Id);
                         // Custom Text: ItemActivation After Gold Before Heal
                         if (itemData.HealQuantity > 0)
                         {
@@ -1905,7 +1958,7 @@ namespace Obeliskial_Essentials
                         }
 
                         // Custom Text: ItemActivation After Heal Before Damage
-                        BinbinCustomText(TextLocation.ItemActivationAfterHealBeforeDamage, ref stringBuilder1, __instance);
+                        BinbinCustomText(TextLocation.ItemActivationAfterHealBeforeDamage, ref stringBuilder1, __instance.Id);
                         if (itemData.DamageToTarget > 0)
                         {
                             stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsDealDamage"), (object)medsColorTextArray("damage", medsNumFormat(medsEnchantDamagePreCalculated), medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)itemData.DamageToTargetType)))));
@@ -1915,7 +1968,7 @@ namespace Obeliskial_Essentials
                         bool flag5 = true;
 
                         // Custom Text: ItemActivation After Damage Before AC
-                        BinbinCustomText(TextLocation.ItemActivationAfterDamageBeforeAC, ref stringBuilder1, __instance);
+                        BinbinCustomText(TextLocation.ItemActivationAfterDamageBeforeAC, ref stringBuilder1, __instance.Id);
                         if ((UnityEngine.Object)itemData.AuracurseGain1 != (UnityEngine.Object)null && itemData.AuracurseGainValue1 > 0)
                         {
                             ++num18;
@@ -1945,7 +1998,7 @@ namespace Obeliskial_Essentials
                         int num19;
 
                         // Custom Text: ItemAfterACBeforeSelf
-                        BinbinCustomText(TextLocation.ItemActivationAfterACBeforeSelf, ref stringBuilder1, __instance);
+                        BinbinCustomText(TextLocation.ItemActivationAfterACBeforeSelf, ref stringBuilder1, __instance.Id);
 
                         if (num18 > 0)
                         {
@@ -2152,7 +2205,7 @@ namespace Obeliskial_Essentials
                         }
 
                         // Custom Text: ItemActivation After Self Before AddCard
-                        BinbinCustomText(TextLocation.ItemActivationAfterSelfBeforeAddCard, ref stringBuilder1, __instance);
+                        BinbinCustomText(TextLocation.ItemActivationAfterSelfBeforeAddCard, ref stringBuilder1, __instance.Id);
                         if (itemData.CardNum > 0)
                         {
                             string str27;
@@ -2267,7 +2320,7 @@ namespace Obeliskial_Essentials
                                 stringBuilder1.Append(" ");
                         }
 
-                        BinbinCustomText(TextLocation.ItemActivationAfterAddCardBeforeReduceCost, ref stringBuilder1, __instance);
+                        BinbinCustomText(TextLocation.ItemActivationAfterAddCardBeforeReduceCost, ref stringBuilder1, __instance.Id);
                         // Custom Text: ItemActivation After AddCard Before CardReduce
                         if (itemData.CardsReduced > 0)
                         {
@@ -2356,7 +2409,7 @@ namespace Obeliskial_Essentials
                     }
 
                     // Custom Text: ItemActivation After AllActivation BeforeDestroyConditions
-                    BinbinCustomText(TextLocation.ItemActivationAfterAllActivationBeforeDestroyConditions, ref stringBuilder1, __instance);
+                    BinbinCustomText(TextLocation.ItemActivationAfterAllActivationBeforeDestroyConditions, ref stringBuilder1, __instance.Id);
                     if (itemData.DestroyStartOfTurn || itemData.DestroyEndOfTurn)
                     {
                         stringBuilder1.Append("<voffset=-.1><size=-.05><color=#1A505A>- ");
@@ -2391,7 +2444,7 @@ namespace Obeliskial_Essentials
                 }
 
                 // Custom Text End    
-                BinbinCustomText(TextLocation.End, ref stringBuilder1, __instance);
+                BinbinCustomText(TextLocation.End, ref stringBuilder1, __instance.Id);
 
 
                 stringBuilder1.Replace("<c>", "<color=#5E3016>");
@@ -2404,12 +2457,22 @@ namespace Obeliskial_Essentials
                 __instance.DescriptionNormalized = stringBuilder1.ToString();
                 __instance.DescriptionNormalized = Regex.Replace(__instance.DescriptionNormalized, "[,][ ]*(<(.*?)>)*(.)", (MatchEvaluator)(m => m.ToString().ToLower()));
                 __instance.DescriptionNormalized = Regex.Replace(__instance.DescriptionNormalized, "<br>\\w", (MatchEvaluator)(m => m.ToString().ToUpper()));
+                // Traverse.Create(__instance).Field("descriptionNormalized").SetValue(__instance.DescriptionNormalized);
                 Globals.Instance.CardsDescriptionNormalized[__instance.Id] = stringBuilder1.ToString();
                 if (includeInSearch)
                     Globals.Instance.IncludeInSearch(Regex.Replace(Regex.Replace(__instance.DescriptionNormalized, "<sprite name=(.*?)>", (MatchEvaluator)(m => Texts.Instance.GetText(m.Groups[1].Value))), "(<(.*?)>)*", ""), __instance.Id, false);
             }
             else
             {
+                if (__instance.Id == testCard)
+                {
+                    LogDebug($"Testing Description Cache for {testCard},\n Normalized {__instance.DescriptionNormalized},\n Regular {__instance.Description}");
+                    LogDebug($"Testing Description Cache same {Globals.Instance.CardsDescriptionNormalized[__instance.Id] == __instance.DescriptionNormalized}");
+                }
+                if (__instance.Id == testCard2)
+                {
+                    LogDebug($"Testing Description Cache for {testCard2},\n Normalized {__instance.DescriptionNormalized},\n Regular {__instance.Description}");
+                }
                 __instance.DescriptionNormalized = Globals.Instance.CardsDescriptionNormalized[__instance.Id];
             }
 
@@ -2702,14 +2765,14 @@ namespace Obeliskial_Essentials
 
         }
 
-        public static void BinbinCustomText(TextLocation location, ref StringBuilder stringBuilder, CardData card)
+        public static void BinbinCustomText(TextLocation location, ref StringBuilder stringBuilder, string card)
         {
             if (TextToAddAtLocations == null)
             {
                 TextToAddAtLocations = [];
             }
 
-            if (TextToAddAtLocations.TryGetValue(location, out Dictionary<CardData, List<string>> cardsToAddTextTo))
+            if (TextToAddAtLocations.TryGetValue(location, out Dictionary<string, List<string>> cardsToAddTextTo))
             {
                 if (cardsToAddTextTo.TryGetValue(card, out List<string> textsToAdd))
                 {
@@ -2734,19 +2797,16 @@ namespace Obeliskial_Essentials
 
         }
 
-        public static void AddTextToCardDescription(string text, TextLocation location, CardData card)
+        public static void AddTextToCardDescription(string text, TextLocation location, string card)
         {
-            if (TextToAddAtLocations == null)
-            {
-                TextToAddAtLocations = [];
-            }
+            TextToAddAtLocations ??= [];
 
             if (!TextToAddAtLocations.ContainsKey(location))
             {
                 TextToAddAtLocations[location] = [];
             }
 
-            Dictionary<CardData, List<string>> cardsToAddTextTo = TextToAddAtLocations[location];
+            Dictionary<string, List<string>> cardsToAddTextTo = TextToAddAtLocations[location];
 
             if (!cardsToAddTextTo.ContainsKey(card))
             {
@@ -2755,17 +2815,56 @@ namespace Obeliskial_Essentials
             cardsToAddTextTo[card].Add(text);
 
             TextToAddAtLocations[location] = cardsToAddTextTo;
+
+            ModifiedCards.Add(card);
         }
 
-        public static void AddTextToCardDescription(string text, TextLocation location, string card)
+        // public static void AddTextToCardDescription(string text, TextLocation location, string card)
+        // {
+        //     if (Globals.Instance.GetCardData(card, false) == null)
+        //     {
+        //         LogError($"Card {card} not found to add description to.");
+        //         return;
+        //     }
+        //     AddTextToCardDescription(text, location, Globals.Instance.GetCardData(card, false));
+
+        // }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(CardItem), nameof(CardItem.SetCard))]
+        public static void SetCardPostfix(
+                ref CardItem __instance,
+                ref TMP_Text ___descriptionTextTM,
+                string id,
+                bool deckScale = true,
+                Hero _theHero = null,
+                NPC _theNPC = null,
+                bool GetFromGlobal = false,
+                bool _generated = false)
         {
-            if (Globals.Instance.GetCardData(card, false) == null)
+            LogDebug($"SetCardPostfix {id}");
+            bool isNull = __instance == null && __instance.CardData == null;
+            if (isNull)
             {
-                LogError($"Card {card} not found to add description to.");
                 return;
             }
-            AddTextToCardDescription(text, location, Globals.Instance.GetCardData(card, false));
+            string cardId = id.Split("_")[0];
+            bool needsUpdating = ModifiedCards.Contains(cardId);
+            if (needsUpdating)
+            {
 
+                if (Globals.Instance.CardsDescriptionNormalized.TryGetValue(cardId, out string newDescription))
+                {
+                    ___descriptionTextTM.text = newDescription;
+                    LogDebug($"SetCardPostfix - Setting Combat Description for {__instance.CardData.Id} - {newDescription}");
+                }
+                else
+                {
+                    LogError($"SetCardPostfix - Missing CardDescription for {cardId} with internalId {__instance.CardData.Id}");
+                }
+
+            }
         }
     }
+
 }
