@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using static Obeliskial_Essentials.Essentials;
+using UnityEngine.SceneManagement;
+using Unity.Loading;
 
 namespace Obeliskial_Essentials
 {
@@ -213,7 +215,13 @@ namespace Obeliskial_Essentials
             // Otherwise update visibility based on the current index
             for (int i = 0; i < totalItems; i++)
             {
-                bool isVisible = (i >= startIndex && i < startIndex + visibleItemCount);
+                // bool isMultiplayerLobby = SceneManager.GetActiveScene().name == "Lobby" || LobbyManager.Instance;
+                bool isMultiplayerLobby = GameManager.Instance.IsMultiplayer() && GameManager.Instance.IsLoadingGame();
+                if (isMultiplayerLobby)
+                {
+                    LogDebug("LoadingStatus Multiplayer Game - Setting all heroes active");
+                }
+                bool isVisible = (i >= startIndex && i < startIndex + visibleItemCount) || isMultiplayerLobby;
                 itemsList[i].SetActive(isVisible);
             }
         }
@@ -337,10 +345,10 @@ namespace Obeliskial_Essentials
 
             BoxCollider2D leftCollider = leftButton.GetComponent<BoxCollider2D>() ?? leftButton.AddComponent<BoxCollider2D>();
             // leftCollider.size = new Vector2(0.5f, 0.25f);
-            leftCollider.size = new Vector2(1.1f/scaleX, 1.1f/scaleY);
+            leftCollider.size = new Vector2(1.1f / scaleX, 1.1f / scaleY);
             BoxCollider2D rightCollider = rightButton.GetComponent<BoxCollider2D>() ?? rightButton.AddComponent<BoxCollider2D>();
             // rightCollider.size = new Vector2(0.5f, 0.25f);
-            rightCollider.size = new Vector2(1.1f/scaleX, 1.1f/scaleY);
+            rightCollider.size = new Vector2(1.1f / scaleX, 1.1f / scaleY);
 
             ButtonClickHandler leftClickHandler = leftButton.AddComponent<ButtonClickHandler>();
             leftClickHandler.scrollController = scrollContainer.GetComponent<ScrollController>();
@@ -374,13 +382,13 @@ namespace Obeliskial_Essentials
                     {
                         colors[index] = Color.green;
                     }
-                    
+
                 }
             }
 
             texture.SetPixels(colors);
             texture.Apply();
-            
+
             Sprite sprite = Sprite.Create(texture, new Rect(0, 0, 64, 64), new Vector2(0.5f, 0.5f));
             renderer.sprite = sprite;
             renderer.flipX = isLeftButton;

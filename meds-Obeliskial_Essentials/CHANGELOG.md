@@ -1,3 +1,7 @@
+# 1.4.7
+
+Temporary fix for not being able to load into Multiplayer games with "offscreen" heroes.
+
 # 1.4.6
 
 Fixed a text issue with "Dispel all" in the case where a card also has certain types of Special Values.
