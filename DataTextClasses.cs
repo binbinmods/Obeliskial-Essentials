@@ -475,8 +475,8 @@ namespace Obeliskial_Essentials
         public string IncreasedDamageReceivedType2;
         public int IncreasedDirectDamageChargesMultiplierNeededForOne;
         public int IncreasedDirectDamageChargesMultiplierNeededForOne2;
-        public int IncreasedDirectDamageReceivedPerStack;
-        public int IncreasedDirectDamageReceivedPerStack2;
+        public float IncreasedDirectDamageReceivedPerStack;
+        public float IncreasedDirectDamageReceivedPerStack2;
         public int IncreasedDirectDamageReceivedPerTurn;
         public int IncreasedDirectDamageReceivedPerTurn2;
         public int IncreasedPercentDamageReceivedPerStack;
@@ -639,6 +639,7 @@ namespace Obeliskial_Essentials
         public float LootPercent;
         public string LootRarity; // CardRarity
         public string LootType; // CardType
+        public string LootMisc; // CardType
     }
 
     [Serializable]
@@ -772,6 +773,10 @@ namespace Obeliskial_Essentials
         public int GoldCost;
         public int IndexForAnswerTranslation;
         public bool RepeatForAllCharacters;
+        public bool RepeatForAllWarriors;
+        public bool RepeatForAllScouts;
+        public bool RepeatForAllMages;
+        public bool RepeatForAllHealers;
         public string ReplyActionText; // Enums.EventAction
         public string ReplyShowCard; // CardData
         public string ReplyText;

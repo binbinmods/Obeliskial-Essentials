@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using static Obeliskial_Essentials.Essentials;
 using System.Collections.Generic;
 using TMPro;
+using BepInEx;
 
 namespace Obeliskial_Essentials
 {
@@ -2809,6 +2810,7 @@ namespace Obeliskial_Essentials
             Dictionary<string, List<string>> cardsToAddTextTo = TextToAddAtLocations[location];
 
             AddCardToDict(text, location, card, cardsToAddTextTo);
+
             if (includeAB)
             {
                 AddCardToDict(text, location, card + "a", cardsToAddTextTo);
@@ -2818,10 +2820,12 @@ namespace Obeliskial_Essentials
             if (includeRare)
             {
                 AddCardToDict(text, location, card + "rare", cardsToAddTextTo);
+
             }
+
         }
 
-        public static void AddCardToDict(string text, TextLocation location, string card, Dictionary<string, List<string>> cardsToAddTextTo)
+        public static void AddCardToDict(string text, TextLocation location, string card, Dictionary<string, List<string>> cardsToAddTextTo, bool refreshDescription = false)
         {
             if (!cardsToAddTextTo.ContainsKey(card))
             {
@@ -2829,11 +2833,11 @@ namespace Obeliskial_Essentials
             }
             cardsToAddTextTo[card].Add(text);
 
+            // Refreshes the card description if the AddText function is called in weird locations
+            Globals.Instance?.GetCardData(card, false)?.SetDescriptionNew(true, null, true);
+
             TextToAddAtLocations[location] = cardsToAddTextTo;
-            if (ModifiedCards == null)
-            {
-                ModifiedCards = [];
-            }
+            ModifiedCards ??= [];
             ModifiedCards.Add(card);
         }
 
@@ -2873,6 +2877,10 @@ namespace Obeliskial_Essentials
 
                 if (Globals.Instance.CardsDescriptionNormalized.TryGetValue(cardId, out string newDescription))
                 {
+                    if (newDescription.IsNullOrWhiteSpace())
+                    {
+                        return;
+                    }
                     ___descriptionTextTM.text = newDescription;
                     LogDebug($"SetCardPostfix - Setting Combat Description for {__instance.CardData.Id} - {newDescription}");
                 }

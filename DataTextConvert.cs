@@ -1011,8 +1011,8 @@ namespace Obeliskial_Essentials
             text.IncreasedDamageReceivedType2 = ToString(data.IncreasedDamageReceivedType2);
             text.IncreasedDirectDamageChargesMultiplierNeededForOne = data.IncreasedDirectDamageChargesMultiplierNeededForOne;
             text.IncreasedDirectDamageChargesMultiplierNeededForOne2 = data.IncreasedDirectDamageChargesMultiplierNeededForOne2;
-            text.IncreasedDirectDamageReceivedPerStack = (int)data.IncreasedDirectDamageReceivedPerStack;
-            text.IncreasedDirectDamageReceivedPerStack2 = (int)data.IncreasedDirectDamageReceivedPerStack2;
+            text.IncreasedDirectDamageReceivedPerStack = data.IncreasedDirectDamageReceivedPerStack;
+            text.IncreasedDirectDamageReceivedPerStack2 = data.IncreasedDirectDamageReceivedPerStack2;
             text.IncreasedDirectDamageReceivedPerTurn = data.IncreasedDirectDamageReceivedPerTurn;
             text.IncreasedDirectDamageReceivedPerTurn2 = data.IncreasedDirectDamageReceivedPerTurn2;
             text.IncreasedPercentDamageReceivedPerStack = data.IncreasedPercentDamageReceivedPerStack;
@@ -1121,6 +1121,7 @@ namespace Obeliskial_Essentials
             text.LootPercent = data.LootPercent;
             text.LootRarity = ToString(data.LootRarity);
             text.LootType = ToString(data.LootType);
+            text.LootMisc = ToString(data.LootMisc);
             return text;
         }
         public static PerkNodeDataText ToText(PerkNodeData data)
@@ -1269,6 +1270,10 @@ namespace Obeliskial_Essentials
             text.GoldCost = data.GoldCost;
             text.IndexForAnswerTranslation = data.IndexForAnswerTranslation;
             text.RepeatForAllCharacters = data.RepeatForAllCharacters;
+            text.RepeatForAllWarriors = data.RepeatForAllWarriors;
+            text.RepeatForAllScouts = data.RepeatForAllScouts;
+            text.RepeatForAllMages = data.RepeatForAllMages;
+            text.RepeatForAllHealers = data.RepeatForAllHealers;
             text.ReplyActionText = ToString(data.ReplyActionText);
             text.ReplyShowCard = ToString(data.ReplyShowCard);
             text.ReplyText = data.ReplyText;

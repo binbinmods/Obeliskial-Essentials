@@ -1,3 +1,7 @@
+# 1.4.8
+
+Fixed export issue of with IncreasedDirectDamageReceived
+
 # 1.4.7
 
 Temporary fix for not being able to load into Multiplayer games with "offscreen" heroes.
