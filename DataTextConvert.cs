@@ -924,7 +924,7 @@ namespace Obeliskial_Essentials
         public static AuraCurseDataText ToText(AuraCurseData data)
         {
             AuraCurseDataText text = new();
-            text.Id = data.Id;
+            text.ACName = data.ACName;
             text.AuraConsumed = data.AuraConsumed;
             text.AuraDamageIncreasedPercent = data.AuraDamageIncreasedPercent;
             text.AuraDamageIncreasedPercent2 = data.AuraDamageIncreasedPercent2;

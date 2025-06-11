@@ -1667,7 +1667,7 @@ namespace Obeliskial_Essentials
                         stringBuilder1.Append(string.Format(Texts.Instance.GetText(itemData.AuracurseCustomString), (object)medsColorTextArray("aura", medsSpriteText(itemData.AuracurseCustomAC.Id)), (object)stringBuilder11.ToString(), (object)itemData.AuracurseCustomModValue2));
                         stringBuilder1.Append("\n");
                     }
-                    if (itemData.Id == "harleyrare")
+                    if (itemData.Id == "harleyrare" || itemData.Id == "templelurkerpetrare" || itemData.Id == "mentalscavengerspetrare")
                     {
                         stringBuilder1.Append(Texts.Instance.GetText("immortal"));
                         stringBuilder1.Append("\n");

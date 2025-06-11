@@ -1,3 +1,7 @@
+# 1.5.0
+
+Updated for AtO version 1.6
+
 # 1.4.9
 
 Updated to allow proper NPC loading/upgrading in combats

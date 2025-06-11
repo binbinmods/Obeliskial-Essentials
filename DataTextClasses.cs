@@ -388,7 +388,7 @@ namespace Obeliskial_Essentials
     [Serializable]
     public class AuraCurseDataText : DataText
     {
-        public string Id;
+        public string ACName;
         public int AuraConsumed;
         public int AuraDamageIncreasedPercent;
         public int AuraDamageIncreasedPercent2;
