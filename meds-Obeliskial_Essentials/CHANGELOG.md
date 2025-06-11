@@ -1,6 +1,18 @@
+# 1.4.9
+
+Updated to allow proper NPC loading/upgrading in combats
+
+Cards now properly display the Stealth Icon and should properly display all X values.
+
+Added useful Custom Functions for Hero creation and more
+
+AddTextToCardDescription now refreshes description when added - allows it to be used more widely
+
 # 1.4.8
 
 Fixed export issue of with IncreasedDirectDamageReceived
+
+Fixed LootMisc
 
 # 1.4.7
 

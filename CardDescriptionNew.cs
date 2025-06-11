@@ -7,6 +7,7 @@ using static Obeliskial_Essentials.Essentials;
 using System.Collections.Generic;
 using TMPro;
 using BepInEx;
+using UnityEngine.Experimental.U2D;
 
 namespace Obeliskial_Essentials
 {
@@ -407,30 +408,30 @@ namespace Obeliskial_Essentials
                         if ((UnityEngine.Object)__instance.HealAuraCurseName != (UnityEngine.Object)null)
                         {
                             if (__instance.HealAuraCurseName.IsAura)
-                                stringBuilder4.Append(medsSpriteText(__instance.HealAuraCurseName.ACName));
+                                stringBuilder4.Append(medsSpriteText(__instance.HealAuraCurseName.Id));
                             else
-                                stringBuilder5.Append(medsSpriteText(__instance.HealAuraCurseName.ACName));
+                                stringBuilder5.Append(medsSpriteText(__instance.HealAuraCurseName.Id));
                         }
                         if ((UnityEngine.Object)__instance.HealAuraCurseName2 != (UnityEngine.Object)null)
                         {
                             if (__instance.HealAuraCurseName2.IsAura)
-                                stringBuilder4.Append(medsSpriteText(__instance.HealAuraCurseName2.ACName));
+                                stringBuilder4.Append(medsSpriteText(__instance.HealAuraCurseName2.Id));
                             else
-                                stringBuilder5.Append(medsSpriteText(__instance.HealAuraCurseName2.ACName));
+                                stringBuilder5.Append(medsSpriteText(__instance.HealAuraCurseName2.Id));
                         }
                         if ((UnityEngine.Object)__instance.HealAuraCurseName3 != (UnityEngine.Object)null)
                         {
                             if (__instance.HealAuraCurseName3.IsAura)
-                                stringBuilder4.Append(medsSpriteText(__instance.HealAuraCurseName3.ACName));
+                                stringBuilder4.Append(medsSpriteText(__instance.HealAuraCurseName3.Id));
                             else
-                                stringBuilder5.Append(medsSpriteText(__instance.HealAuraCurseName3.ACName));
+                                stringBuilder5.Append(medsSpriteText(__instance.HealAuraCurseName3.Id));
                         }
                         if ((UnityEngine.Object)__instance.HealAuraCurseName4 != (UnityEngine.Object)null)
                         {
                             if (__instance.HealAuraCurseName4.IsAura)
-                                stringBuilder4.Append(medsSpriteText(__instance.HealAuraCurseName4.ACName));
+                                stringBuilder4.Append(medsSpriteText(__instance.HealAuraCurseName4.Id));
                             else
-                                stringBuilder5.Append(medsSpriteText(__instance.HealAuraCurseName4.ACName));
+                                stringBuilder5.Append(medsSpriteText(__instance.HealAuraCurseName4.Id));
                         }
                         if (stringBuilder4.Length > 0)
                         {
@@ -455,9 +456,9 @@ namespace Obeliskial_Essentials
                         if ((UnityEngine.Object)__instance.HealAuraCurseSelf != (UnityEngine.Object)null)
                         {
                             if (__instance.HealAuraCurseSelf.IsAura)
-                                stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsPurgeYour"), (object)medsSpriteText(__instance.HealAuraCurseSelf.ACName)));
+                                stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsPurgeYour"), (object)medsSpriteText(__instance.HealAuraCurseSelf.Id)));
                             else
-                                stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsDispelYour"), (object)medsSpriteText(__instance.HealAuraCurseSelf.ACName)));
+                                stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsDispelYour"), (object)medsSpriteText(__instance.HealAuraCurseSelf.Id)));
                             stringBuilder1.Append("\n");
                         }
                     }
@@ -476,9 +477,9 @@ namespace Obeliskial_Essentials
                             StringBuilder stringBuilder6 = new StringBuilder();
                             StringBuilder stringBuilder7 = new StringBuilder();
                             if (__instance.HealAuraCurseName4.IsAura)
-                                stringBuilder6.Append(medsSpriteText(__instance.HealAuraCurseName4.ACName));
+                                stringBuilder6.Append(medsSpriteText(__instance.HealAuraCurseName4.Id));
                             else
-                                stringBuilder7.Append(medsSpriteText(__instance.HealAuraCurseName4.ACName));
+                                stringBuilder7.Append(medsSpriteText(__instance.HealAuraCurseName4.Id));
                             if (stringBuilder6.Length > 0)
                             {
                                 stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsPurge"), (object)stringBuilder6.ToString()));
@@ -538,14 +539,14 @@ namespace Obeliskial_Essentials
                         }
                         else
                         {
-                            if (__instance.Damage == 1 && (__instance.DamageSpecialValueGlobal || __instance.DamageSpecialValue1 || __instance.DamageSpecialValue2))
+                            if (__instance.Damage >= 1 && (__instance.DamageSpecialValueGlobal || __instance.DamageSpecialValue1 || __instance.DamageSpecialValue2))
                                 stringBuilder2.Append(medsColorTextArray("damage", "X", medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)__instance.DamageType))));
                             else
                                 stringBuilder2.Append(medsColorTextArray("damage", medsNumFormat(__instance.DamagePreCalculated), medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)__instance.DamageType))));
                             if (__instance.Damage2 > 0)
                             {
                                 flag4 = true;
-                                if (__instance.Damage2 == 1 && (__instance.Damage2SpecialValue1 || __instance.Damage2SpecialValue2 || __instance.Damage2SpecialValueGlobal))
+                                if (__instance.Damage2 >= 1 && (__instance.Damage2SpecialValue1 || __instance.Damage2SpecialValue2 || __instance.Damage2SpecialValueGlobal))
                                 {
                                     if (__instance.DamageType == __instance.DamageType2)
                                     {
@@ -566,7 +567,7 @@ namespace Obeliskial_Essentials
                     }
                     if (!flag4 && __instance.Damage2 > 0)
                     {
-                        if (__instance.Damage2 == 1 && (__instance.Damage2SpecialValueGlobal || __instance.Damage2SpecialValue1 || __instance.Damage2SpecialValue2))
+                        if (__instance.Damage2 >= 1 && (__instance.Damage2SpecialValueGlobal || __instance.Damage2SpecialValue1 || __instance.Damage2SpecialValue2))
                             stringBuilder2.Append(medsColorTextArray("damage", "X", medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)__instance.DamageType2))));
                         else
                             stringBuilder2.Append(medsColorTextArray("damage", medsNumFormat(__instance.DamagePreCalculated2), medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)__instance.DamageType2))));
@@ -635,7 +636,7 @@ namespace Obeliskial_Essentials
                     if ((__instance.TargetSide == Enums.CardTargetSide.Friend || __instance.TargetSide == Enums.CardTargetSide.FriendNotSelf) && __instance.SpecialValueGlobal == Enums.CardSpecialValue.AuraCurseYours && (UnityEngine.Object)__instance.SpecialAuraCurseNameGlobal != (UnityEngine.Object)null && (double)__instance.SpecialValueModifierGlobal > 0.0)
                     {
                         flag1 = true;
-                        stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsShareYour"), (object)medsSpriteText(__instance.SpecialAuraCurseNameGlobal.ACName)));
+                        stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsShareYour"), (object)medsSpriteText(__instance.SpecialAuraCurseNameGlobal.Id)));
                         stringBuilder1.Append("\n");
                     }
                     if (!__instance.Damage2SpecialValue1 && !flag1 && (__instance.SpecialValueGlobal != Enums.CardSpecialValue.None || __instance.SpecialValue1 != Enums.CardSpecialValue.None || __instance.SpecialValue2 != Enums.CardSpecialValue.None))
@@ -645,47 +646,47 @@ namespace Obeliskial_Essentials
                             if (__instance.TargetSide == Enums.CardTargetSide.Self && (__instance.SpecialValueGlobal == Enums.CardSpecialValue.AuraCurseTarget || __instance.SpecialValueGlobal == Enums.CardSpecialValue.AuraCurseYours))
                             {
                                 if ((UnityEngine.Object)__instance.SpecialAuraCurseNameGlobal != (UnityEngine.Object)null)
-                                    str5 = medsSpriteText(__instance.SpecialAuraCurseNameGlobal.ACName);
+                                    str5 = medsSpriteText(__instance.SpecialAuraCurseNameGlobal.Id);
                                 if (__instance.AuraChargesSpecialValueGlobal)
                                 {
                                     if ((UnityEngine.Object)__instance.Aura != (UnityEngine.Object)null)
-                                        str6 = medsSpriteText(__instance.Aura.ACName);
+                                        str6 = medsSpriteText(__instance.Aura.Id);
                                     if ((UnityEngine.Object)__instance.Aura2 != (UnityEngine.Object)null && __instance.AuraCharges2SpecialValueGlobal)
-                                        str7 = medsSpriteText(__instance.Aura2.ACName);
+                                        str7 = medsSpriteText(__instance.Aura2.Id);
                                     if ((UnityEngine.Object)__instance.Aura3 != (UnityEngine.Object)null && __instance.AuraCharges3SpecialValue1)
-                                        thirdACSprite = medsSpriteText(__instance.Aura3.ACName);
+                                        thirdACSprite = medsSpriteText(__instance.Aura3.Id);
                                 }
                                 else if (__instance.CurseChargesSpecialValueGlobal)
                                 {
                                     if ((UnityEngine.Object)__instance.Curse != (UnityEngine.Object)null)
-                                        str6 = medsSpriteText(__instance.Curse.ACName);
+                                        str6 = medsSpriteText(__instance.Curse.Id);
                                     if ((UnityEngine.Object)__instance.Curse2 != (UnityEngine.Object)null && __instance.CurseCharges2SpecialValueGlobal)
-                                        str7 = medsSpriteText(__instance.Curse2.ACName);
+                                        str7 = medsSpriteText(__instance.Curse2.Id);
                                     if ((UnityEngine.Object)__instance.Curse3 != (UnityEngine.Object)null && __instance.CurseCharges3SpecialValue1)
-                                        thirdACSprite = medsSpriteText(__instance.Curse3.ACName);
+                                        thirdACSprite = medsSpriteText(__instance.Curse3.Id);
                                 }
                             }
                             else if (__instance.SpecialValue1 == Enums.CardSpecialValue.AuraCurseTarget)
                             {
                                 if ((UnityEngine.Object)__instance.SpecialAuraCurseName1 != (UnityEngine.Object)null)
-                                    str5 = medsSpriteText(__instance.SpecialAuraCurseName1.ACName);
+                                    str5 = medsSpriteText(__instance.SpecialAuraCurseName1.Id);
                                 if (__instance.AuraChargesSpecialValue1)
                                 {
                                     if ((UnityEngine.Object)__instance.Aura != (UnityEngine.Object)null)
-                                        str6 = medsSpriteText(__instance.Aura.ACName);
+                                        str6 = medsSpriteText(__instance.Aura.Id);
                                     if ((UnityEngine.Object)__instance.Aura2 != (UnityEngine.Object)null && __instance.AuraCharges2SpecialValue1)
-                                        str7 = medsSpriteText(__instance.Aura2.ACName);
+                                        str7 = medsSpriteText(__instance.Aura2.Id);
                                     if ((UnityEngine.Object)__instance.Curse3 != (UnityEngine.Object)null && __instance.CurseCharges3SpecialValue1)
-                                        thirdACSprite = medsSpriteText(__instance.Curse3.ACName);
+                                        thirdACSprite = medsSpriteText(__instance.Curse3.Id);
                                 }
                                 else if (__instance.CurseChargesSpecialValue1)
                                 {
                                     if ((UnityEngine.Object)__instance.Curse != (UnityEngine.Object)null)
-                                        str6 = medsSpriteText(__instance.Curse.ACName);
+                                        str6 = medsSpriteText(__instance.Curse.Id);
                                     if ((UnityEngine.Object)__instance.Curse2 != (UnityEngine.Object)null && __instance.CurseCharges2SpecialValue1)
-                                        str7 = medsSpriteText(__instance.Curse2.ACName);
+                                        str7 = medsSpriteText(__instance.Curse2.Id);
                                     if ((UnityEngine.Object)__instance.Curse3 != (UnityEngine.Object)null && __instance.CurseCharges3SpecialValue1)
-                                        thirdACSprite = medsSpriteText(__instance.Curse3.ACName);
+                                        thirdACSprite = medsSpriteText(__instance.Curse3.Id);
                                 }
                             }
                             if (str5 != "" && str6 != "")
@@ -811,7 +812,7 @@ namespace Obeliskial_Essentials
                         if ((UnityEngine.Object)__instance.Aura != (UnityEngine.Object)null && (__instance.AuraChargesSpecialValue1 || __instance.AuraChargesSpecialValueGlobal))
                         {
                             ++num4;
-                            stringBuilder2.Append(medsColorTextArray("aura", "X", medsSpriteText(__instance.Aura.ACName)));
+                            stringBuilder2.Append(medsColorTextArray("aura", "X", medsSpriteText(__instance.Aura.Id)));
                             auraCurseData = __instance.Aura;
                         }
                         if ((UnityEngine.Object)__instance.Aura2 != (UnityEngine.Object)null && (__instance.AuraCharges2SpecialValue1 || __instance.AuraCharges2SpecialValueGlobal))
@@ -819,10 +820,10 @@ namespace Obeliskial_Essentials
                             ++num4;
                             if ((UnityEngine.Object)__instance.Aura != (UnityEngine.Object)null && (UnityEngine.Object)__instance.Aura == (UnityEngine.Object)__instance.Aura2)
                             {
-                                stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.Aura.Id, __instance.AuraCharges, character)), medsSpriteText(__instance.Aura.ACName)));
+                                stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.Aura.Id, __instance.AuraCharges, character)), medsSpriteText(__instance.Aura.Id)));
                                 stringBuilder2.Append("+");
                             }
-                            stringBuilder2.Append(medsColorTextArray("aura", "X", medsSpriteText(__instance.Aura2.ACName)));
+                            stringBuilder2.Append(medsColorTextArray("aura", "X", medsSpriteText(__instance.Aura2.Id)));
                             auraCurseData = __instance.Aura2;
                         }
                         if ((UnityEngine.Object)__instance.Aura3 != (UnityEngine.Object)null && (__instance.AuraCharges3SpecialValue1 || __instance.AuraCharges3SpecialValueGlobal))
@@ -830,15 +831,15 @@ namespace Obeliskial_Essentials
                             ++num4;
                             if ((UnityEngine.Object)__instance.Aura != (UnityEngine.Object)null && (UnityEngine.Object)__instance.Aura == (UnityEngine.Object)__instance.Aura3)
                             {
-                                stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.Aura.Id, __instance.AuraCharges, character)), medsSpriteText(__instance.Aura.ACName)));
+                                stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.Aura.Id, __instance.AuraCharges, character)), medsSpriteText(__instance.Aura.Id)));
                                 stringBuilder2.Append("+");
                             }
                             if ((UnityEngine.Object)__instance.Aura2 != (UnityEngine.Object)null && (UnityEngine.Object)__instance.Aura == (UnityEngine.Object)__instance.Aura3)
                             {
-                                stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.Aura2.Id, __instance.AuraCharges2, character)), medsSpriteText(__instance.Aura3.ACName)));
+                                stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.Aura2.Id, __instance.AuraCharges2, character)), medsSpriteText(__instance.Aura3.Id)));
                                 stringBuilder2.Append("+");
                             }
-                            stringBuilder2.Append(medsColorTextArray("aura", "X", medsSpriteText(__instance.Aura3.ACName)));
+                            stringBuilder2.Append(medsColorTextArray("aura", "X", medsSpriteText(__instance.Aura3.Id)));
                             auraCurseData = __instance.Aura3;
                         }
                         if (num4 > 0)
@@ -861,17 +862,17 @@ namespace Obeliskial_Essentials
                         if ((UnityEngine.Object)__instance.Curse != (UnityEngine.Object)null && (__instance.CurseChargesSpecialValue1 || __instance.CurseChargesSpecialValueGlobal))
                         {
                             ++num5;
-                            stringBuilder2.Append(medsColorTextArray("curse", "X", medsSpriteText(__instance.Curse.ACName)));
+                            stringBuilder2.Append(medsColorTextArray("curse", "X", medsSpriteText(__instance.Curse.Id)));
                         }
                         if ((UnityEngine.Object)__instance.Curse2 != (UnityEngine.Object)null && (__instance.CurseCharges2SpecialValue1 || __instance.CurseCharges2SpecialValueGlobal))
                         {
                             ++num5;
-                            stringBuilder2.Append(medsColorTextArray("curse", "X", medsSpriteText(__instance.Curse2.ACName)));
+                            stringBuilder2.Append(medsColorTextArray("curse", "X", medsSpriteText(__instance.Curse2.Id)));
                         }
                         if ((UnityEngine.Object)__instance.Curse3 != (UnityEngine.Object)null && (__instance.CurseCharges3SpecialValue1 || __instance.CurseCharges3SpecialValueGlobal))
                         {
                             ++num5;
-                            stringBuilder2.Append(medsColorTextArray("curse", "X", medsSpriteText(__instance.Curse3.ACName)));
+                            stringBuilder2.Append(medsColorTextArray("curse", "X", medsSpriteText(__instance.Curse3.Id)));
                         }
                         if (num5 > 0)
                         {
@@ -886,17 +887,17 @@ namespace Obeliskial_Essentials
                         if ((UnityEngine.Object)__instance.CurseSelf != (UnityEngine.Object)null && (__instance.CurseChargesSpecialValue1 || __instance.CurseChargesSpecialValueGlobal))
                         {
                             ++num6;
-                            stringBuilder2.Append(medsColorTextArray("curse", "X", medsSpriteText(__instance.CurseSelf.ACName)));
+                            stringBuilder2.Append(medsColorTextArray("curse", "X", medsSpriteText(__instance.CurseSelf.Id)));
                         }
                         if ((UnityEngine.Object)__instance.CurseSelf2 != (UnityEngine.Object)null && (__instance.CurseCharges2SpecialValue1 || __instance.CurseCharges2SpecialValueGlobal))
                         {
                             ++num6;
-                            stringBuilder2.Append(medsColorTextArray("curse", "X", medsSpriteText(__instance.CurseSelf2.ACName)));
+                            stringBuilder2.Append(medsColorTextArray("curse", "X", medsSpriteText(__instance.CurseSelf2.Id)));
                         }
                         if ((UnityEngine.Object)__instance.CurseSelf3 != (UnityEngine.Object)null && (__instance.CurseCharges3SpecialValue1 || __instance.CurseCharges3SpecialValueGlobal))
                         {
                             ++num6;
-                            stringBuilder2.Append(medsColorTextArray("curse", "X", medsSpriteText(__instance.CurseSelf3.ACName)));
+                            stringBuilder2.Append(medsColorTextArray("curse", "X", medsSpriteText(__instance.CurseSelf3.Id)));
                         }
                         if (num6 > 0)
                         {
@@ -966,13 +967,13 @@ namespace Obeliskial_Essentials
                         if (str8 == "")
                             str8 = "<space=-.1>";
                         if (__instance.SpecialValue1 == Enums.CardSpecialValue.AuraCurseYours)
-                            stringBuilder2.Append(string.Format(Texts.Instance.GetText("cardsXEqualsYour"), (object)medsSpriteText(__instance.SpecialAuraCurseName1.ACName), (object)str8));
+                            stringBuilder2.Append(string.Format(Texts.Instance.GetText("cardsXEqualsYour"), (object)medsSpriteText(__instance.SpecialAuraCurseName1.Id), (object)str8));
                         else if (__instance.SpecialValue1 == Enums.CardSpecialValue.AuraCurseTarget)
-                            stringBuilder2.Append(string.Format(Texts.Instance.GetText("cardsXEqualsTarget"), (object)medsSpriteText(__instance.SpecialAuraCurseName1.ACName), (object)str8));
+                            stringBuilder2.Append(string.Format(Texts.Instance.GetText("cardsXEqualsTarget"), (object)medsSpriteText(__instance.SpecialAuraCurseName1.Id), (object)str8));
                         else if (__instance.SpecialValueGlobal == Enums.CardSpecialValue.AuraCurseYours)
-                            stringBuilder2.Append(string.Format(Texts.Instance.GetText("cardsXEqualsYour"), (object)medsSpriteText(__instance.SpecialAuraCurseNameGlobal.ACName), (object)str8));
+                            stringBuilder2.Append(string.Format(Texts.Instance.GetText("cardsXEqualsYour"), (object)medsSpriteText(__instance.SpecialAuraCurseNameGlobal.Id), (object)str8));
                         else if (__instance.SpecialValueGlobal == Enums.CardSpecialValue.AuraCurseTarget)
-                            stringBuilder2.Append(string.Format(Texts.Instance.GetText("cardsXEqualsTarget"), (object)medsSpriteText(__instance.SpecialAuraCurseNameGlobal.ACName), (object)str8));
+                            stringBuilder2.Append(string.Format(Texts.Instance.GetText("cardsXEqualsTarget"), (object)medsSpriteText(__instance.SpecialAuraCurseNameGlobal.Id), (object)str8));
                         if (__instance.SpecialValueGlobal == Enums.CardSpecialValue.HealthYours)
                             stringBuilder2.Append(string.Format(Texts.Instance.GetText("cardsXEqualsYourHp"), (object)str8));
                         else if (__instance.SpecialValue1 == Enums.CardSpecialValue.HealthYours)
@@ -1024,22 +1025,22 @@ namespace Obeliskial_Essentials
                                 if (__instance.TargetSide == Enums.CardTargetSide.Self)
                                 {
                                     if (__instance.HealAuraCurseName.IsAura)
-                                        stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsPurgeYour"), (object)medsSpriteText(__instance.HealAuraCurseName.ACName)));
+                                        stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsPurgeYour"), (object)medsSpriteText(__instance.HealAuraCurseName.Id)));
                                     else
-                                        stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsDispelYour"), (object)medsSpriteText(__instance.HealAuraCurseName.ACName)));
+                                        stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsDispelYour"), (object)medsSpriteText(__instance.HealAuraCurseName.Id)));
                                 }
                                 else if (__instance.HealAuraCurseName.IsAura)
-                                    stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsPurge"), (object)medsSpriteText(__instance.HealAuraCurseName.ACName)));
+                                    stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsPurge"), (object)medsSpriteText(__instance.HealAuraCurseName.Id)));
                                 else
-                                    stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsDispel"), (object)medsSpriteText(__instance.HealAuraCurseName.ACName)));
+                                    stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsDispel"), (object)medsSpriteText(__instance.HealAuraCurseName.Id)));
                                 stringBuilder1.Append("\n");
                             }
                             if ((UnityEngine.Object)__instance.HealAuraCurseSelf != (UnityEngine.Object)null)
                             {
                                 if (__instance.HealAuraCurseSelf.IsAura)
-                                    stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsPurgeYour"), (object)medsSpriteText(__instance.HealAuraCurseSelf.ACName)));
+                                    stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsPurgeYour"), (object)medsSpriteText(__instance.HealAuraCurseSelf.Id)));
                                 else
-                                    stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsDispelYour"), (object)medsSpriteText(__instance.HealAuraCurseSelf.ACName)));
+                                    stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsDispelYour"), (object)medsSpriteText(__instance.HealAuraCurseSelf.Id)));
                                 stringBuilder1.Append("\n");
                             }
                         }
@@ -1055,17 +1056,17 @@ namespace Obeliskial_Essentials
                     if ((UnityEngine.Object)__instance.CurseSelf != (UnityEngine.Object)null && __instance.CurseCharges > 0)
                     {
                         ++num9;
-                        stringBuilder2.Append(medsColorTextArray("curse", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.CurseSelf.Id, __instance.CurseCharges, character)), medsSpriteText(__instance.CurseSelf.ACName)));
+                        stringBuilder2.Append(medsColorTextArray("curse", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.CurseSelf.Id, __instance.CurseCharges, character)), medsSpriteText(__instance.CurseSelf.Id)));
                     }
                     if ((UnityEngine.Object)__instance.CurseSelf2 != (UnityEngine.Object)null && __instance.CurseCharges2 > 0)
                     {
                         ++num9;
-                        stringBuilder2.Append(medsColorTextArray("curse", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.CurseSelf2.Id, __instance.CurseCharges2, character)), medsSpriteText(__instance.CurseSelf2.ACName)));
+                        stringBuilder2.Append(medsColorTextArray("curse", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.CurseSelf2.Id, __instance.CurseCharges2, character)), medsSpriteText(__instance.CurseSelf2.Id)));
                     }
                     if ((UnityEngine.Object)__instance.CurseSelf3 != (UnityEngine.Object)null && __instance.CurseCharges3 > 0)
                     {
                         ++num9;
-                        stringBuilder2.Append(medsColorTextArray("curse", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.CurseSelf3.Id, __instance.CurseCharges3, character)), medsSpriteText(__instance.CurseSelf3.ACName)));
+                        stringBuilder2.Append(medsColorTextArray("curse", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.CurseSelf3.Id, __instance.CurseCharges3, character)), medsSpriteText(__instance.CurseSelf3.Id)));
                     }
                     if (num9 > 0)
                     {
@@ -1117,17 +1118,17 @@ namespace Obeliskial_Essentials
                     if ((UnityEngine.Object)__instance.Aura != (UnityEngine.Object)null && __instance.AuraCharges > 0 && (UnityEngine.Object)__instance.Aura != (UnityEngine.Object)auraCurseData)
                     {
                         ++num10;
-                        stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.Aura.Id, __instance.AuraCharges, character)), medsSpriteText(__instance.Aura.ACName)));
+                        stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.Aura.Id, __instance.AuraCharges, character)), medsSpriteText(__instance.Aura.Id)));
                     }
                     if ((UnityEngine.Object)__instance.Aura2 != (UnityEngine.Object)null && __instance.AuraCharges2 > 0 && (UnityEngine.Object)__instance.Aura2 != (UnityEngine.Object)auraCurseData)
                     {
                         ++num10;
-                        stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.Aura2.Id, __instance.AuraCharges2, character)), medsSpriteText(__instance.Aura2.ACName)));
+                        stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.Aura2.Id, __instance.AuraCharges2, character)), medsSpriteText(__instance.Aura2.Id)));
                     }
                     if ((UnityEngine.Object)__instance.Aura3 != (UnityEngine.Object)null && __instance.AuraCharges3 > 0 && (UnityEngine.Object)__instance.Aura3 != (UnityEngine.Object)auraCurseData)
                     {
                         ++num10;
-                        stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.Aura3.Id, __instance.AuraCharges3, character)), medsSpriteText(__instance.Aura3.ACName)));
+                        stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.Aura3.Id, __instance.AuraCharges3, character)), medsSpriteText(__instance.Aura3.Id)));
                     }
                     if (num10 > 0)
                     {
@@ -1147,34 +1148,34 @@ namespace Obeliskial_Essentials
                     if ((UnityEngine.Object)__instance.AuraSelf != (UnityEngine.Object)null && __instance.AuraCharges > 0)
                     {
                         ++num11;
-                        stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.AuraSelf.Id, __instance.AuraCharges, character)), medsSpriteText(__instance.AuraSelf.ACName)));
+                        stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.AuraSelf.Id, __instance.AuraCharges, character)), medsSpriteText(__instance.AuraSelf.Id)));
                     }
                     if ((UnityEngine.Object)__instance.AuraSelf2 != (UnityEngine.Object)null && __instance.AuraCharges2 > 0)
                     {
                         ++num11;
-                        stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.AuraSelf2.Id, __instance.AuraCharges2, character)), medsSpriteText(__instance.AuraSelf2.ACName)));
+                        stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.AuraSelf2.Id, __instance.AuraCharges2, character)), medsSpriteText(__instance.AuraSelf2.Id)));
                     }
                     if ((UnityEngine.Object)__instance.AuraSelf3 != (UnityEngine.Object)null && __instance.AuraCharges3 > 0)
                     {
                         ++num11;
-                        stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.AuraSelf3.Id, __instance.AuraCharges3, character)), medsSpriteText(__instance.AuraSelf3.ACName)));
+                        stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.AuraSelf3.Id, __instance.AuraCharges3, character)), medsSpriteText(__instance.AuraSelf3.Id)));
                     }
                     if (!flag1)
                     {
                         if ((UnityEngine.Object)__instance.AuraSelf != (UnityEngine.Object)null && (__instance.AuraChargesSpecialValue1 || __instance.AuraChargesSpecialValueGlobal))
                         {
                             ++num11;
-                            stringBuilder2.Append(medsColorTextArray("aura", "X", medsSpriteText(__instance.AuraSelf.ACName)));
+                            stringBuilder2.Append(medsColorTextArray("aura", "X", medsSpriteText(__instance.AuraSelf.Id)));
                         }
                         if ((UnityEngine.Object)__instance.AuraSelf2 != (UnityEngine.Object)null && (__instance.AuraCharges2SpecialValue1 || __instance.AuraCharges2SpecialValueGlobal))
                         {
                             ++num11;
-                            stringBuilder2.Append(medsColorTextArray("aura", "X", medsSpriteText(__instance.AuraSelf2.ACName)));
+                            stringBuilder2.Append(medsColorTextArray("aura", "X", medsSpriteText(__instance.AuraSelf2.Id)));
                         }
                         if ((UnityEngine.Object)__instance.AuraSelf3 != (UnityEngine.Object)null && (__instance.AuraCharges3SpecialValue1 || __instance.AuraCharges3SpecialValueGlobal))
                         {
                             ++num11;
-                            stringBuilder2.Append(medsColorTextArray("aura", "X", medsSpriteText(__instance.AuraSelf3.ACName)));
+                            stringBuilder2.Append(medsColorTextArray("aura", "X", medsSpriteText(__instance.AuraSelf3.Id)));
                         }
                     }
                     if (num11 > 0)
@@ -1200,17 +1201,17 @@ namespace Obeliskial_Essentials
                     if (__instance.CurseCharges > 0 && (UnityEngine.Object)__instance.Curse != (UnityEngine.Object)null)
                     {
                         ++num12;
-                        stringBuilder2.Append(medsColorTextArray("curse", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.Curse.Id, __instance.CurseCharges, character)), medsSpriteText(__instance.Curse.ACName)));
+                        stringBuilder2.Append(medsColorTextArray("curse", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.Curse.Id, __instance.CurseCharges, character)), medsSpriteText(__instance.Curse.Id)));
                     }
                     if (__instance.CurseCharges2 > 0 && (UnityEngine.Object)__instance.Curse2 != (UnityEngine.Object)null)
                     {
                         ++num12;
-                        stringBuilder2.Append(medsColorTextArray("curse", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.Curse2.Id, __instance.CurseCharges2, character)), medsSpriteText(__instance.Curse2.ACName)));
+                        stringBuilder2.Append(medsColorTextArray("curse", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.Curse2.Id, __instance.CurseCharges2, character)), medsSpriteText(__instance.Curse2.Id)));
                     }
                     if (__instance.CurseCharges3 > 0 && (UnityEngine.Object)__instance.Curse3 != (UnityEngine.Object)null)
                     {
                         ++num12;
-                        stringBuilder2.Append(medsColorTextArray("curse", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.Curse3.Id, __instance.CurseCharges3, character)), medsSpriteText(__instance.Curse3.ACName)));
+                        stringBuilder2.Append(medsColorTextArray("curse", medsNumFormat(medsGetFinalAuraCharges(__instance.CardClass, __instance.Curse3.Id, __instance.CurseCharges3, character)), medsSpriteText(__instance.Curse3.Id)));
                     }
                     if (num12 > 0)
                     {
@@ -1302,11 +1303,11 @@ namespace Obeliskial_Essentials
                         }
                         if ((UnityEngine.Object)__instance.AcEnergyBonus != (UnityEngine.Object)null)
                         {
-                            stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(__instance.AcEnergyBonusQuantity), medsSpriteText(__instance.AcEnergyBonus.ACName)));
+                            stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(__instance.AcEnergyBonusQuantity), medsSpriteText(__instance.AcEnergyBonus.Id)));
                             if ((UnityEngine.Object)__instance.AcEnergyBonus2 != (UnityEngine.Object)null)
                             {
                                 stringBuilder2.Append(" ");
-                                stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(__instance.AcEnergyBonus2Quantity), medsSpriteText(__instance.AcEnergyBonus2.ACName)));
+                                stringBuilder2.Append(medsColorTextArray("aura", medsNumFormat(__instance.AcEnergyBonus2Quantity), medsSpriteText(__instance.AcEnergyBonus2.Id)));
                             }
                             if (__instance.AcEnergyBonus.IsAura)
                             {
@@ -1609,8 +1610,8 @@ namespace Obeliskial_Essentials
                     BinbinCustomText(TextLocation.ItemAfterHealBonusBeforeACBonus, ref stringBuilder1, __instance.Id);
                     if ((UnityEngine.Object)itemData.AuracurseBonus1 != (UnityEngine.Object)null && itemData.AuracurseBonusValue1 > 0 && (UnityEngine.Object)itemData.AuracurseBonus2 != (UnityEngine.Object)null && itemData.AuracurseBonusValue2 > 0 && itemData.AuracurseBonusValue1 == itemData.AuracurseBonusValue2)
                     {
-                        stringBuilder2.Append(medsSpriteText(itemData.AuracurseBonus1.ACName));
-                        stringBuilder2.Append(medsSpriteText(itemData.AuracurseBonus2.ACName));
+                        stringBuilder2.Append(medsSpriteText(itemData.AuracurseBonus1.Id));
+                        stringBuilder2.Append(medsSpriteText(itemData.AuracurseBonus2.Id));
                         stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemCharges"), (object)stringBuilder2.ToString(), (object)medsNumFormatItem(itemData.AuracurseBonusValue1, true)));
                         stringBuilder1.Append("\n");
                         stringBuilder2.Clear();
@@ -1619,12 +1620,12 @@ namespace Obeliskial_Essentials
                     {
                         if ((UnityEngine.Object)itemData.AuracurseBonus1 != (UnityEngine.Object)null && itemData.AuracurseBonusValue1 > 0)
                         {
-                            stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemCharges"), (object)medsSpriteText(itemData.AuracurseBonus1.ACName), (object)medsNumFormatItem(itemData.AuracurseBonusValue1, true)));
+                            stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemCharges"), (object)medsSpriteText(itemData.AuracurseBonus1.Id), (object)medsNumFormatItem(itemData.AuracurseBonusValue1, true)));
                             stringBuilder1.Append("\n");
                         }
                         if ((UnityEngine.Object)itemData.AuracurseBonus2 != (UnityEngine.Object)null && itemData.AuracurseBonusValue2 > 0)
                         {
-                            stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemCharges"), (object)medsSpriteText(itemData.AuracurseBonus2.ACName), (object)medsNumFormatItem(itemData.AuracurseBonusValue2, true)));
+                            stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemCharges"), (object)medsSpriteText(itemData.AuracurseBonus2.Id), (object)medsNumFormatItem(itemData.AuracurseBonusValue2, true)));
                             stringBuilder1.Append("\n");
                         }
                     }
@@ -2558,8 +2559,13 @@ namespace Obeliskial_Essentials
         }
         public static string medsSpriteText(string sprite)
         {
+
             StringBuilder stringBuilder = new StringBuilder();
             string str = sprite.ToLower().Replace(" ", "");
+            if (str == "stealthbonus")
+            {
+                str = "stealth";
+            }
             switch (str)
             {
                 case "block":
