@@ -4,6 +4,7 @@ using System.Linq;
 using static UnityEngine.Mathf;
 using System.Collections.ObjectModel;
 using static Obeliskial_Essentials.Essentials;
+using System.Text;
 
 namespace Obeliskial_Essentials
 {
@@ -365,7 +366,9 @@ namespace Obeliskial_Essentials
                     types2 = cardTypes1;
                 }
                 CardData castedCard = _castedCard;
+                // if (_castedCard.CardClass == cardClass1)
                 bool hasProperCardTypeToTrigger = types1.Any(castedCard.HasCardType);
+                // bool hasCardType2 = types2.Any(castedCard.HasCardType);
                 if (hasProperCardTypeToTrigger)
                 {
                     if (MatchManager.Instance.CountHeroHand() == 0 || !((Object)_character.HeroData != (Object)null))
@@ -376,7 +379,7 @@ namespace Obeliskial_Essentials
                     for (int index2 = 0; index2 < heroHand.Count; ++index2)
                     {
                         CardData cardData = MatchManager.Instance.GetCardData(heroHand[index2]);
-                        bool hasProperCardTypeToReduce = types1.Any(cardData.HasCardType);
+                        bool hasProperCardTypeToReduce = types2.Any(cardData.HasCardType);
                         if ((Object)cardData != (Object)null && hasProperCardTypeToReduce && _character.GetCardFinalCost(cardData) > num1)
                             num1 = _character.GetCardFinalCost(cardData);
                     }
@@ -385,7 +388,7 @@ namespace Obeliskial_Essentials
                     for (int index3 = 0; index3 < heroHand.Count; ++index3)
                     {
                         CardData cardData = MatchManager.Instance.GetCardData(heroHand[index3]);
-                        bool hasProperCardTypeToReduce = types1.Any(cardData.HasCardType);
+                        bool hasProperCardTypeToReduce = types2.Any(cardData.HasCardType);
 
                         if ((Object)cardData != (Object)null && hasProperCardTypeToReduce && _character.GetCardFinalCost(cardData) >= num1)
                             cardDataList.Add(cardData);
@@ -1641,6 +1644,134 @@ namespace Obeliskial_Essentials
             return UnityEngine.Random.Range(min, max);
         }
 
+        /// <summary>
+        /// Adds a card to the currently active hero's hand.
+        /// </summary>
+        /// <param name="cardId">Id of the card to add</param>
+        /// <param name="randomlyUpgraded">Whether or not you want the card to be randomly upgraded.</param>
+        /// <param name="vanish">Whether the card should vanish</param>
+        /// <param name="costZero">Whether the card should cost 0.</param>
+        /// <param name="costReduction">How much the card should have its cost reduced by</param>
+        /// <param name="permanentCostReduction">Whether the cost reduction is permanent or not</param>
+        public static void AddCardToHand(string cardId, bool randomlyUpgraded = true, bool vanish = true, bool costZero = true, int costReduction = 0, bool permanentCostReduction = false)
+        {
+            if (MatchManager.Instance.CountHeroHand() == 10)
+            {
+                LogDebug("[TRAIT EXECUTION] Broke because player at max cards");
+                return;
+            }
+            string str = cardId;
+            string cardInDictionary;
+            if (randomlyUpgraded)
+            {
+                int randomIntRange = MatchManager.Instance.GetRandomIntRange(0, 100, "trait");
+                cardInDictionary = MatchManager.Instance.CreateCardInDictionary(randomIntRange >= 45 ? (randomIntRange >= 90 ? str + "rare" : str + "b") : str + "a");
+
+            }
+            else
+            {
+                cardInDictionary = MatchManager.Instance.CreateCardInDictionary(str);
+            }
+            CardData cardData = MatchManager.Instance.GetCardData(cardInDictionary);
+            cardData.Vanish = vanish;
+            if (permanentCostReduction)
+            {
+                cardData.EnergyReductionToZeroPermanent = costZero;
+                cardData.EnergyReductionPermanent = costReduction;
+
+            }
+            else
+            {
+                cardData.EnergyReductionToZeroTemporal = costZero;
+                cardData.EnergyReductionTemporal = costReduction;
+            }
+            MatchManager.Instance.GenerateNewCard(1, cardInDictionary, false, Enums.CardPlace.Hand);
+            MatchManager.Instance.CreateLogCardModification(cardData.InternalId, MatchManager.Instance.GetHeroHeroActive());
+        }
+
+        /// <summary>
+        /// Gets a random card of a certain type to the hand of the active character.
+        /// </summary>
+        /// <param name="heroClass">Class of card to add</param>
+        /// <param name="cardTypes">Possible types of card to add</param>
+        /// <param name="cardCost">Cost of card to add</param>
+        /// <param name="costZero">Whether the card should be set to cost 0</param>
+        /// <param name="costReduction">How much the card should have its cost reduced by</param>
+        /// <param name="vanish">Whether the card vanishes or not</param>
+        /// <param name="permanentCostReduction">Whether the cost reduction is permanent or not</param>
+        public static string GetRandomCardOfTypeAndCost(Enums.HeroClass heroClass, Enums.CardType[] cardTypes, int cardCost)//, bool costZero = false, int costReduction = 0, bool vanish = true, bool permanentCostReduction = false)
+        {
+            if (!((UnityEngine.Object)MatchManager.Instance != (UnityEngine.Object)null))
+                return "";
+            List<string> stringList = new List<string>();
+            StringBuilder stringBuilder = new StringBuilder();
+            string heroClassString = Enum.GetName(typeof(Enums.HeroClass), (object)heroClass);
+            foreach (Enums.CardType cardType in cardTypes)
+            {
+                stringBuilder.Clear();
+                stringBuilder.Append(heroClassString);
+                stringBuilder.Append("_");
+                stringBuilder.Append(Enum.GetName(typeof(Enums.CardType), (object)cardType));
+                for (int index = 0; index < Globals.Instance.CardListByClassType[stringBuilder.ToString()].Count; ++index)
+                    stringList.Add(Globals.Instance.CardListByClassType[stringBuilder.ToString()][index]);
+            }
+            for (int index = 0; index < Globals.Instance.CardListByClassType[stringBuilder.ToString()].Count; ++index)
+                stringList.Add(Globals.Instance.CardListByClassType[stringBuilder.ToString()][index]);
+            int num2 = cardCost;  //MatchManager.Instance.energyJustWastedByHero;
+            if (num2 > 10)
+                num2 = 10;
+            bool flag = false;
+            string str = "";
+            for (int index = 0; !flag && index < 500; ++index)
+            {
+                int randomIntRange = MatchManager.Instance.GetRandomIntRange(0, stringList.Count, "trait");
+                str = stringList[randomIntRange];
+                if (Globals.Instance.GetCardData(str, false).EnergyCostOriginal == num2)
+                    break;
+            }
+            return str;
+
+        }
+
+        /// <summary>
+        /// Reduces the cost of all cards in your hand that have a card type in cardTypes by numToReduce.
+        /// </summary>
+        /// <param name="cardTypes"></param>
+        /// <param name="numToReduce"></param>
+        /// <param name="scrollText"></param>
+        public static void Mastery(Enums.CardType[] cardTypes, int numToReduce = 1, string scrollText = "")
+        {
+            Character character = MatchManager.Instance.GetHeroHeroActive();
+            if (!((UnityEngine.Object)character.HeroData != (UnityEngine.Object)null) || MatchManager.Instance == null)
+                return;
+            // numToReduce = 1;
+            // if (numToReduce <= 0)
+            //     return;
+            List<string> heroHand = MatchManager.Instance.GetHeroHand(character.HeroIndex);
+            List<CardData> cardDataList = new List<CardData>();
+            for (int index = 0; index < heroHand.Count; ++index)
+            {
+                bool hasProperCardTypeToReduce = cardTypes.Any(MatchManager.Instance.GetCardData(heroHand[index]).HasCardType);
+                CardData cardData = MatchManager.Instance.GetCardData(heroHand[index]);
+                if ((UnityEngine.Object)cardData != (UnityEngine.Object)null && cardData.GetCardFinalCost() > 0 && hasProperCardTypeToReduce)
+                    cardDataList.Add(cardData);
+            }
+            for (int index = 0; index < cardDataList.Count; ++index)
+            {
+                CardData cardData = cardDataList[index];
+                if ((UnityEngine.Object)cardData != (UnityEngine.Object)null)
+                {
+                    cardData.EnergyReductionTemporal += numToReduce;
+                    MatchManager.Instance.UpdateHandCards();
+                    CardItem fromTableByIndex = MatchManager.Instance.GetCardFromTableByIndex(cardData.InternalId);
+                    fromTableByIndex.PlayDissolveParticle();
+                    fromTableByIndex.ShowEnergyModification(-numToReduce);
+                    character.HeroItem.ScrollCombatText(scrollText, Enums.CombatScrollEffectType.Trait);
+                    MatchManager.Instance.CreateLogCardModification(cardData.InternalId, MatchManager.Instance.GetHero(character.HeroIndex));
+                }
+            }
+
+        }
     }
 }
 

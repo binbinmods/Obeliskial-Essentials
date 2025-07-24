@@ -1,3 +1,11 @@
+# 1.5.1
+
+Prevented a bunch of things from being improperly turned into English when using non-English languages.
+
+Fixed GetRandomCardIdByTypeAndRandomRarity
+
+Added additional functions to the HeroFunctions
+
 # 1.5.0
 
 Updated for AtO version 1.6

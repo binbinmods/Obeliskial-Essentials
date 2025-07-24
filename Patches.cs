@@ -1004,10 +1004,12 @@ namespace Obeliskial_Essentials
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Texts), "GetText")]
-        public static void GetTextPostfix(string _id, ref string __result, string _type = "")
+        public static void GetTextPostfix(string _id, ref string __result, Dictionary<string, Dictionary<string, string>> ___TextStrings, string _type = "")
         {
-            if (medsTexts.ContainsKey(_id))
+            if (__result.IsNullOrWhiteSpace() && medsTexts.ContainsKey(_id))
                 __result = medsTexts[_id];
+            if (__result.IsNullOrWhiteSpace())
+                __result = ___TextStrings["en"].TryGetValue(_id, out string value) ? value : "";
             return;
         }
 
@@ -2181,6 +2183,54 @@ namespace Obeliskial_Essentials
             return false;
         }
 
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Functions), nameof(Functions.GetRandomCardIdByTypeAndRandomRarity))]
+
+        public static bool GetRandomCardIdByTypeAndRandomRarityPrefix(ref string __result, Enums.CardType _cardType)
+        {
+            // LogDebug("GetRandomCardIdByTypeAndRandomRarityPrefix");
+            int randInt = MatchManager.Instance.GetRandomIntRange(0, Globals.Instance.CardListByType[_cardType].Count);
+            if (Globals.Instance.CardListByType[_cardType].Count == 0)
+            {
+                // LogDebug("No cards found");
+                return false;
+            }
+            string cardId = Globals.Instance.CardListByType[_cardType][randInt];
+            CardData cardData;
+            if (_cardType == Enums.CardType.Food)
+            {
+                LogDebug($"GetRandomCardIdByTypeAndRandomRarityPrefix - Attempting to generate Food: {cardId}");
+
+                randInt = MatchManager.Instance.GetRandomIntRange(0, 100);
+                if (randInt > 75)
+                {
+                    cardData = Globals.Instance.GetCardData(cardId, false);
+                    if (cardData.UpgradesToRare != null)
+                    {
+                        __result = cardData.UpgradesToRare.Id;
+                    }
+                    else
+                    {
+                        __result = cardId;
+                    }
+                }
+                else
+                {
+                    __result = cardId;
+                }
+                return false;
+            }
+            cardData = Globals.Instance.GetCardData(cardId, false);
+            // CardData cardData = Globals.Instance.GetCardData(Globals.Instance.CardListByType[_cardType][MatchManager.Instance.GetRandomIntRange(0, Globals.Instance.CardListByType[_cardType].Count)], false);
+            if (cardData == null)
+            {
+                LogDebug($"GetRandomCardIdByTypeAndRandomRarityPrefix - CardData is null for cardId: {cardId}");
+                // __result = "";
+                return false;
+            }
+            __result = Functions.GetCardByRarity(MatchManager.Instance.GetRandomIntRange(0, 100), cardData);
+            return false;
+        }
         // public static GameObject ScrollRectObject { get; set; }
 
         private static void CreateRectangle(UnityEngine.Color color, int n)
