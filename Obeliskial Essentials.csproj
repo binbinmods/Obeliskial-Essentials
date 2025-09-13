@@ -6,7 +6,7 @@
         <AssemblyName>com.stiffmeds.obeliskialessentials</AssemblyName>
         <Product>Obeliskial_Essentials</Product>
         <Description>Essential reference classes and methods for Across the Obelisk modding.</Description>
-        <Version>1.5.1</Version>
+        <Version>1.5.2</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
         <PackageReadmeFile>README.md</PackageReadmeFile>

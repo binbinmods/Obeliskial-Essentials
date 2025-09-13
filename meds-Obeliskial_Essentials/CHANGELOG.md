@@ -1,3 +1,11 @@
+# 1.5.2
+
+Fixed card descriptions when multiple % based damage increases on an item.
+
+Added "Heal Attacker" for Item.HealPercent and Item.HealQuantity.
+
+Added description for Item.Energy when granting energy to someone other than self.
+
 # 1.5.1
 
 Prevented a bunch of things from being improperly turned into English when using non-English languages.

@@ -1505,7 +1505,18 @@ namespace Obeliskial_Essentials
                         ++num15;
                     }
 
+                    if (num15 > 0)
+                    {
+                        stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemXDamages"), (object)stringBuilder2.ToString(), (object)medsNumFormatItem(num16, true)));
+                        stringBuilder1.Append("\n");
+                        stringBuilder2.Clear();
+                    }
+
+
                     // CHANGE: Added Support for DamagePercentBonus2 and 3. Added support for other damageTypes.
+                    num15 = 0;
+                    num16 = 0;
+
                     if (itemData.DamagePercentBonus == Enums.DamageType.All)
                     {
                         stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemAllDamages"), (object)medsNumFormatItem(Functions.FuncRoundToInt(itemData.DamagePercentBonusValue), true, true)));
@@ -1513,12 +1524,16 @@ namespace Obeliskial_Essentials
                     }
                     else if (itemData.DamagePercentBonus != Enums.DamageType.None && itemData.DamagePercentBonusValue != 0)
                     {
-                        string dt = itemData.DamagePercentBonus.ToString().ToLower();
-                        string textToAdd = "<space=.3><size=+.1><sprite name=" + dt + "></size> damage  {0}";
-                        textToAdd = string.Format(textToAdd, (object)medsNumFormatItem(Functions.FuncRoundToInt(itemData.DamagePercentBonusValue), true, true));
-                        stringBuilder1.Append(textToAdd);
-                        stringBuilder1.Append("\n");
+                        num16 = Mathf.RoundToInt(itemData.DamagePercentBonusValue);
+                        stringBuilder2.Append(medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)itemData.DamagePercentBonus)));
+                        ++num15;
+                        // string dt = itemData.DamagePercentBonus.ToString().ToLower();
+                        // string textToAdd = "<space=.3><size=+.1><sprite name=" + dt + "></size> damage  {0}";
+                        // textToAdd = string.Format(textToAdd, (object)medsNumFormatItem(Functions.FuncRoundToInt(itemData.DamagePercentBonusValue), true, true));
+                        // stringBuilder1.Append(textToAdd);
+                        // stringBuilder1.Append("\n");
                     }
+
 
                     if (itemData.DamagePercentBonus2 == Enums.DamageType.All)
                     {
@@ -1527,11 +1542,19 @@ namespace Obeliskial_Essentials
                     }
                     else if (itemData.DamagePercentBonus2 != Enums.DamageType.None && itemData.DamagePercentBonusValue2 != 0)
                     {
-                        string dt = itemData.DamagePercentBonus2.ToString().ToLower();
-                        string textToAdd = "<space=.3><size=+.1><sprite name=" + dt + "></size> damage  {0}";
-                        textToAdd = string.Format(textToAdd, (object)medsNumFormatItem(Functions.FuncRoundToInt(itemData.DamagePercentBonusValue2), true, true));
-                        stringBuilder1.Append(textToAdd);
-                        stringBuilder1.Append("\n");
+                        if (itemData.DamagePercentBonusValue2 != itemData.DamagePercentBonusValue)
+                        {
+                            string dt = itemData.DamagePercentBonus2.ToString().ToLower();
+                            string textToAdd = "<space=.3><size=+.1><sprite name=" + dt + "></size> damage  {0}";
+                            textToAdd = string.Format(textToAdd, (object)medsNumFormatItem(Functions.FuncRoundToInt(itemData.DamagePercentBonusValue2), true, true));
+                            stringBuilder1.Append(textToAdd);
+                            stringBuilder1.Append("\n");
+                        }
+                        else
+                        {
+                            stringBuilder2.Append(medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)itemData.DamagePercentBonus2)));
+                            ++num15;
+                        }
                     }
 
                     if (itemData.DamagePercentBonus3 == Enums.DamageType.All)
@@ -1541,21 +1564,32 @@ namespace Obeliskial_Essentials
                     }
                     else if (itemData.DamagePercentBonus3 != Enums.DamageType.None && itemData.DamagePercentBonusValue3 != 0)
                     {
-                        string dt = itemData.DamagePercentBonus3.ToString().ToLower();
-                        string textToAdd = "<space=.3><size=+.1><sprite name=" + dt + "></size> damage  {0}";
-                        textToAdd = string.Format(textToAdd, (object)medsNumFormatItem(Functions.FuncRoundToInt(itemData.DamagePercentBonusValue3), true, true));
-                        stringBuilder1.Append(textToAdd);
+                        if (itemData.DamagePercentBonusValue3 != itemData.DamagePercentBonusValue || itemData.DamagePercentBonusValue3 != itemData.DamagePercentBonusValue2)
+                        {
+                            string dt = itemData.DamagePercentBonus3.ToString().ToLower();
+                            string textToAdd = "<space=.3><size=+.1><sprite name=" + dt + "></size> damage  {0}";
+                            textToAdd = string.Format(textToAdd, (object)medsNumFormatItem(Functions.FuncRoundToInt(itemData.DamagePercentBonusValue3), true, true));
+                            stringBuilder1.Append(textToAdd);
+                            stringBuilder1.Append("\n");
+                        }
+                        else
+                        {
+                            // stringBuilder2.Append(medsSpriteText(itemData.DamagePercentBonus3.ToString().ToLower()));
+                            stringBuilder2.Append(medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)itemData.DamagePercentBonus3)));
+                            ++num15;
+                        }
+                    }
+
+                    if (num15 > 0)
+                    {
+                        stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemXDamages"), (object)stringBuilder2.ToString(), (object)medsNumFormatItem(num16, true, true)));
                         stringBuilder1.Append("\n");
+                        stringBuilder2.Clear();
                     }
                     // END CHANGE
 
 
-                    if (num15 > 0)
-                    {
-                        stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemXDamages"), (object)stringBuilder2.ToString(), (object)medsNumFormatItem(num16, true)));
-                        stringBuilder1.Append("\n");
-                        stringBuilder2.Clear();
-                    }
+
                     // Custom Text: After DamageBonus before heal                    
                     BinbinCustomText(TextLocation.ItemAfterDamageBonusBeforeHeal, ref stringBuilder1, __instance.Id);
                     if (itemData.UseTheNextInsteadWhenYouPlay && (double)itemData.HealPercentBonus != 0.0)
@@ -1684,6 +1718,7 @@ namespace Obeliskial_Essentials
 
                         // Custom Text: Enchantment Only Before Cast
                         BinbinCustomText(TextLocation.ItemEnchantBeforeCast, ref stringBuilder1, __instance.Id);
+
                         if (itemData.CastedCardType != Enums.CardType.None)
                         {
                             stringBuilder2.Append("<color=#5E3016>");
@@ -1921,11 +1956,22 @@ namespace Obeliskial_Essentials
                             }
                             else if (itemData.ItemTarget == Enums.ItemTarget.AllEnemy)
                                 stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemRecoverSelf"), (object)stringBuilder2.ToString()));
+
+                            // CHANGE: Item - Heal Attacker when hit
+                            else if (itemData.ItemTarget == Enums.ItemTarget.CurrentTarget && itemData.Activation == Enums.EventActivation.Damaged)
+                                stringBuilder1.Append(string.Format("Heal Attacker", (object)stringBuilder2.ToString()));
+                            // END CHANGE
                             stringBuilder1.Append("<br>");
                             stringBuilder2.Clear();
                         }
                         if (itemData.EnergyQuantity > 0 && itemData.ItemTarget == Enums.ItemTarget.Self)
                             stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsGain"), (object)medsColorTextArray("system", medsNumFormat(itemData.EnergyQuantity), medsSpriteText("energy"))));
+
+                        // CHANGE: Item - Give energy to non-self when item activated
+                        else if (itemData.EnergyQuantity > 0)
+                            stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsGrant"), (object)medsColorTextArray("system", medsNumFormat(itemData.EnergyQuantity), medsSpriteText("energy"), "\n")));
+                        // END CHANGE
+
                         if (itemData.HealPercentQuantity > 0)
                         {
                             stringBuilder2.Append("<color=#111111>");
@@ -1950,6 +1996,10 @@ namespace Obeliskial_Essentials
                                 stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemRecoverRandomHPHero"), (object)stringBuilder2.ToString()));
                             else if (itemData.ItemTarget == Enums.ItemTarget.RandomEnemy)
                                 stringBuilder1.Append(string.Format(Texts.Instance.GetText("itemRecoverRandomHPMonster"), (object)stringBuilder2.ToString()));
+                            // CHANGE: Item - Heal Attacker when hit
+                            else if (itemData.ItemTarget == Enums.ItemTarget.CurrentTarget && itemData.Activation == Enums.EventActivation.Damaged)
+                                stringBuilder1.Append(string.Format($"Attacker recovers <color=#111111>{medsNumFormatItem(itemData.HealPercentQuantity, true, true)}</color>"));
+                            // END CHANGE
                             stringBuilder1.Append("<br>");
                             stringBuilder2.Clear();
                         }
