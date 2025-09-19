@@ -115,6 +115,10 @@
 					<HintPath>$(GamePath)\AcrossTheObelisk_Data\Managed\Assembly-CSharp.dll</HintPath>
 					<Private>False</Private>
 				</Reference> -->
+				<!-- <Reference Include="Assembly-CSharp">
+					<HintPath>../!libs/Assembly-CSharp v1.7.dll</HintPath>
+					<Private>False</Private>
+				</Reference> -->
 				<Reference Include="Assembly-CSharp">
 					<HintPath>../!libs/Assembly-CSharp.dll</HintPath>
 					<Private>False</Private>

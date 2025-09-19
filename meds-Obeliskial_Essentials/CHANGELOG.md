@@ -6,6 +6,8 @@ Added "Heal Attacker" for Item.HealPercent and Item.HealQuantity.
 
 Added description for Item.Energy when granting energy to someone other than self.
 
+Fixed sprite export for Mac.
+
 # 1.5.1
 
 Prevented a bunch of things from being improperly turned into English when using non-English languages.

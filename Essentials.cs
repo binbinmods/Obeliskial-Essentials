@@ -105,7 +105,7 @@ namespace Obeliskial_Essentials
             Log.LogInfo(msg);
         }
 
-        
+
         internal static void LogWarning(string msg)
         {
             Log.LogWarning(msg);
@@ -152,7 +152,16 @@ namespace Obeliskial_Essentials
                 return;
             RenderTexture renderTex = RenderTexture.GetTemporary((int)spriteToExport.texture.width, (int)spriteToExport.texture.height, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Linear);
             // we flip it when doing the Graphics.Blit because the sprites are packed (which... flips them? idk?)
-            Graphics.Blit(spriteToExport.texture, renderTex, new Vector2(1, -1), new Vector2(0, 1));
+            bool isMac = UnityEngine.SystemInfo.operatingSystemFamily == UnityEngine.OperatingSystemFamily.MacOSX;
+            if (isMac)
+            {
+                Graphics.Blit(spriteToExport.texture, renderTex);//, new Vector2(1, -1), new Vector2(0, 1));
+
+            }
+            else
+            {
+                Graphics.Blit(spriteToExport.texture, renderTex, new Vector2(1, -1), new Vector2(0, 1));
+            }
             RenderTexture previous = RenderTexture.active;
             RenderTexture.active = renderTex;
             readableText = fullTextureExport ? new((int)spriteToExport.texture.width, (int)spriteToExport.texture.height) : new((int)spriteToExport.textureRect.width, (int)spriteToExport.textureRect.height);
@@ -164,7 +173,13 @@ namespace Obeliskial_Essentials
             finalImage = fullTextureExport ? new((int)spriteToExport.texture.width, (int)spriteToExport.texture.height) : new((int)spriteToExport.textureRect.width, (int)spriteToExport.textureRect.height);
             for (int i = 0; i < readableText.width; i++)
                 for (int j = 0; j < readableText.height; j++)
-                    finalImage.SetPixel(i, readableText.height - j - 1, readableText.GetPixel(i, j));
+                {
+                    // finalImage.SetPixel(i, readableText.height - j - 1, readableText.GetPixel(i, j));
+                    // UnityE== UnityEngine.OperatingSystemFamily.MacOSX;
+                    int value = isMac ? j : readableText.height - j - 1;
+                    finalImage.SetPixel(i, value, readableText.GetPixel(i, j));
+                }
+
             finalImage.Apply();
             File.WriteAllBytes(filePath, ImageConversion.EncodeToPNG(finalImage));
             medsExportedSpritePaths.Add(filePath);
@@ -461,7 +476,7 @@ namespace Obeliskial_Essentials
             FolderCreate(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", exportType));
             File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", exportType, exportID + ".json"), exportText);
         }
-        
+
         public static bool IsHost()
         {
             if ((GameManager.Instance.IsMultiplayer() && NetworkManager.Instance.IsMaster()) || !GameManager.Instance.IsMultiplayer())
@@ -900,7 +915,7 @@ namespace Obeliskial_Essentials
         public static void TomeOfKnowledgeExport(bool exportImages = true, UniverseLib.UI.Models.ButtonRef _btn = null)
         {
             List<string> doneList = new();
-            foreach(string id in Globals.Instance.Cards.Keys)
+            foreach (string id in Globals.Instance.Cards.Keys)
             {
                 CardData card = Globals.Instance.GetCardData(id, false);
                 if (card != null)
@@ -1380,7 +1395,7 @@ namespace Obeliskial_Essentials
                 }
                 s += "\t" + _wkly.Seed;
             }
-            
+
             /*
             week 1 starts: 9  November 
             week 2 starts: 16 November
@@ -1440,7 +1455,7 @@ namespace Obeliskial_Essentials
                 }
             }
         }
-        
+
         internal static void medsListCorruptors()
         {
             List<string> easy = new();
@@ -1964,7 +1979,7 @@ namespace Obeliskial_Essentials
             result = "\n\n=================================================================================\n" + data.Length.ToString() + " " + type + " with overall checksum " + result.GetHashCode().ToString() + result;
             return result;
         }
-        
+
 
 
     }

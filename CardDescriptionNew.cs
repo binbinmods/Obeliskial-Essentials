@@ -120,8 +120,8 @@ namespace Obeliskial_Essentials
                         str8 = "";
         */
 
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(CardData), "SetDescriptionNew")]
+        // [HarmonyPrefix]
+        // [HarmonyPatch(typeof(CardData), "SetDescriptionNew")]
         public static bool SetDescriptionNewPrefix(ref CardData __instance,
                                                    //    int ___damagePreCalculated,
                                                    //    int ___damagePreCalculatedCombined,
