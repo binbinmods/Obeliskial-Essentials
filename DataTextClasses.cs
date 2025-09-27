@@ -172,7 +172,7 @@ namespace Obeliskial_Essentials
         public int AddCardChoose;
         public bool AddCardCostTurn;
         public string AddCardFrom; // Enums.CardFrom (Mass Invis: Deck?)
-        public string AddCardForModify; // CardIdProvider New v1.6.20, calls GetCardID(CardData, caster, target)
+        // public string AddCardForModify; // CardIdProvider New Removed between 1.6.20 ad 1.7 calls GetCardID(CardData, caster, target)
         public string AddCardId;
         public string[] AddCardList; // then Globals.Instance.GetCardData each?
         public string AddCardPlace; // Enums.CardPlace (Mass Invis: Discard?)
@@ -314,8 +314,6 @@ namespace Obeliskial_Essentials
         public bool HealSpecialValue2;
         public bool HealSpecialValueGlobal;
         // public float HealSelfPerDamageDonePercent; // NEW v1.6.20
-        public bool HealSelfTeamPerDamageDonePercent; // NEW v1.6.20 
-        public int HealBasedOnAuraCurse; // NEW v1.6.20 
         public string ID;
         public bool IgnoreBlock;
         public bool IgnoreBlock2;
@@ -1213,6 +1211,9 @@ namespace Obeliskial_Essentials
         public string HealQuantitySpecialValue; // SPECIAL VALUE NEW v1.6.20
         public int HealReceivedFlatBonus;
         public float HealReceivedPercentBonus;
+        public bool HealSelfTeamPerDamageDonePercent; // NEW v1.6.20 
+        public int HealBasedOnAuraCurse; // NEW v1.6.20 
+
         public string ID;
         public bool IsEnchantment;
         public string ItemSound; // AudioClip

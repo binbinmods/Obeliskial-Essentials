@@ -1,3 +1,11 @@
+# 1.5.4
+
+Secondary update for AtO v1.6.20.
+
+Added proper imports/exports of new features
+
+Updated text adding system
+
 # 1.5.3
 
 Temporary update for AtO v1.6.20, not all features are working.
