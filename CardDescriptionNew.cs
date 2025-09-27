@@ -2011,9 +2011,9 @@ namespace Obeliskial_Essentials
 
                         // Custom Text: ItemActivation After Heal Before Damage
                         BinbinCustomText(TextLocation.ItemActivationAfterHealBeforeDamage, ref stringBuilder1, __instance.Id);
-                        if (itemData.DamageToTarget > 0)
+                        if (itemData.DamageToTarget1 > 0)
                         {
-                            stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsDealDamage"), (object)medsColorTextArray("damage", medsNumFormat(medsEnchantDamagePreCalculated), medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)itemData.DamageToTargetType)))));
+                            stringBuilder1.Append(string.Format(Texts.Instance.GetText("cardsDealDamage"), (object)medsColorTextArray("damage", medsNumFormat(medsEnchantDamagePreCalculated), medsSpriteText(Enum.GetName(typeof(Enums.DamageType), (object)itemData.DamageToTargetType1)))));
                             stringBuilder1.Append("\n");
                         }
                         int num18 = 0;
@@ -2920,7 +2920,7 @@ namespace Obeliskial_Essentials
                 bool GetFromGlobal = false,
                 bool _generated = false)
         {
-            LogDebug($"SetCardPostfix {id}");
+            // LogDebug($"SetCardPostfix {id}");
             bool isNull = __instance == null && __instance.CardData == null;
             if (isNull)
             {
@@ -2938,7 +2938,7 @@ namespace Obeliskial_Essentials
                         return;
                     }
                     ___descriptionTextTM.text = newDescription;
-                    LogDebug($"SetCardPostfix - Setting Combat Description for {__instance.CardData.Id} - {newDescription}");
+                    // LogDebug($"SetCardPostfix - Setting Combat Description for {__instance.CardData.Id} - {newDescription}");
                 }
                 else
                 {

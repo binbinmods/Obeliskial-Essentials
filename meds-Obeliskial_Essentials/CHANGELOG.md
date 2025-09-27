@@ -1,3 +1,7 @@
+# 1.5.3
+
+Temporary update for AtO v1.6.20, not all features are working.
+
 # 1.5.2
 
 Fixed card descriptions when multiple % based damage increases on an item.

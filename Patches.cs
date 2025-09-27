@@ -166,9 +166,10 @@ namespace Obeliskial_Essentials
             subclassDictionary = Traverse.Create(__instance).Field("subclassDictionary").GetValue<Dictionary<string, SubClassData[]>>();
             nonHistorySubclassDictionary = Traverse.Create(__instance).Field("nonHistorySubclassDictionary").GetValue<Dictionary<string, SubClassData>>();
             SubclassByName = Traverse.Create(__instance).Field("SubclassByName").GetValue<Dictionary<string, string>>();
-            BinbinReorderSubclasses();
-            __instance.StartCoroutine(medsHeroSelectionStartCo());
-            return false;
+            // BinbinReorderSubclasses();
+            // __instance.StartCoroutine(medsHeroSelectionStartCo());
+            // return false;
+            return true;
         }
 
         private static void BinbinReorderSubclasses()
@@ -397,19 +398,19 @@ namespace Obeliskial_Essentials
             // Modified version of your original code to integrate with scroll system
             // LogDebug("creating");
             // Create a new GameObject for the scroll system if it doesn't exist
-            GameObject scrollSystemObject = GameObject.Find("HeroSelectionScrollSystem") ?? new GameObject("HeroSelectionScrollSystem");
+            // GameObject scrollSystemObject = GameObject.Find("HeroSelectionScrollSystem") ?? new GameObject("HeroSelectionScrollSystem");
 
-            // Get or add the scroll system component
-            HeroSelectionScrollSystem scrollSystem = scrollSystemObject.GetComponent<HeroSelectionScrollSystem>();
-            if (scrollSystem == null)
-            {
-                scrollSystem = scrollSystemObject.AddComponent<HeroSelectionScrollSystem>();
+            // // Get or add the scroll system component
+            // HeroSelectionScrollSystem scrollSystem = scrollSystemObject.GetComponent<HeroSelectionScrollSystem>();
+            // if (scrollSystem == null)
+            // {
+            //     scrollSystem = scrollSystemObject.AddComponent<HeroSelectionScrollSystem>();
 
-                // Create button prefabs
-                ScrollButtonCreator buttonCreator = scrollSystemObject.AddComponent<ScrollButtonCreator>();
-                scrollSystem.scrollLeftButtonPrefab = buttonCreator.CreateLeftButton();
-                scrollSystem.scrollRightButtonPrefab = buttonCreator.CreateRightButton();
-            }
+            //     // Create button prefabs
+            //     ScrollButtonCreator buttonCreator = scrollSystemObject.AddComponent<ScrollButtonCreator>();
+            //     scrollSystem.scrollLeftButtonPrefab = buttonCreator.CreateLeftButton();
+            //     scrollSystem.scrollRightButtonPrefab = buttonCreator.CreateRightButton();
+            // }
 
             float num2 = 0.95f;
             float num3 = 0.55f;
@@ -457,7 +458,7 @@ namespace Obeliskial_Essentials
                     case 4: categoryName = "dlc"; break;
                 }
 
-                Transform scrollContainer = scrollSystem.GetScrollContainerFor(categoryName);
+                // Transform scrollContainer = scrollSystem.GetScrollContainerFor(categoryName);
 
                 // Loops over characters within each class
                 for (int index2 = 0; index2 < num1; ++index2)
@@ -497,11 +498,17 @@ namespace Obeliskial_Essentials
                     if (!((UnityEngine.Object)_subclassdata == (UnityEngine.Object)null))
                     {
                         // GameObject2 is the actual selection object
+                        // GameObject gameObject2 = UnityEngine.Object.Instantiate<GameObject>(
+                        //     HeroSelectionManager.Instance.heroSelectionPrefab,
+                        //     Vector3.zero,
+                        //     Quaternion.identity,
+                        //     scrollContainer);
                         GameObject gameObject2 = UnityEngine.Object.Instantiate<GameObject>(
                             HeroSelectionManager.Instance.heroSelectionPrefab,
                             Vector3.zero,
                             Quaternion.identity,
-                            scrollContainer);
+                            gameObject1.transform);
+
 
                         gameObject2.transform.localPosition = new Vector3(num3 + num4 * (float)index2, y, 0.0f);
                         gameObject2.transform.localScale = new Vector3(num2, num2, 1f);
@@ -555,8 +562,8 @@ namespace Obeliskial_Essentials
                 }
             }
 
-            LogDebug("Created All Scroll Controllers");
-            scrollSystem.RefreshAllScrollControllers();
+            // LogDebug("Created All Scroll Controllers");
+            // scrollSystem.RefreshAllScrollControllers();
 
 
             if (GameManager.Instance.IsMultiplayer() && GameManager.Instance.IsLoadingGame())

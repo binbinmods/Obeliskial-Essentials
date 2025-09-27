@@ -30,6 +30,7 @@ namespace Obeliskial_Essentials
         //public string GameObjectAnimated; // set from skinData.SkinGo
         public string HeroClass;
         public string HeroClassSecondary;
+        // public string HeroClassThird; // NEW v1.6.20
         public string HitSound; // sound played when hit
         public int HP;
         public string ID;
@@ -80,10 +81,13 @@ namespace Obeliskial_Essentials
         public string Card; // CardData
     }
 
+    // TODO: ActivateOnRuneTypeAdded, TryActivateOnEveryEvent, MaxBleedDamagePerTurn
+
     [Serializable]
     public class TraitDataText : DataText
     {
         public string Activation; // Enums.EventActivation // PreBeginCombat for Piss's L3 Sacred
+        public bool ActivateOnRuneTypeAdded; // New for v1.6.20
         public string AuraCurseBonus1; // "Sanctify" (AuraCurseData)
         public string AuraCurseBonus2; // null (AuraCurseData)
         public string AuraCurseBonus3; // null (AuraCurseData)
@@ -114,6 +118,7 @@ namespace Obeliskial_Essentials
         public float HealReceivedPercentBonus;
         public string ID; // filename?
         // ignore keynotes public string[] KeyNotes; // [ "Energy" (KeyNotesData), "Fatigue" (KeyNotesData) ] // the help text?
+        public int MaxBleedDamagePerTurn; // NEW v1.6.20
         public string ResistModified1; // Enums.DamageType
         public string ResistModified2;
         public string ResistModified3;
@@ -125,12 +130,15 @@ namespace Obeliskial_Essentials
         public string TraitCard; // Globals.Instance.GetCardData("vaccine") ?? (actually uses the least-cloned; is this from source or?)
         public string TraitCardForAllHeroes; // e.g. Nezglekt's Friendly Tadpole // Globals.Instance.GetCardData("vaccine") ?? (actually uses the least-cloned; is this from source or?)
         public string TraitName; // "nice" name
+        public bool TryActivateOnEveryEvent; // NEW v1.6.20
     }
 
+    // TODO: AddCardForModify, AddCardOnlyCheckAuxTypes, AddCardTypeBasedOnHeroClas, AddCardListBasedOnHeroClass, AddVanishToDeck, Auras, ChooseOneOfAvailableAuras, CopyConfig, Curses, CurseChargesSides, HealSelfTeamPerDamageDonePercent, HealBasedOnAuraCurse, PetTemporal, PetTemporalCast, PetTemporalMoveToCenter, PetTemporalMoveToBack, PetTemporalFadeOutDelay
     [Serializable]
     public class CardDataText : DataText
     {
         // #MISSINGCARDENCHANT: enchant damage? enchantDamage, enchantDamagePreCalculated? e.g. profisherface?
+        // public int enchantDamagePreCalculated2
 
 
         // public IGNORE DamagePreCalculated; // IGNORE; InitClone automatically sets
@@ -145,6 +153,17 @@ namespace Obeliskial_Essentials
         // public IGNORE KeyNotes; // automatically built by CreateCardClones-->CardData.InitClone, so no need to worry about it?
         // public IGNORE Target; // probably set by CardData.SetTarget?
 
+        // NEW CUSTOM DESCRIPTIONS v1.6.20
+        // public  string preDescriptionId = "";
+        // public  string descriptionId = "";
+        // public  string postDescriptionId = "";
+        // public  bool useDescriptionFromCard;
+        // public  string[] preDescriptionArgs;
+        // public  string[] descriptionArgs;
+        // public  string[] postDescriptionArgs;
+
+        // public bool _tempAttackSelf
+
         public string AcEnergyBonus; // AuraCurseData
         public string AcEnergyBonus2; // AuraCurseData
         public int AcEnergyBonusQuantity;
@@ -153,6 +172,7 @@ namespace Obeliskial_Essentials
         public int AddCardChoose;
         public bool AddCardCostTurn;
         public string AddCardFrom; // Enums.CardFrom (Mass Invis: Deck?)
+        public string AddCardForModify; // CardIdProvider New v1.6.20, calls GetCardID(CardData, caster, target)
         public string AddCardId;
         public string[] AddCardList; // then Globals.Instance.GetCardData each?
         public string AddCardPlace; // Enums.CardPlace (Mass Invis: Discard?)
@@ -160,6 +180,11 @@ namespace Obeliskial_Essentials
         public string AddCardType; // Enums.CardType (Mass Invis: None)
         public string[] AddCardTypeAux; // ???
         public bool AddCardVanish;
+        public bool AddCardOnlyCheckAuxTypes; // New v1.6.20
+        public string[] AddCardTypeBasedOnHeroClass; // List<CardToGainTypeBasedOnHeroClass> New v1.6.20
+        public string[] AddCardListBasedOnHeroClass; //List<CardToGainListBasedOnHeroClass> New v1.6.20
+        public bool AddVanishToDeck; // New v1.6.20
+        public string[] Auras; //AuraBuffs New v1.6.20
         public string Aura; // Mass Invis: "Stealth" (AuraCurseData)
         public string Aura2;
         public string Aura3;
@@ -189,11 +214,15 @@ namespace Obeliskial_Essentials
         public string[] CardTypeAux; // ???
         public string[] CardTypeList; // List<Enums.CardType> // when would this be used? Check pls
         public string CardUpgraded; // Enums.CardUpgraded
+        public bool ChooseOneOfAvailableAuras; // NEW v1.6.20
+        public string CopyConfig; //CopyConfig New v1.6.20
         public bool Corrupted;
+        public string[] Curses; //CurseDebuffs New v1.6.20 
         public string Curse; // null (AuraCurseData)
         public string Curse2; // null (AuraCurseData)
         public string Curse3; // null (AuraCurseData)
         public int CurseCharges;
+        public int CurseChargesSides; // New v1.6.20 
         public bool CurseChargesSpecialValue1; // ???
         public bool CurseChargesSpecialValue2; // ???
         public bool CurseChargesSpecialValueGlobal; // ???
@@ -284,6 +313,9 @@ namespace Obeliskial_Essentials
         public bool HealSpecialValue1;
         public bool HealSpecialValue2;
         public bool HealSpecialValueGlobal;
+        // public float HealSelfPerDamageDonePercent; // NEW v1.6.20
+        public bool HealSelfTeamPerDamageDonePercent; // NEW v1.6.20 
+        public int HealBasedOnAuraCurse; // NEW v1.6.20 
         public string ID;
         public bool IgnoreBlock;
         public bool IgnoreBlock2;
@@ -308,6 +340,12 @@ namespace Obeliskial_Essentials
         public string PetModel; // null (UnityEngine.GameObject)
         public string PetOffset; // Vector2
         public string PetSize; // Vector2
+        public bool PetTemporal; // New v1.6.20 
+        public bool PetTemporalAttack; // New v1.6.20 
+        public bool PetTemporalCast; // New v1.6.20
+        public bool PetTemporalMoveToCenter; // New v1.6.20
+        public bool PetTemporalMoveToBack; // New v1.6.20
+        public float PetTemporalFadeOutDelay; // New v1.6.20
         public bool Playable;
         public int PullTarget;
         public int PushTarget;
@@ -385,10 +423,12 @@ namespace Obeliskial_Essentials
         public int SpeedQuantity;
     }
 
+    // TODO: ACBonusData, AuraDamageConditionalBonuses, ConsumeDamageChargesIfACApplied, ChargesPreReqForDamageReflection, ChargesPreReqForGrantBlockToTeamForAmountOfDamageBlocked, DamageReflectedModifierType, DamageReflectedMultiplier, HealTotalOnExplode, HealPerChargeOnExplode, HealTargetOnExplode, ACOnExplode, ACTotalChargesOnExplode, ACChargesPerStackChargeOnExplodeOnExplode, GrantBlockToTeamForAmountOfDamageBlocked
     [Serializable]
     public class AuraCurseDataText : DataText
     {
         public string ACName;
+        public string ACBonusData; // List<AuraCurseChargesBonus> New v1.6.20
         public int AuraConsumed;
         public int AuraDamageIncreasedPercent;
         public int AuraDamageIncreasedPercent2;
@@ -415,7 +455,9 @@ namespace Obeliskial_Essentials
         public string AuraDamageType3;
         public string AuraDamageType4;
         public string AuraDamageChargesBasedOnACCharges;
+        public string AuraDamageConditionalBonuses; // AuraDamageBonus[] New v1.6.20
         public string ConsumedDamageChargesBasedOnACCharges;
+        public string ConsumeDamageChargesIfACApplied; //AuraCurseData NEW v1.6.20
         public int BlockChargesGainedPerStack;
         public int CardsDrawPerStack;
         public bool CharacterStatAbsolute;
@@ -428,6 +470,8 @@ namespace Obeliskial_Essentials
         public int ChargesAuxNeedForOne1;
         public int ChargesAuxNeedForOne2;
         public int ChargesMultiplierDescription;
+        public int ChargesPreReqForDamageReflection; // NEW v1.6.20
+        public int ChargesPreReqForGrantBlockToTeamForAmountOfDamageBlocked; // NEW v1.6.20
         public bool CombatlogShow;
         public bool ConsumeAll;
         public bool ConsumedAtCast;
@@ -439,6 +483,8 @@ namespace Obeliskial_Essentials
         public int DamagePreventedPerStack;
         public int DamageReflectedConsumeCharges;
         public string DamageReflectedType;
+        public string DamageReflectedModifierType; // Enums.RefectedDamageModifierType New v1.6.20
+        public int DamageReflectedMultiplier; // NEW v1.6.20
         public int DamageSidesWhenConsumed;
         public int DamageSidesWhenConsumedPerCharge;
         public string DamageTypeWhenConsumed;
@@ -451,6 +497,12 @@ namespace Obeliskial_Essentials
         public string EffectTick;
         public string EffectTickSides;
         public int ExplodeAtStacks;
+        public int HealTotalOnExplode; // NEW v1.6.20
+        public float HealPerChargeOnExplode; // NEW v1.6.20
+        public string HealTargetOnExplode; // Enums.AuraCurseExplodeHealTarget NEW v1.6.20
+        public string ACOnExplode; // AuraCurseData NEW v1.6.20
+        public int ACTotalChargesOnExplode; // NEW v1.6.20
+        public int ACChargesPerStackChargeOnExplodeOnExplode; // NEW v1.6.20
         public string GainAuraCurseConsumption;
         public string GainAuraCurseConsumption2;
         public int GainAuraCurseConsumptionPerCharge;
@@ -458,6 +510,7 @@ namespace Obeliskial_Essentials
         public bool GainCharges;
         public string GainChargesFromThisAuraCurse;
         public string GainChargesFromThisAuraCurse2;
+        public bool GrantBlockToTeamForAmountOfDamageBlocked; // NEW v1.6.20
         public int HealAttackerConsumeCharges;
         public int HealAttackerPerStack;
         public int HealDonePercent;
@@ -517,6 +570,7 @@ namespace Obeliskial_Essentials
         public bool Taunt;
     }
 
+    // TODO: GameObjectAnimatedAlternate, SpriteSpeedAlternate, SpritePortraitAlternate, OnlyKillBossWhenHpZero
     [Serializable]
     public class NPCDataText : DataText
     {
@@ -535,10 +589,12 @@ namespace Obeliskial_Essentials
         public float FluffOffsetX; // ??
         public float FluffOffsetY; // ??
         public string GameObjectAnimated; // UnityEngine.GameObject
+        public string GameObjectAnimatedAlternate; // UnityEngine.GameObject, NEW v1.6.20
         public int GoldReward;
         public string HellModeMob; // NPCData
         public string HitSound; // UnityEngine.Sprite
         public int HP;
+        public bool OnlyKillBossWhenHpZero; // NEW v1.6.20
         public string ID;
         public bool IsBoss;
         public bool IsNamed;
@@ -560,6 +616,8 @@ namespace Obeliskial_Essentials
         public string Sprite; // UnityEngine.Sprite
         public string SpritePortrait; // UnityEngine.Sprite;
         public string SpriteSpeed; // UnityEngine.Sprite;
+        public string SpriteSpeedAlternate; // UnityEngine.Sprite, NEW v1.6.20
+        public string SpritePortraitAlternate; // UnityEngine.Sprite, NEW v1.6.20
         public string TierMob; // CombatTier
         public string TierReward; // TierRewardData
         public string UpgradedMob; // NPCData
@@ -568,6 +626,7 @@ namespace Obeliskial_Essentials
         public string GameObjectReplaceTexture;
     }
 
+    // TODO: StartsAtObeliskMadnessLevel, StartsAtSingularityMadnessLevel, SpecialSecondTargetID, SecondOnlyCastIf, SecondValueCastIf,
     [Serializable]
     public class AICardsText : DataText
     {
@@ -577,6 +636,11 @@ namespace Obeliskial_Essentials
         public string OnlyCastIf; // OnlyCastIf
         public float PercentToCast;
         public int Priority;
+        public int StartsAtObeliskMadnessLevel; // NEW v1.6.20
+        public int StartsAtSingularityMadnessLevel; // NEW v1.6.20
+        public string SpecialSecondTargetID; // NEW v1.6.20
+        public string SecondOnlyCastIf; // OnlyCastIf, New v1.6.20
+        public float SecondValueCastIf; // NEW v1.6.20
         public string TargetCast; // TargetCast
         public int UnitsInDeck;
         public float ValueCastIf;
@@ -614,9 +678,11 @@ namespace Obeliskial_Essentials
         public string SourceNodeName;
     }
 
+    // TODO: AllowDropOnlyItems
     [Serializable]
     public class LootDataText : DataText
     {
+        public bool AllowDropOnlyItems; // NEW v1.6.20
         public float DefaultPercentEpic;
         public float DefaultPercentMythic;
         public float DefaultPercentRare;
@@ -677,14 +743,17 @@ namespace Obeliskial_Essentials
         public int Week;
     }
 
+    // TODO: IsSingularityTrait, OrderSingularity
     [Serializable]
     public class ChallengeTraitText : DataText
     {
         public string Icon; // UnityEngine.Sprite
         public string ID;
         public bool IsMadnessTrait;
+        public bool IsSingularityTrait; // NEW v1.6.20
         public string Name; // "nice" name
         public int Order;
+        public int OrderSingularity; // NEW v1.6.20
     }
 
     /* TierRewardData is already appropriately serializable!
@@ -700,6 +769,7 @@ namespace Obeliskial_Essentials
         public int TierNum;
     }*/
 
+    // TODO: NPCToSummonOnNpcKilled, RandomizeNpcPosition, stepSound
     [Serializable]
     public class CombatDataText : DataText
     {
@@ -715,6 +785,9 @@ namespace Obeliskial_Essentials
         public bool HealHeroes;
         public string[] NPCList; // NPCData
         public int NPCRemoveInMadness0Index;
+        public string NPCToSummonOnNpcKilled; //NPCData NEW v1.6.20
+        public bool RandomizeNpcPosition; //NEW v1.6.20
+        public string StepSound;  //Enums.CombatStepSound NEW v1.6.20
         public string ThermometerTierData; // ThermometerTierData
         public bool IsRift;
     }
@@ -750,6 +823,7 @@ namespace Obeliskial_Essentials
         public string Requirement; // EventRequirementData
     }
 
+    //TODO: TrackCard
     [Serializable]
     public class EventRequirementDataText : DataText
     {
@@ -760,10 +834,12 @@ namespace Obeliskial_Essentials
         public string RequirementName;
         public bool RequirementTrack;
         public string TrackSprite; // UnityEngine.Sprite
+        public string TrackCard;  //CardData New v1.6.20
         public bool ItemTrack;
         public string RequirementZoneFinishTrack;
     }
 
+    // TODO: SSItemCorruptionUI, SSCItemCorruptionUI, FLItemCorruptionUI, FLCItemCorruptionUI
     [Serializable]
     public class EventReplyDataText : DataText
     {
@@ -801,6 +877,7 @@ namespace Obeliskial_Essentials
         public int SSCharacterReplacementPosition;
         public string SSCombat; // CombatData
         public bool SSCorruptionUI;
+        public bool SSItemCorruptionUI; // NEW v1.6.20
         public string SSCorruptItemSlot; // Enums.ItemSlot
         public bool SSCraftUI;
         public string SSCraftUIMaxType; // Enums.CardRarity
@@ -855,6 +932,7 @@ namespace Obeliskial_Essentials
         public string SSCCardPlayerPairsGamePackData; // CardPlayerPairsPackData
         public string SSCCombat; // CombatData
         public bool SSCCorruptionUI;
+        public bool SSCItemCorruptionUI; // NEW v1.6.20
         public string SSCCorruptItemSlot; // Enums.ItemSlot
         public bool SSCCraftUI;
         public string SSCCraftUIMaxType; // Enums.CardRarity
@@ -896,6 +974,7 @@ namespace Obeliskial_Essentials
         public string FLCardPlayerPairsGamePackData; // CardPlayerPairsPackData
         public string FLCombat; // CombatData
         public bool FLCorruptionUI;
+        public bool FLItemCorruptionUI; // NEW v1.6.20
         public string FLCorruptItemSlot; // Enums.ItemSlot
         public bool FLCraftUI;
         public string FLCraftUIMaxType; // Enums.CardRarity
@@ -935,6 +1014,7 @@ namespace Obeliskial_Essentials
         public string FLCCardPlayerPairsGamePackData; // CardPlayerPairsPackData
         public string FLCCombat; // CombatData
         public bool FLCCorruptionUI;
+        public bool FLCItemCorruptionUI; // NEW v1.6.20
         public string FLCCorruptItemSlot; // Enums.ItemSlot
         public bool FLCCraftUI;
         public string FLCCraftUIMaxType; // Enums.CardRarity
@@ -1015,6 +1095,7 @@ namespace Obeliskial_Essentials
         public string RequiredClass; // SubClassData
     }
 
+    // TODO: AddVanishToDeck, AuraCurseGainSelf3, AuraCurseGainSelfValue3, AuraCurseGain1SpecialValue, AuraCurseGain2SpecialValue, AuraCurseGain3SpecialValue, AuraCurseHeal1, AuraCurseHeal2, AuraCurseHeal3, AuraCurseSetted2, AuraCurseSetted3, ChanceToPurge, ChanceToPurgeNum, ChanceToDispelSelf, ChanceToDispelNumSelf, ChooseOneACToGain, DamageToTargetType2, DamageToTarget2, DttSpecialValues1, DttSpecialValues2, DontTargetBoss, HealQuantitySpecialValue
     [Serializable]
     public class ItemDataText : DataText
     {
@@ -1023,6 +1104,7 @@ namespace Obeliskial_Essentials
         public bool ACG3MultiplyByEnergyUsed;
         public string Activation; // Enums.EventActivation
         public bool ActivationOnlyOnHeroes;
+        public bool AddVanishToDeck; // NEW v1.6.20
         public string AuraCurseBonus1; // AuraCurseData
         public string AuraCurseBonus2; // AuraCurseData
         public int AuraCurseBonusValue1;
@@ -1039,12 +1121,24 @@ namespace Obeliskial_Essentials
         public int AuraCurseGainValue3;
         public string AuraCurseGainSelf1; // AuraCurseData
         public string AuraCurseGainSelf2; // AuraCurseData
+        public string AuraCurseGainSelf3; // AuraCurseData, New v1.6.20
         public int AuraCurseGainSelfValue1;
         public int AuraCurseGainSelfValue2;
+        public int AuraCurseGainSelfValue3; // New v1.6.20 
+        public string AuraCurseGain1SpecialValue; // SPECIAL VALUE NEW v1.6.20
+        public string AuraCurseGain2SpecialValue; // SPECIAL VALUE NEW v1.6.20
+        public string AuraCurseGain3SpecialValue; // SPECIAL VALUE NEW v1.6.20
+
+        public string AuraCurseHeal1; // AuraCurseData, New v1.6.20
+        public string AuraCurseHeal2; // AuraCurseData, New v1.6.20
+        public string AuraCurseHeal3; // AuraCurseData, New v1.6.20
         public string AuraCurseImmune1; // AuraCurseData
         public string AuraCurseImmune2; // AuraCurseData
         public int AuraCurseNumForOneEvent;
         public string AuraCurseSetted; // AuraCurseData
+
+        public string AuraCurseSetted2; // AuraCurseData NEW v1.6.20
+        public string AuraCurseSetted3; // AuraCurseData NEW v1.6.20
         public int CardNum;
         public string CardPlace; // Enums.CardPlace
         public int CardsReduced;
@@ -1056,12 +1150,17 @@ namespace Obeliskial_Essentials
         public bool CastEnchantmentOnFinishSelfCast;
         public int ChanceToDispel;
         public int ChanceToDispelNum;
+        public int ChanceToPurge; // NEW v1.6.20
+        public int ChanceToPurgeNum; // NEW v1.6.20
+        public int ChanceToDispelSelf; // NEW v1.6.20
+        public int ChanceToDispelNumSelf; // NEW v1.6.20
         public string CharacterStatModified; // Enums.CharacterStat
         public string CharacterStatModified2; // Enums.CharacterStat
         public string CharacterStatModified3; // Enums.CharacterStat
         public int CharacterStatModifiedValue;
         public int CharacterStatModifiedValue2;
         public int CharacterStatModifiedValue3;
+        public bool ChooseOneACToGain; // NEW v1.6.20
         public bool CostReducePermanent;
         public int CostReduceReduction;
         public int CostReduceEnergyRequirement;
@@ -1081,11 +1180,18 @@ namespace Obeliskial_Essentials
         public float DamagePercentBonusValue2;
         public float DamagePercentBonusValue3;
         public int DamageToTarget;
-        public string DamageToTargetType; // Enums.DamageType
+        public string DamageToTargetType1; // Enums.DamageType
+
+        public string DttSpecialValues1; // Special Value, New v1.6.20
+        public int DamageToTarget2; // New v1.6.20
+        public string DamageToTargetType2;// Enums.DamageType, New v1.6.20
+        public string DttSpecialValues2; // Special Value, New v1.6.20
+
         public bool DestroyAfterUse;
         public int DestroyAfterUses;
         public bool DestroyEndOfTurn;
         public bool DestroyStartOfTurn;
+        public bool DontTargetBoss; // NEW v1.6.20
         public int DrawCards;
         public bool DrawMultiplyByEnergyUsed;
         public bool DropOnly; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ok done
@@ -1104,6 +1210,7 @@ namespace Obeliskial_Essentials
         public int HealPercentQuantity;
         public int HealPercentQuantitySelf;
         public int HealQuantity;
+        public string HealQuantitySpecialValue; // SPECIAL VALUE NEW v1.6.20
         public int HealReceivedFlatBonus;
         public float HealReceivedPercentBonus;
         public string ID;
@@ -1185,6 +1292,7 @@ namespace Obeliskial_Essentials
         public string ConnectionIfNotNode;
     }
 
+    // TODO: CardbackTextId, PdxAccountRequired, SingularityLevel
     [Serializable]
     public class CardbackDataText : DataText
     {
@@ -1195,13 +1303,18 @@ namespace Obeliskial_Essentials
         public int CardbackOrder;
         public string CardbackSprite; // Sprite
         public string CardbackSubclass; // SubClassData
+        public string CardbackTextId; // Added in 1.6.20
         public bool Locked;
         public int ObeliskLevel;
+        public bool PdxAccountRequired; // New v1.6.20
         public int RankLevel;
         public bool ShowIfLocked;
+        public int SingularityLevel; // New v1.6.20
         public string Sku;
         public string SteamStat;
     }
+
+    // TODO: SkinTextId
     [Serializable]
     public class SkinDataText : DataText
     {
@@ -1212,6 +1325,7 @@ namespace Obeliskial_Essentials
         public string SkinName;
         public int SkinOrder;
         public string SkinSubclass; // SubClassData
+        public string SkinTextId; // New v1.6.20
         public string Sku;
         public string SpritePortrait; // Sprite
         public string SpritePortraitGrande; // Sprite
@@ -1219,6 +1333,7 @@ namespace Obeliskial_Essentials
         public string SpriteSiluetaGrande; // Sprite
         public string SteamStat;
     }
+
     [Serializable]
     public class CinematicDataText : DataText
     {
@@ -1366,5 +1481,76 @@ namespace Obeliskial_Essentials
         public string Title;
         public List<string> Perks;
         public int Points;
+    }
+
+    // New structs added in v1.6.20
+    [Serializable]
+    public class CurseDebuffsText : DataText
+    {
+        public string curse; //AuraCurseData
+
+        public string curseSelf; //AuraCurseData
+
+        public int curseCharges;
+
+        public int curseChargesSides;
+
+        public bool curseChargesSpecialValueGlobal;
+
+        public bool curseChargesSpecialValue1;
+
+        public bool curseChargesSpecialValue2;
+    }
+
+    [Serializable]
+    public class AuraBuffsText : DataText
+    {
+        public string aura; //AuraCurseData
+
+        public string auraSelf; //AuraCurseData
+
+        public int auraCharges;
+
+        public bool auraChargesSpecialValueGlobal;
+
+        public bool auraChargesSpecialValue1;
+
+        public bool auraChargesSpecialValue2;
+    }
+
+    [Serializable]
+    public class CardToGainTypeBasedOnHeroClassText : DataText
+    {
+        public string heroClass; //Enums.HeroClass
+
+        public string[] cardTypes; //List<Enums.CardType>
+    }
+
+    [Serializable]
+    public class CardToGainListBasedOnHeroClassText : DataText
+    {
+        public string heroClass; //Enums.HeroClass
+
+        public string[] cardsList; //List<CardData>
+    }
+
+    [Serializable]
+    public class SpecialValuesText : DataText
+    {
+        public string Name; //Enums.SpecialValueModifierName
+
+        public bool Use;
+
+        public float Multiplier;
+    }
+
+    [Serializable]
+    public class CopyConfigText : DataText
+    {
+        public bool CopyNameFromOriginal;
+        public bool CopyImageFromOriginal;
+        public bool CopyCardUpgradedFromOriginal;
+        public bool CopyCardTypeFromOriginal;
+
     }
 }
