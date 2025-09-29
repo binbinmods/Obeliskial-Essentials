@@ -815,7 +815,7 @@ namespace Obeliskial_Essentials
             text.DamagePercentBonusValue2 = data.DamagePercentBonusValue2;
             text.DamagePercentBonusValue3 = data.DamagePercentBonusValue3;
             text.DamageToTarget = data.DamageToTarget1;
-            text.DamageToTargetType1 = ToString(data.DamageToTargetType1);
+            text.DamageToTargetType = ToString(data.DamageToTargetType1);
             text.DestroyAfterUse = data.DestroyAfterUse;
             text.DestroyAfterUses = data.DestroyAfterUses;
             text.DestroyEndOfTurn = data.DestroyEndOfTurn;
@@ -899,11 +899,11 @@ namespace Obeliskial_Essentials
             text.TargetCast = ToString(data.TargetCast);
             text.UnitsInDeck = data.UnitsInDeck;
             text.ValueCastIf = data.ValueCastIf;
-            text.StartsAtObeliskMadnessLevel = data.StartsAtObeliskMadnessLevel; //v1.6.20
-            text.StartsAtSingularityMadnessLevel = data.StartsAtSingularityMadnessLevel; //v1.6.20
-            text.SpecialSecondTargetID = ToString(data.SpecialSecondTargetID); //v1.6.20
-            text.SecondOnlyCastIf = ToString(data.SecondOnlyCastIf); //v1.6.20
-            text.SecondValueCastIf = data.SecondValueCastIf; //v1.6.20
+            // text.StartsAtObeliskMadnessLevel = data.StartsAtObeliskMadnessLevel; //v1.6.20
+            // text.StartsAtSingularityMadnessLevel = data.StartsAtSingularityMadnessLevel; //v1.6.20
+            // text.SpecialSecondTargetID = ToString(data.SpecialSecondTargetID); //v1.6.20
+            // text.SecondOnlyCastIf = ToString(data.SecondOnlyCastIf); //v1.6.20
+            // text.SecondValueCastIf = data.SecondValueCastIf; //v1.6.20
             return text;
         }
         // TODO: GameObjectAnimatedAlternate, SpriteSpeedAlternate, SpritePortraitAlternate, OnlyKillBossWhenHpZero

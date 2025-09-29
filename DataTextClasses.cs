@@ -1178,7 +1178,7 @@ namespace Obeliskial_Essentials
         public float DamagePercentBonusValue2;
         public float DamagePercentBonusValue3;
         public int DamageToTarget;
-        public string DamageToTargetType1; // Enums.DamageType
+        public string DamageToTargetType; // Enums.DamageType
 
         public string DttSpecialValues1; // Special Value, New v1.6.20
         public int DamageToTarget2; // New v1.6.20

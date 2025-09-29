@@ -1,10 +1,14 @@
+# 1.5.5
+
+Fixed issue with display of certain damage types for new cards.
+
 # 1.5.4
 
 Secondary update for AtO v1.6.20.
 
 Added proper imports/exports of new features
 
-Updated text adding system
+<!-- Updated text adding system -->
 
 # 1.5.3
 
