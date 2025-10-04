@@ -2,6 +2,8 @@
 
 Fixed issue with display of certain damage types for new cards.
 
+Partial update to Text Display system
+
 # 1.5.4
 
 Secondary update for AtO v1.6.20.
