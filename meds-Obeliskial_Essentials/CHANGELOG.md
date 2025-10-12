@@ -1,3 +1,7 @@
+# 1.5.6
+
+Updated to allow for more modded heroes to be added.
+
 # 1.5.5
 
 Fixed issue with display of certain damage types for new cards.
