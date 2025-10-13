@@ -6,7 +6,7 @@
         <AssemblyName>com.stiffmeds.obeliskialessentials</AssemblyName>
         <Product>Obeliskial_Essentials</Product>
         <Description>Essential reference classes and methods for Across the Obelisk modding.</Description>
-        <Version>1.5.6</Version>
+        <Version>1.5.7</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -50,14 +50,15 @@
 					<HintPath>$(GamePath)/BepInEx/core/BepInEx.dll</HintPath>
 					<Private>False</Private>
 				</Reference>
-				<!-- <Reference Include="Facepunch.Steamworks.Win64">
+				<Reference Include="Facepunch.Steamworks.Win64">
 					<HintPath>../!libs/Facepunch.Steamworks.Win64.dll</HintPath>
-					<Private>False</Private> -->
+					<Private>False</Private>
+					</Reference>
 
-				<Reference Include="Facepunch.Steamworks.Posix">
+				<!-- <Reference Include="Facepunch.Steamworks.Posix">
 					<HintPath>../!libs/Facepunch.Steamworks.Posix v1.6.22b.dll</HintPath>
-				<Private>False</Private>
-				</Reference>
+				<Private>False</Private> -->
+				<!-- </Reference> -->
 				<Reference Include="PhotonRealtime">
 					<HintPath>$(GamePath)/Contents/Resources/Data/Managed/PhotonRealtime.dll</HintPath>
 					<Private>False</Private>

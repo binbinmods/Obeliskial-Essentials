@@ -1,3 +1,7 @@
+# 1.5.7
+
+Windows compatibility
+
 # 1.5.6
 
 Updated to allow for more modded heroes to be added.
