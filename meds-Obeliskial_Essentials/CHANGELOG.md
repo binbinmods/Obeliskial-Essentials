@@ -1,3 +1,17 @@
+# 1.6.0
+
+Initial Update for AtO v1.7.0
+
+Known Issue: Possible issue when using a large number of hero mods. Will be rectified soon.
+
+# 1.5.8
+
+Fixed issue with SpecialValue export
+
+Allowed perk level to be directly changed
+
+<!-- Update for AtO v1.7.0 -->
+
 # 1.5.7
 
 Windows compatibility

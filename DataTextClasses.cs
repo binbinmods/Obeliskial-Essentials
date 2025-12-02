@@ -464,8 +464,8 @@ namespace Obeliskial_Essentials
         public int CharacterStatChargesMultiplierNeededForOne;
         public string CharacterStatModified;
         public int CharacterStatModifiedValue;
-        public int CharacterStatModifiedValuePerStack;
-        public int ChargesAuxNeedForOne1;
+        public float CharacterStatModifiedValuePerStack;
+        public float ChargesAuxNeedForOne1;
         public int ChargesAuxNeedForOne2;
         public int ChargesMultiplierDescription;
         public int ChargesPreReqForDamageReflection; // NEW v1.6.20
@@ -557,9 +557,9 @@ namespace Obeliskial_Essentials
         public float ResistModifiedPercentagePerStack;
         public float ResistModifiedPercentagePerStack2;
         public float ResistModifiedPercentagePerStack3;
-        public int ResistModifiedValue;
-        public int ResistModifiedValue2;
-        public int ResistModifiedValue3;
+        public float ResistModifiedValue;
+        public float ResistModifiedValue2;
+        public float ResistModifiedValue3;
         public int RevealCardsPerCharge;
         public bool SkipsNextTurn;
         public string Sound; // noting that Weak has null

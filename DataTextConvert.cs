@@ -313,6 +313,10 @@ namespace Obeliskial_Essentials
         {
             return ToJson(ToText(data), true);
         }
+        public static string ToString(SpecialValues data)
+        {
+            return ToJson(ToText(data), true);
+        }
 
         public static string[] ToString<T>(T[] data)
         {
@@ -1854,6 +1858,8 @@ namespace Obeliskial_Essentials
             };
             return text;
         }
+
+
         // public static CopyConfigText ToText(CopyConfig data)
         // {
         //     SpecialValuesText text = new();

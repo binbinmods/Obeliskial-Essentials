@@ -203,8 +203,8 @@ namespace Obeliskial_Essentials
             return true;
         }
 
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(HeroSelectionManager), "StartCoContinue")]
+        // [HarmonyPrefix]
+        // [HarmonyPatch(typeof(HeroSelectionManager), "StartCoContinue")]
         private static bool StartCoContinuePrefix(ref HeroSelectionManager __instance)
         {
             __instance.StartCoroutine(medsHeroSelectionStartCoContinue());
