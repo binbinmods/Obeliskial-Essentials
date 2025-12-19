@@ -152,11 +152,9 @@ namespace Obeliskial_Essentials
                 return;
             RenderTexture renderTex = RenderTexture.GetTemporary((int)spriteToExport.texture.width, (int)spriteToExport.texture.height, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Linear);
             // we flip it when doing the Graphics.Blit because the sprites are packed (which... flips them? idk?)
-            bool isMac = UnityEngine.SystemInfo.operatingSystemFamily == UnityEngine.OperatingSystemFamily.MacOSX;
-            if (isMac)
+            if (Environment.OSVersion.Platform == PlatformID.MacOSX)
             {
                 Graphics.Blit(spriteToExport.texture, renderTex);//, new Vector2(1, -1), new Vector2(0, 1));
-
             }
             else
             {
@@ -176,7 +174,7 @@ namespace Obeliskial_Essentials
                 {
                     // finalImage.SetPixel(i, readableText.height - j - 1, readableText.GetPixel(i, j));
                     // UnityE== UnityEngine.OperatingSystemFamily.MacOSX;
-                    int value = isMac ? j : readableText.height - j - 1;
+                    int value = Environment.OSVersion.Platform == PlatformID.MacOSX ? j : readableText.height - j - 1;
                     finalImage.SetPixel(i, value, readableText.GetPixel(i, j));
                 }
 

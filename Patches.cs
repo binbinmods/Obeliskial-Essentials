@@ -169,38 +169,10 @@ namespace Obeliskial_Essentials
             SubclassByName = Traverse.Create(__instance).Field("SubclassByName").GetValue<Dictionary<string, string>>();
 
             LogDebug("HeroSelectionManager Start Prefix");
-            // foreach (KeyValuePair<string, HeroSelection> item in __instance.heroSelectionDictionary)
-            // {
-            //     if (item.Value.gameObject.transform.parent != item.Value.DefaultParent)
-            //     {
-            //         item.Value.gameObject.SetActive(value: true);
-            //         SpriteRenderer spriteSR = Traverse.Create(item.Value).Field("spriteSR").GetValue<SpriteRenderer>();
-            //         spriteSR.enabled = true;
-            //         Traverse.Create(item.Value).Field("spriteSR").SetValue(spriteSR);
-            //         item.Value.nameOver.gameObject.SetActive(value: true);
-            //         item.Value.rankOver.gameObject.SetActive(value: true);
-            //     }
-            // }
-            // HeroSelection heroSelection = new HeroSelection();
-            // for (int i = 0; i < 4; i++)
-            // {
-            //     heroSelection = __instance.GetBoxHeroFromIndex(i);
-            // }
-            // if (heroSelection != null)
-            // {
-            //     SubClassData subClassData = Traverse.Create(heroSelection).Field("subClassData").GetValue<SubClassData>();
-            //     __instance.charPopupMini.SetSubClassData(subClassData);
-            // }
-            // else
-            // {
-            //     __instance.charPopupMini.SetSubClassData(Globals.Instance.GetSubClassData("mercenary"));
-            // }
-            // LogDebug("HeroSelectionManager Start Prefix - Post charPopupMini");
-            // Task.Delay(500);
             BinbinReorderSubclasses();
-
-            // return false;
-            return true;
+            StartCoContinuePrefix(ref __instance);
+            return false;
+            // return true;
         }
 
         // [HarmonyPrefix]
@@ -283,7 +255,7 @@ namespace Obeliskial_Essentials
             HeroSelectionManager.Instance.ShowDrag(state: false, Vector3.zero);
             int num = 33;
             int num2 = 5;
-            // LogDebug("HeroSelectionManager StartCo - Post Drag");
+            LogDebug("HeroSelectionManager StartCo - Post Drag");
             foreach (KeyValuePair<string, SubClassData> item3 in Globals.Instance.SubClass)
             {
                 if (!item3.Value.MainCharacter)
@@ -312,7 +284,7 @@ namespace Obeliskial_Essentials
                     subclassDictionary[key2][Globals.Instance.SubClass[item3.Key].OrderInList] = Globals.Instance.SubClass[item3.Key];
                 }
             }
-            // LogDebug("HeroSelectionManager StartCo - Post Sublcass init");
+            LogDebug("HeroSelectionManager StartCo - Post Subclass init");
             Traverse.Create(HeroSelectionManager.Instance).Field("nonHistorySubclassDictionary").SetValue(nonHistorySubclassDictionary);
             Traverse.Create(HeroSelectionManager.Instance).Field("subclassDictionary").SetValue(subclassDictionary);
 
@@ -417,7 +389,7 @@ namespace Obeliskial_Essentials
                     HeroSelectionManager.Instance.menuController.Add(component.transform);
                 }
             }
-            // LogDebug("HeroSelectionManager StartCo - Post Subclass position loop");
+            LogDebug("HeroSelectionManager StartCo - Post Subclass position loop");
             if (GameManager.Instance.IsMultiplayer())
             {
                 List<string> list = new List<string>();
@@ -473,7 +445,7 @@ namespace Obeliskial_Essentials
                     }
                 }
             }
-            // LogDebug("HeroSelectionManager StartCo - Post MP");
+            LogDebug("HeroSelectionManager StartCo - Post MP");
 
             if (GameManager.Instance.IsMultiplayer() && GameManager.Instance.IsLoadingGame())
             {
@@ -494,7 +466,7 @@ namespace Obeliskial_Essentials
                 }
                 Traverse.Create(HeroSelectionManager.Instance).Field("SubclassByName").SetValue(SubclassByName);
             }
-            // LogDebug("HeroSelectionManager StartCo - Post MP load game");
+            LogDebug("HeroSelectionManager StartCo - Post MP load game");
 
             if (GameManager.Instance.IsGameAdventure() && AtOManager.Instance.IsFirstGame() && !GameManager.Instance.IsMultiplayer())
             {
@@ -508,7 +480,7 @@ namespace Obeliskial_Essentials
                 HeroSelectionManager.Instance.BeginAdventure();
                 yield break;
             }
-            // LogDebug("HeroSelectionManager StartCo - Post tutorial");
+            LogDebug("HeroSelectionManager StartCo - Post tutorial");
             HeroSelectionManager.Instance.charPopupGO = HeroSelectionManager.Instance.charPopup.gameObject;
             HeroSelectionManager.Instance.charPopup = HeroSelectionManager.Instance.charPopupGO.GetComponent<CharPopup>();
             HeroSelectionManager.Instance.charPopup.HideNow();
@@ -534,7 +506,7 @@ namespace Obeliskial_Essentials
                 HeroSelectionManager.Instance.weeklyNumber.text = AtOManager.Instance.GetWeeklyName(AtOManager.Instance.GetWeekly());
             }
 
-            // LogDebug("HeroSelectionManager StartCo - Post weekly or not setup");
+            LogDebug("HeroSelectionManager StartCo - Post weekly or not setup");
             if (GameManager.Instance.IsGameAdventure())
             {
                 // LogDebug("Adventure");
@@ -656,7 +628,7 @@ namespace Obeliskial_Essentials
             }
             else if (!GameManager.Instance.IsWeeklyChallenge())
             {
-                // LogDebug("Obelisk");
+                LogDebug("Obelisk");
                 HeroSelectionManager.Instance.titleMovement.SetText(Texts.Instance.GetText("modeObelisk"));
                 HeroSelectionManager.Instance.madnessButton.gameObject.SetActive(value: true);
                 if (GameManager.Instance.IsMultiplayer())
@@ -704,12 +676,12 @@ namespace Obeliskial_Essentials
             }
             else
             {
-                // LogDebug("Weekly");
+                LogDebug("Weekly");
                 HeroSelectionManager.Instance.titleMovement.SetText(Texts.Instance.GetText("modeWeekly"));
                 HeroSelectionManager.Instance.madnessButton.gameObject.SetActive(value: false);
             }
 
-            // LogDebug("HeroSelectionManager StartCo - Post Buttons");
+            LogDebug("HeroSelectionManager StartCo - Post Buttons");
             HeroSelectionManager.Instance.Resize();
             if (GameManager.Instance.IsWeeklyChallenge() && !GameManager.Instance.IsLoadingGame())
             {
@@ -766,7 +738,7 @@ namespace Obeliskial_Essentials
                 if (NetworkManager.Instance.IsMaster())
                 {
                     // Custom DrawBoxSelectionNames implementation
-                    // LogDebug("DrawBoxSelectionNames");
+                    LogDebug("DrawBoxSelectionNames");
                     DrawBoxSelectionNamesLocal();
 
                     HeroSelectionManager.Instance.botonBegin.gameObject.SetActive(value: true);
@@ -848,7 +820,7 @@ namespace Obeliskial_Essentials
                     }
                 }
             }
-            // LogDebug("HeroSelectionManager StartCo - Post Boxes");
+            LogDebug("HeroSelectionManager StartCo - Post Boxes");
             HeroSelectionManager.Instance.RearrangeHerosData();
             HeroSelectionManager.Instance.ShowHeroesByFilterAsync("all");
             yield return Globals.Instance.WaitForSeconds(0.1f);
@@ -886,9 +858,9 @@ namespace Obeliskial_Essentials
                     {
                         photonView.RPC("NET_ShareSandbox", RpcTarget.Others, Functions.CompressString(sandboxMods));
                     }
-                    // LogDebug("HeroSelectionManager StartCo - Post Sandbox Init");
+                    LogDebug("HeroSelectionManager StartCo - Post Sandbox Init");
                     HeroSelectionManager.Instance.RefreshCharBoxesBySandboxHeroes();
-                    // LogDebug("HeroSelectionManager StartCo - Post Sandbox Refresh");
+                    LogDebug("HeroSelectionManager StartCo - Post Sandbox Refresh");
                 }
             }
             else
@@ -975,7 +947,14 @@ namespace Obeliskial_Essentials
             {
                 photonView.RPC("NET_SetNotOriginal", RpcTarget.All);
             }
+
+            LogDebug("HeroSelectionManager StartCo - End");
+            // HeroSelectionManager.Instance.SetCombatToolUI();
+            // HeroSelectionManager.Instance.SetCharacterSelectionTabCount();
+
         }
+
+
         private IEnumerator medsHeroSelectionStartOld()
         {
             if (GameManager.Instance.IsMultiplayer())

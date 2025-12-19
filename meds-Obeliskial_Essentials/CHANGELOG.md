@@ -1,3 +1,11 @@
+# 1.6.1
+
+Update for AtO v1.7.2
+
+Updated to allow arbitrary number of heroes again
+
+Hopefully fixed PC based export of sprites
+
 # 1.6.0
 
 Initial Update for AtO v1.7.0
