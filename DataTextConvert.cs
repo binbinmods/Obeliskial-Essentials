@@ -1179,6 +1179,11 @@ namespace Obeliskial_Essentials
             text.TravelDestination = data.TravelDestination;
             text.VisibleIfNotRequirement = data.VisibleIfNotRequirement;
             text.SourceNodeName = data.SourceNodeName; // #XMAS
+            if (medsNodeSource.ContainsKey(data.NodeId))
+            {
+                text.medsPosX = medsNodeSource[data.NodeId].transform.position.x;
+                text.medsPosY = medsNodeSource[data.NodeId].transform.position.y;
+            }
             if (data.NodeBackgroundImg != null && medsExportJSON.Value && medsExportSprites.Value)
                 ExportSprite(data.NodeBackgroundImg, "node");
             return text;

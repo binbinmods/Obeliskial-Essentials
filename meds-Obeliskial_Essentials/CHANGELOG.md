@@ -1,10 +1,16 @@
+# 1.6.2
+
+Fixed node export to include position data
+
 # 1.6.1
 
 Update for AtO v1.7.2
 
-Updated to allow arbitrary number of heroes again
+Updated to allow up to 64 heroes.
 
 Hopefully fixed PC based export of sprites
+
+Added button to refresh content (only adds content, does not delete currently added content)
 
 # 1.6.0
 

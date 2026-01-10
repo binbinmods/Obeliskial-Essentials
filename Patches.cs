@@ -44,7 +44,8 @@ namespace Obeliskial_Essentials
         private static Dictionary<string, SubClassData[]> subclassDictionary = new();
         private static Dictionary<string, SubClassData> nonHistorySubclassDictionary = new();
         private static Dictionary<string, string> SubclassByName = new();
-
+        public static Dictionary<string, NodeData> medsNodeDataSourceGlobal = new();
+        public static bool medsExportNode = false;
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Globals), "CreateGameContent")]
         [HarmonyPriority(Priority.First)]
@@ -75,8 +76,11 @@ namespace Obeliskial_Essentials
             {
                 LogInfo("PRAYGE; THE EXPORT HAS BEGUN");
                 Node[] foundNodes = Resources.FindObjectsOfTypeAll<Node>();
+                LogInfo("Found " + foundNodes.Length + " nodes");
                 foreach (Node n in foundNodes)
+                {
                     medsNodeSource[n.name] = n;
+                }
                 FolderCreate(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "sprite"));
                 FolderCreate(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "card"));
                 FolderCreate(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "!combined"));
@@ -100,6 +104,7 @@ namespace Obeliskial_Essentials
                         medsNodeEventPriority[kvp.Value.NodeEvent[a].EventId] = kvp.Value.NodeEventPriority.Length > a ? kvp.Value.NodeEventPriority[a] : 0;
                     }
                 }
+                medsNodeDataSourceGlobal = medsNodeDataSource;
                 LogDebug("finished building node-event relationships");
                 ExtractData(Traverse.Create(Globals.Instance).Field("_SubClassSource").GetValue<Dictionary<string, SubClassData>>().Select(item => item.Value).ToArray());
                 ExtractData(Traverse.Create(Globals.Instance).Field("_TraitsSource").GetValue<Dictionary<string, TraitData>>().Select(item => item.Value).ToArray());
@@ -128,6 +133,7 @@ namespace Obeliskial_Essentials
                 ExtractData(Traverse.Create(Globals.Instance).Field("_CardPlayerPairsPackDataSource").GetValue<Dictionary<string, CardPlayerPairsPackData>>().Select(item => item.Value).ToArray());
                 ExtractData(medsEventReplyDataText.Select(item => item.Value).ToArray());
                 //Plugin.FullNodeDataExport();
+                medsExportNode = true;
                 medsExportJSON.Value = false; // turn off after exporting*/
                 LogInfo("OUR PRAYERS WERE ANSWERED");
             }
@@ -232,7 +238,7 @@ namespace Obeliskial_Essentials
         private static IEnumerator medsHeroSelectionStartCoContinue()
         {
 
-            LogDebug("HeroSelectionManager StartCo - Post MP ready");
+            // LogDebug("HeroSelectionManager StartCo - Post MP ready");
 
             MadnessManager.Instance.ShowMadness();
             MadnessManager.Instance.RefreshValues();
@@ -253,9 +259,9 @@ namespace Obeliskial_Essentials
             Traverse.Create(HeroSelectionManager.Instance).Field("boxHero").SetValue(boxHero);
 
             HeroSelectionManager.Instance.ShowDrag(state: false, Vector3.zero);
-            int num = 33;
+            int num = 64;
             int num2 = 5;
-            LogDebug("HeroSelectionManager StartCo - Post Drag");
+            // LogDebug("HeroSelectionManager StartCo - Post Drag");
             foreach (KeyValuePair<string, SubClassData> item3 in Globals.Instance.SubClass)
             {
                 if (!item3.Value.MainCharacter)
@@ -284,7 +290,7 @@ namespace Obeliskial_Essentials
                     subclassDictionary[key2][Globals.Instance.SubClass[item3.Key].OrderInList] = Globals.Instance.SubClass[item3.Key];
                 }
             }
-            LogDebug("HeroSelectionManager StartCo - Post Subclass init");
+            // LogDebug("HeroSelectionManager StartCo - Post Subclass init");
             Traverse.Create(HeroSelectionManager.Instance).Field("nonHistorySubclassDictionary").SetValue(nonHistorySubclassDictionary);
             Traverse.Create(HeroSelectionManager.Instance).Field("subclassDictionary").SetValue(subclassDictionary);
 
@@ -389,7 +395,7 @@ namespace Obeliskial_Essentials
                     HeroSelectionManager.Instance.menuController.Add(component.transform);
                 }
             }
-            LogDebug("HeroSelectionManager StartCo - Post Subclass position loop");
+            // LogDebug("HeroSelectionManager StartCo - Post Subclass position loop");
             if (GameManager.Instance.IsMultiplayer())
             {
                 List<string> list = new List<string>();
@@ -445,7 +451,7 @@ namespace Obeliskial_Essentials
                     }
                 }
             }
-            LogDebug("HeroSelectionManager StartCo - Post MP");
+            // LogDebug("HeroSelectionManager StartCo - Post MP");
 
             if (GameManager.Instance.IsMultiplayer() && GameManager.Instance.IsLoadingGame())
             {
@@ -466,7 +472,7 @@ namespace Obeliskial_Essentials
                 }
                 Traverse.Create(HeroSelectionManager.Instance).Field("SubclassByName").SetValue(SubclassByName);
             }
-            LogDebug("HeroSelectionManager StartCo - Post MP load game");
+            // LogDebug("HeroSelectionManager StartCo - Post MP load game");
 
             if (GameManager.Instance.IsGameAdventure() && AtOManager.Instance.IsFirstGame() && !GameManager.Instance.IsMultiplayer())
             {
@@ -480,7 +486,7 @@ namespace Obeliskial_Essentials
                 HeroSelectionManager.Instance.BeginAdventure();
                 yield break;
             }
-            LogDebug("HeroSelectionManager StartCo - Post tutorial");
+            // LogDebug("HeroSelectionManager StartCo - Post tutorial");
             HeroSelectionManager.Instance.charPopupGO = HeroSelectionManager.Instance.charPopup.gameObject;
             HeroSelectionManager.Instance.charPopup = HeroSelectionManager.Instance.charPopupGO.GetComponent<CharPopup>();
             HeroSelectionManager.Instance.charPopup.HideNow();
@@ -628,7 +634,7 @@ namespace Obeliskial_Essentials
             }
             else if (!GameManager.Instance.IsWeeklyChallenge())
             {
-                LogDebug("Obelisk");
+                // LogDebug("Obelisk");
                 HeroSelectionManager.Instance.titleMovement.SetText(Texts.Instance.GetText("modeObelisk"));
                 HeroSelectionManager.Instance.madnessButton.gameObject.SetActive(value: true);
                 if (GameManager.Instance.IsMultiplayer())
@@ -676,12 +682,12 @@ namespace Obeliskial_Essentials
             }
             else
             {
-                LogDebug("Weekly");
+                // LogDebug("Weekly");
                 HeroSelectionManager.Instance.titleMovement.SetText(Texts.Instance.GetText("modeWeekly"));
                 HeroSelectionManager.Instance.madnessButton.gameObject.SetActive(value: false);
             }
 
-            LogDebug("HeroSelectionManager StartCo - Post Buttons");
+            // LogDebug("HeroSelectionManager StartCo - Post Buttons");
             HeroSelectionManager.Instance.Resize();
             if (GameManager.Instance.IsWeeklyChallenge() && !GameManager.Instance.IsLoadingGame())
             {
@@ -738,7 +744,7 @@ namespace Obeliskial_Essentials
                 if (NetworkManager.Instance.IsMaster())
                 {
                     // Custom DrawBoxSelectionNames implementation
-                    LogDebug("DrawBoxSelectionNames");
+                    // LogDebug("DrawBoxSelectionNames");
                     DrawBoxSelectionNamesLocal();
 
                     HeroSelectionManager.Instance.botonBegin.gameObject.SetActive(value: true);
@@ -820,7 +826,7 @@ namespace Obeliskial_Essentials
                     }
                 }
             }
-            LogDebug("HeroSelectionManager StartCo - Post Boxes");
+            // LogDebug("HeroSelectionManager StartCo - Post Boxes");
             HeroSelectionManager.Instance.RearrangeHerosData();
             HeroSelectionManager.Instance.ShowHeroesByFilterAsync("all");
             yield return Globals.Instance.WaitForSeconds(0.1f);
@@ -858,9 +864,9 @@ namespace Obeliskial_Essentials
                     {
                         photonView.RPC("NET_ShareSandbox", RpcTarget.Others, Functions.CompressString(sandboxMods));
                     }
-                    LogDebug("HeroSelectionManager StartCo - Post Sandbox Init");
+                    // LogDebug("HeroSelectionManager StartCo - Post Sandbox Init");
                     HeroSelectionManager.Instance.RefreshCharBoxesBySandboxHeroes();
-                    LogDebug("HeroSelectionManager StartCo - Post Sandbox Refresh");
+                    // LogDebug("HeroSelectionManager StartCo - Post Sandbox Refresh");
                 }
             }
             else
@@ -948,11 +954,25 @@ namespace Obeliskial_Essentials
                 photonView.RPC("NET_SetNotOriginal", RpcTarget.All);
             }
 
-            LogDebug("HeroSelectionManager StartCo - End");
-            // HeroSelectionManager.Instance.SetCombatToolUI();
-            // HeroSelectionManager.Instance.SetCharacterSelectionTabCount();
+            // LogDebug("HeroSelectionManager StartCo - End");
+            // SetCombatToolUI();
+            // SetCharacterSelectionTabCount();
 
         }
+
+        // [HarmonyReversePatch]
+        // [HarmonyPatch(typeof(HeroSelectionManager), "SetCombatToolUI")]
+        // public static void SetCombatToolUI()
+        // {
+        //     return;
+        // }
+
+        // [HarmonyReversePatch]
+        // [HarmonyPatch(typeof(HeroSelectionManager), "SetCharacterSelectionTabCount")]
+        // public static void SetCharacterSelectionTabCount()
+        // {
+        //     return;
+        // }
 
 
         private IEnumerator medsHeroSelectionStartOld()
@@ -2967,183 +2987,27 @@ namespace Obeliskial_Essentials
             __result = Functions.GetCardByRarity(MatchManager.Instance.GetRandomIntRange(0, 100), cardData);
             return false;
         }
-        // public static GameObject ScrollRectObject { get; set; }
 
-        private static void CreateRectangle(UnityEngine.Color color, int n)
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(MapManager), "Start")]
+        public static void StartPostfix(ref MapManager __instance)
         {
-            // Create a new GameObject
-            GameObject rectangle = new GameObject("WhiteRectangle");
-
-            // Add RectTransform component
-            RectTransform rectTransform = rectangle.AddComponent<RectTransform>();
-            // Canvas canvas = rectangle.AddComponent<Canvas>();
-            // Add Image component and set its color to white
-            Image image = rectangle.AddComponent<Image>();
-            image.color = color;
-
-            LogDebug($"Creating rectangel with color: {color}");
-            // Set the rectangle's size and position
-            rectTransform.sizeDelta = new Vector2(200, 50 * n); // Width: 200, Height: 100
-            rectTransform.anchoredPosition = new Vector2(0, 0); // Centered
-            Transform parent = null;
-            // Set the rectangle's parent to HeroSelectionManager's canvas or a relevant parent
-            if (HeroSelectionManager.Instance != null)
+            if (!medsExportNode || !medsExportNodePositions.Value)
             {
-                parent = HeroSelectionManager.Instance.transform;
-
+                return;
             }
-            if (color == Color.black)
+            LogDebug("MapManagerStartPostfix");
+            Node[] foundNodes = Resources.FindObjectsOfTypeAll<Node>();
+            LogDebug("Found " + foundNodes.Length + " nodes on Map Start");
+            foreach (Node n in foundNodes)
             {
-                parent = GameManager.Instance.MaskWindow;
+                medsNodeSource[n.name] = n;
             }
-            if (color == Color.red)
-            {
-                parent = GameManager.Instance.MaskWindow.transform;
-            }
-            if (color == Color.blue)
-            {
-                Canvas canvas = FindObjectOfType<Canvas>();
-                parent = canvas.transform;
-            }
-            if (color == Color.cyan)
-            {
-                parent = HeroSelectionManager.Instance.charContainerBg.transform;
-            }
-
-            LogDebug($"Parent: {parent.name}");
-
-
-            rectangle.transform.SetParent(parent);
-
-
-            UnityEngine.Object.DontDestroyOnLoad(rectangle.transform);
-            UnityEngine.Object.DontDestroyOnLoad(rectangle);
-            rectangle.SetActive(true);
-
-        }
-
-
-
-        public static void CreateScrollRect(string name, Transform parent)
-        {
-            // Create the main ScrollRect GameObject
-            GameObject ScrollRectObject = new GameObject(name);
-            RectTransform ContentTransform = new RectTransform();
-            RectTransform scrollRectTransform = ScrollRectObject.AddComponent<RectTransform>();
-            ScrollRect scrollRect = ScrollRectObject.AddComponent<ScrollRect>();
-            Image scrollRectImage = ScrollRectObject.AddComponent<Image>();
-
-            // Set the RectTransform properties
-            scrollRectTransform.anchorMin = Vector2.zero;
-            scrollRectTransform.anchorMax = Vector2.one;
-            scrollRectTransform.sizeDelta = Vector2.zero;
-            scrollRectTransform.anchoredPosition = Vector2.zero;
-
-            // Create the Viewport
-            GameObject viewportObj = new GameObject("Viewport");
-            RectTransform viewportTransform = viewportObj.AddComponent<RectTransform>();
-            Image viewportImage = viewportObj.AddComponent<Image>();
-            Mask viewportMask = viewportObj.AddComponent<Mask>();
-            viewportObj.transform.SetParent(ScrollRectObject.transform, false);
-
-            // Set viewport RectTransform properties
-            viewportTransform.anchorMin = Vector2.zero;
-            viewportTransform.anchorMax = Vector2.one;
-            viewportTransform.sizeDelta = Vector2.zero;
-            viewportTransform.anchoredPosition = Vector2.zero;
-
-            // Create the Content container
-            GameObject contentObj = new GameObject("Content");
-            ContentTransform = contentObj.AddComponent<RectTransform>();
-            VerticalLayoutGroup verticalLayout = contentObj.AddComponent<VerticalLayoutGroup>();
-            ContentSizeFitter contentSizeFitter = contentObj.AddComponent<ContentSizeFitter>();
-            contentObj.transform.SetParent(viewportObj.transform, false);
-
-            // Set content RectTransform properties
-            ContentTransform.anchorMin = new Vector2(0, 1);
-            ContentTransform.anchorMax = new Vector2(1, 1);
-            ContentTransform.pivot = new Vector2(0.5f, 1);
-            ContentTransform.anchoredPosition = Vector2.zero;
-
-            // Configure the ScrollRect component
-            scrollRect.viewport = viewportTransform;
-            scrollRect.content = ContentTransform;
-            scrollRect.horizontal = false;
-            scrollRect.vertical = true;
-
-            // Configure the VerticalLayoutGroup
-            verticalLayout.padding = new RectOffset(10, 10, 10, 10);
-            verticalLayout.spacing = 10;
-            verticalLayout.childForceExpandWidth = true;
-            verticalLayout.childForceExpandHeight = false;
-            verticalLayout.childControlHeight = true;
-            verticalLayout.childControlWidth = true;
-
-            // Configure the ContentSizeFitter
-            contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-            // Set parent if provided
-            if (parent != null)
-            {
-                ScrollRectObject.transform.SetParent(parent, false);
-            }
-
-            UnityEngine.Object.DontDestroyOnLoad(ScrollRectObject.transform);
-            ScrollRectObject.gameObject.SetActive(true);
-        }
-
-        public GameObject AddItem(GameObject itemToAdd, RectTransform ContentTransform)
-        {
-            // Create a new item
-            // GameObject itemObj = new GameObject($"Item_{itemText}");
-            RectTransform itemTransform = itemToAdd.AddComponent<RectTransform>();
-            // itemObj.AddComponent<Image>();  // Background image
-
-            // // Add text component
-            // GameObject textObj = new GameObject("Text");
-            // RectTransform textTransform = textObj.AddComponent<RectTransform>();
-            // Text text = textObj.AddComponent<Text>();
-            // textObj.transform.SetParent(itemObj.transform, false);
-
-            // // Configure text
-            // text.text = itemText;
-            // text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            // text.color = Color.black;
-            // text.alignment = TextAnchor.MiddleLeft;
-
-            // // Set transforms
-            // textTransform.anchorMin = Vector2.zero;
-            // textTransform.anchorMax = Vector2.one;
-            // textTransform.sizeDelta = Vector2.zero;
-            // textTransform.anchoredPosition = Vector2.zero;
-
-            // Add to scroll content
-            itemToAdd.transform.SetParent(ContentTransform, false);
-            itemTransform.sizeDelta = new Vector2(0, 50);  // Height of 50 pixels
-
-            return itemToAdd;
-        }
-
-        public static void FindCanvases()
-        {
-            Canvas[] canvases = FindObjectsOfType<Canvas>(); // Get all Canvas components
-
-            if (canvases.Length > 0)
-            {
-                Debug.Log("Found " + canvases.Length + " canvases:");
-            }
-            else
-            {
-                Debug.Log("No canvases found in the scene.");
-            }
-
-            foreach (Canvas canvas in canvases)
-            {
-                Debug.Log(" - Canvas Name: " + canvas.gameObject.name);
-                // Add more information here if needed, e.g., render mode, etc.
-                Debug.Log("   Render Mode: " + canvas.renderMode);
-                Debug.Log("   Root Canvas: " + canvas.isRootCanvas);
-            }
+            LogDebug("Starting export of nodes and roads");
+            ExtractData(Patches.medsNodeDataSourceGlobal.Select(item => item.Value).ToArray());
+            medsExportNode = false;
+            MapNodeExport();
+            RoadExport(false);
         }
 
         public static void SetMadnessLevel(ref HeroSelectionManager __instance)

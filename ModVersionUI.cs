@@ -381,6 +381,10 @@ namespace Obeliskial_Essentials
                 }
             });
 
+            ButtonRef btnRefreshContent = UIFactory.CreateButton(devToolsScrollContent, "btnRefreshContent", "Refresh Content");
+            UIFactory.SetLayoutElement(btnRefreshContent.Component.gameObject, minHeight: 25, minWidth: 100);
+            btnRefreshContent.Component.onClick.AddListener(RefreshAllContent);
+
             // caravan shop logger
             ButtonRef btnCaravanShopLog = UIFactory.CreateButton(devToolsScrollContent, "btnCaravanShopLog", "Write Caravan Shop to Log");
             UIFactory.SetLayoutElement(btnCaravanShopLog.Component.gameObject, minWidth: 150, minHeight: 30);
@@ -502,6 +506,7 @@ namespace Obeliskial_Essentials
         internal static Dictionary<string, Toggle> toggleCardsUnlocked = new();
         internal static Dictionary<string, Toggle> toggleNodesUnlocked = new();
         internal static ButtonRef btnAllHeroesLockUnlock;
+        internal static ButtonRef btnAllCardbacksLockUnlock;
         internal static InputFieldRef inputAllHeroesRank;
         internal static InputFieldRef inputAllHeroesExperience;
         internal static InputFieldRef inputSupplies;
@@ -896,6 +901,12 @@ namespace Obeliskial_Essentials
             foreach (string scID in toggleHeroesUnlocked.Keys)
                 toggleHeroesUnlocked[scID].isOn = btnAllHeroesLockUnlock.ButtonText.text != "Lock All";
             btnAllHeroesLockUnlock.ButtonText.text = btnAllHeroesLockUnlock.ButtonText.text == "Lock All" ? "Unlock All" : "Lock All";
+        }
+        internal static void AllCardbackLockUnlock()
+        {
+            foreach (string cardbackId in toggleCardbacksUnlocked.Keys)
+                toggleCardbacksUnlocked[cardbackId].isOn = btnAllCardbacksLockUnlock.ButtonText.text != "Lock All";
+            btnAllCardbacksLockUnlock.ButtonText.text = btnAllCardbacksLockUnlock.ButtonText.text == "Lock All" ? "Unlock All" : "Lock All";
         }
         internal static void AllHeroesRankUpdate(string _newRank)
         {

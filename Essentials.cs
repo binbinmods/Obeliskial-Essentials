@@ -33,6 +33,7 @@ namespace Obeliskial_Essentials
 
         public static ConfigEntry<bool> medsExportJSON { get; private set; }
         public static ConfigEntry<bool> medsExportSprites { get; private set; }
+        public static ConfigEntry<bool> medsExportNodePositions { get; private set; }
         public static ConfigEntry<bool> medsShowAtStart { get; private set; }
         public static ConfigEntry<bool> medsConsistency { get; private set; }
         public static ConfigEntry<bool> medsSkipLogos { get; private set; }
@@ -73,6 +74,7 @@ namespace Obeliskial_Essentials
             medsExportSprites = Config.Bind(new ConfigDefinition("Debug", "Export Sprites"), true, new ConfigDescription("Export sprites when exporting JSON files."));
             medsShowAtStart = Config.Bind(new ConfigDefinition("Debug", "Show At Start"), true, new ConfigDescription("Show the mod version window when the game loads."));
             medsConsistency = Config.Bind(new ConfigDefinition("Should Be Vanilla", "Disable Paradox Integration"), true, new ConfigDescription("Disable Paradox integration and telemetry (does not include launcher)."));
+            medsExportNodePositions = Config.Bind(new ConfigDefinition("Debug", "Export Node Positions"), false, new ConfigDescription("Export node positions to JSON and txt files. Runs when you start a run. Causes temporary lag."));
             medsSkipLogos = Config.Bind(new ConfigDefinition("Should Be Vanilla", "Skip Logos"), true, new ConfigDescription("Skip logos on startup."));
             UniverseLib.Universe.Init(1f, ObeliskialUI.InitUI, LogHandler, new()
             {
@@ -230,6 +232,42 @@ namespace Obeliskial_Essentials
                 else if (!medsVersionText.Contains(newText))
                     medsVersionText += "\n" + newText;
             }
+        }
+
+        public static void UnregisterMod(Mod _mod)
+        {
+            if (medsModAuthors.ContainsKey(_mod.Author.ToLower()))
+            {
+                if (medsModAuthors[_mod.Author.ToLower()].Contains(_mod.Name.ToLower()))
+                {
+                    medsModAuthors[_mod.Author.ToLower()].Remove(_mod.Name.ToLower());
+                }
+                else
+                {
+                    LogError("Attempting to unregister non-registered mod: " + _mod.Author + " - " + _mod.Name);
+
+                }
+
+                // remove from medsMods as well
+                foreach (var key in medsMods.Keys.ToList())
+                {
+                    if (medsMods[key].Author.ToLower() == _mod.Author.ToLower() && medsMods[key].Name.ToLower() == _mod.Name.ToLower())
+                    {
+                        medsMods.Remove(key);
+                        break;
+                    }
+                }
+            }
+
+            // if (_mod.ContentFolder.IsNullOrWhiteSpace()) // no custom content to load
+            //     medsLoadedDependencies[_mod.Author.ToLower().Replace(" ", "_") + "-" + _mod.Name.ToLower().Replace(" ", "_")] = _mod.Version.ToLower();
+            string newText = _mod.Name + " v" + _mod.Version + (_mod.Date == 19920101 ? "" : " (" + _mod.Date.ToString() + ")");
+            if (medsVersionText.IsNullOrWhiteSpace())
+                newText = "";
+            else if (!medsVersionText.Contains(newText))
+                newText += "\n" + newText;
+            medsVersionText = medsVersionText.Replace(newText, "");
+
         }
 
         public static string TextChargesLeft(int currentCharges, int chargesTotal)
@@ -1057,13 +1095,52 @@ namespace Obeliskial_Essentials
             }
             return IDs;
         }
-        public static void MapNodeExport() // exports map node positions into text format
+        public static void MapNodeExport(bool forExcel = false) // exports map node positions into text format
         {
-            Node[] foundNodes = Resources.FindObjectsOfTypeAll<Node>();
-            string s = "name\tzone\tlocalx\tlocaly\tlocalz\tposx\tposy\tposz";
-            foreach (Node n in foundNodes)
-                s += "\n" + n.name + "\t" + n.nodeData.NodeZone.ZoneId + "\t" + n.transform.localPosition.x.ToString() + "\t" + n.transform.localPosition.y.ToString() + "\t" + n.transform.localPosition.z.ToString() + "\t" + n.transform.position.x.ToString() + "\t" + n.transform.position.y.ToString() + "\t" + n.transform.position.z.ToString();
-            File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "nodePos.txt"), s);
+            if (forExcel)
+            {
+                string s = "name\tzone\tlocalx\tlocaly\tlocalz\tposx\tposy\tposz";
+                for (int a = 0; a < MapManager.Instance.mapList.Count; a++)
+                {
+                    foreach (Transform transform1 in MapManager.Instance.mapList[a].transform)
+                    {
+                        if (transform1.gameObject.name == "Nodes")
+                        {
+                            for (int b = 0; b < transform1.childCount; b++)
+                            {
+                                s += "\n" + transform1.GetChild(b).gameObject.name;
+                                Node node = transform1.GetChild(b).gameObject.GetComponent<Node>();
+                                s += "\t" + node.nodeData.NodeZone.ZoneId + "\t" + node.transform.localPosition.x.ToString() + "\t" + node.transform.localPosition.y.ToString() + "\t" + node.transform.localPosition.z.ToString() + "\t" + node.transform.position.x.ToString() + "\t" + node.transform.position.y.ToString() + "\t" + node.transform.position.z.ToString();
+                                medsNodeSource[node.name] = node;
+                            }
+                        }
+                    }
+                }
+                // File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "nodePosForExcel.txt"), s);
+            }
+            else
+            {
+                string s = "name\tzone\tlocalx\tlocaly\tlocalz\tposx\tposy\tposz";
+                for (int a = 0; a < MapManager.Instance.mapList.Count; a++)
+                {
+                    foreach (Transform transform1 in MapManager.Instance.mapList[a].transform)
+                    {
+                        if (transform1.gameObject.name == "Nodes")
+                        {
+                            for (int b = 0; b < transform1.childCount; b++)
+                            {
+                                s += "\n" + transform1.GetChild(b).gameObject.name;
+                                Node node = transform1.GetChild(b).gameObject.GetComponent<Node>();
+                                s += "\t" + node.nodeData.NodeZone.ZoneId + "\t" + node.transform.localPosition.x.ToString() + "\t" + node.transform.localPosition.y.ToString() + "\t" + node.transform.localPosition.z.ToString() + "\t" + node.transform.position.x.ToString() + "\t" + node.transform.position.y.ToString() + "\t" + node.transform.position.z.ToString();
+                                medsNodeSource[node.name] = node;
+                            }
+                        }
+                    }
+                }
+                // FolderCreate(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "nodePosTXT"));
+                // File.WriteAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "nodePosTXT", "vanilla.txt"), s);
+                ExtractData(Patches.medsNodeDataSourceGlobal.Select(item => item.Value).ToArray());
+            }
         }
 
         public static void RoadExport(bool forExcel = false) // exports roads into text format
@@ -1525,6 +1602,12 @@ namespace Obeliskial_Essentials
                 // always open main panel
                 DevTools.ShowUI = true;
             }
+        }
+
+        internal static void RefreshAllContent()
+        {
+            LogDebug("Refreshing all game content...");
+            Globals.Instance.CreateGameContent();
         }
         internal static void medsSkinSpritePositions(SkinData _skin)
         {
