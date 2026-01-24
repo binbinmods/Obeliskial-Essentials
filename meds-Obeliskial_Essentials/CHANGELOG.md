@@ -2,6 +2,10 @@
 
 Fixed node export to include position data
 
+Added debug logging config option
+
+Update for AtO v1.7.3.1
+
 # 1.6.1
 
 Update for AtO v1.7.2

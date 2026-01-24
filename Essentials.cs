@@ -30,7 +30,7 @@ namespace Obeliskial_Essentials
         internal const int ModDate = 20240516;
         private readonly Harmony harmony = new(PluginInfo.PLUGIN_GUID);
         internal static ManualLogSource Log;
-
+        public static ConfigEntry<bool> EnableDebugLogging { get; private set; }
         public static ConfigEntry<bool> medsExportJSON { get; private set; }
         public static ConfigEntry<bool> medsExportSprites { get; private set; }
         public static ConfigEntry<bool> medsExportNodePositions { get; private set; }
@@ -70,6 +70,7 @@ namespace Obeliskial_Essentials
         {
             Log = Logger;
             LogInfo($"{PluginInfo.PLUGIN_GUID} {PluginInfo.PLUGIN_VERSION} has loaded!");
+            EnableDebugLogging = Config.Bind(new ConfigDefinition("Debug", "Enable Debug Logging"), false, new ConfigDescription("Enable debug logging."));
             medsExportJSON = Config.Bind(new ConfigDefinition("Debug", "Export Vanilla Content"), false, new ConfigDescription("Export AtO class data to JSON files that are compatible with Obeliskial Content."));
             medsExportSprites = Config.Bind(new ConfigDefinition("Debug", "Export Sprites"), true, new ConfigDescription("Export sprites when exporting JSON files."));
             medsShowAtStart = Config.Bind(new ConfigDefinition("Debug", "Show At Start"), true, new ConfigDescription("Show the mod version window when the game loads."));
@@ -100,7 +101,11 @@ namespace Obeliskial_Essentials
         }
         internal static void LogDebug(string msg)
         {
-            Log.LogDebug(msg);
+            if (EnableDebugLogging.Value)
+            {
+                Log.LogDebug(msg);
+            }
+
         }
         internal static void LogInfo(string msg)
         {
@@ -1175,8 +1180,8 @@ namespace Obeliskial_Essentials
             else
             {
                 // actual roadsTXT
-                string s = @"\\vanilla roadsTXT. Please ONLY use the roads you need for custom paths, because otherwise load times will be significantly increased and interactions between mods may cause errors and strange behaviour!";
-                s += "\n" + @"\\node_from-node_to|(x1,y1),(x2,y2),(x3,y3),(x4,y4),... [etc]";
+                string s = ""; //@"\\vanilla roadsTXT. Please ONLY use the roads you need for custom paths, because otherwise load times will be significantly increased and interactions between mods may cause errors and strange behaviour!";
+                //s += "\n" + @"\\node_from-node_to|(x1,y1),(x2,y2),(x3,y3),(x4,y4),... [etc]";
                 for (int a = 0; a < MapManager.Instance.mapList.Count; a++)
                 {
                     foreach (Transform transform1 in MapManager.Instance.mapList[a].transform)
@@ -1243,6 +1248,7 @@ namespace Obeliskial_Essentials
             Dictionary<string, int> medsCardEnergyCost = new();
             Dictionary<CardType, List<string>> medsCardItemByType = new();
             List<string> medsSortNameID = new();
+            LogDebug("medsCreateCardClones: Starting to set card lists");
             foreach (CardType key in Enum.GetValues(typeof(Enums.CardType)))
             {
                 if (key != Enums.CardType.None)
@@ -1257,6 +1263,7 @@ namespace Obeliskial_Essentials
             foreach (string key in medsCardsSource.Keys)
                 medsCards.Add(key, medsCardsSource[key]);
             StringBuilder stringBuilder = new StringBuilder();
+            LogDebug("medsCreateCardClones: Starting to set card names");
             foreach (string key1 in medsCardsSource.Keys)
             {
                 stringBuilder.Clear();
@@ -1292,7 +1299,7 @@ namespace Obeliskial_Essentials
             medsSortNameID.Sort();
             Dictionary<string, CardData> medsCardsSorted = new();
             Dictionary<string, CardData> medsCardsSourceSorted = new();
-            //LogDebug("READY TO SORT CARDS! " + medsSortNameID.Count);
+            // LogDebug("READY TO SORT CARDS! " + medsSortNameID.Count);
             foreach (string key in medsSortNameID)
             {
                 string cID = key.Split("|")[1];
@@ -1300,43 +1307,59 @@ namespace Obeliskial_Essentials
                 medsCardsSorted[cID] = medsCards[cID];
                 medsCardsSourceSorted[cID] = medsCardsSource[cID];
             }
-            //LogDebug("FINISHED SORTING CARDS!");
+            // LogDebug("FINISHED SORTING CARDS!");
             medsCardsSource = medsCardsSourceSorted;
             medsCards = medsCardsSorted;
+
 
             foreach (string key1 in medsCardsSource.Keys)
             {
                 CardData card = medsCards[key1];
-                if ((card.CardClass != Enums.CardClass.Item || !card.Item.QuestItem) && card.ShowInTome)
+                if (card == null)
                 {
-                    medsCardEnergyCost.Add(card.Id, card.EnergyCost);
-                    Globals.Instance.IncludeInSearch(card.CardName, card.Id);
-                    medsCardListByClass[card.CardClass].Add(card.Id);
-                    if (card.CardUpgraded == Enums.CardUpgraded.No)
+                    LogDebug("medsCreateCardClones: Card is null: " + key1);
+                    continue;
+                }
+                try
+                {
+                    if ((card.CardClass != Enums.CardClass.Item || !card.Item.QuestItem) && card.ShowInTome)
                     {
-                        medsCardListNotUpgradedByClass[card.CardClass].Add(card.Id);
-                        medsCardListNotUpgraded.Add(card.Id);
-                        if (card.CardClass == Enums.CardClass.Item)
+                        medsCardEnergyCost.Add(card.Id, card.EnergyCost);
+                        Globals.Instance.IncludeInSearch(card.CardName, card.Id);
+
+                        medsCardListByClass[card.CardClass].Add(card.Id);
+                        if (card.CardUpgraded == Enums.CardUpgraded.No)
                         {
-                            if (!medsCardItemByType.ContainsKey(card.CardType))
-                                medsCardItemByType.Add(card.CardType, new List<string>());
-                            if (!medsCardItemByType[card.CardType].Contains(card.Id))
-                                medsCardItemByType[card.CardType].Add(card.Id);
+                            medsCardListNotUpgradedByClass[card.CardClass].Add(card.Id);
+                            medsCardListNotUpgraded.Add(card.Id);
+                            if (card.CardClass == Enums.CardClass.Item)
+                            {
+                                if (!medsCardItemByType.ContainsKey(card.CardType))
+                                    medsCardItemByType.Add(card.CardType, new List<string>());
+                                if (!medsCardItemByType[card.CardType].Contains(card.Id))
+                                    medsCardItemByType[card.CardType].Add(card.Id);
+                            }
+                        }
+                        List<Enums.CardType> cardTypes = card.GetCardTypes();
+                        for (int index = 0; index < cardTypes.Count; ++index)
+                        {
+                            medsCardListByType[cardTypes[index]].Add(card.Id);
+                            string key2 = Enum.GetName(typeof(Enums.CardClass), (object)card.CardClass) + "_" + Enum.GetName(typeof(Enums.CardType), (object)cardTypes[index]);
+                            if (!medsCardListByClassType.ContainsKey(key2))
+                                medsCardListByClassType[key2] = new List<string>();
+                            if (!medsCardListByClassType[key2].Contains(card.Id))
+                                medsCardListByClassType[key2].Add(card.Id);
+                            Globals.Instance.IncludeInSearch(Texts.Instance.GetText(Enum.GetName(typeof(Enums.CardType), (object)cardTypes[index])), card.Id);
                         }
                     }
-                    List<Enums.CardType> cardTypes = card.GetCardTypes();
-                    for (int index = 0; index < cardTypes.Count; ++index)
-                    {
-                        medsCardListByType[cardTypes[index]].Add(card.Id);
-                        string key2 = Enum.GetName(typeof(Enums.CardClass), (object)card.CardClass) + "_" + Enum.GetName(typeof(Enums.CardType), (object)cardTypes[index]);
-                        if (!medsCardListByClassType.ContainsKey(key2))
-                            medsCardListByClassType[key2] = new List<string>();
-                        if (!medsCardListByClassType[key2].Contains(card.Id))
-                            medsCardListByClassType[key2].Add(card.Id);
-                        Globals.Instance.IncludeInSearch(Texts.Instance.GetText(Enum.GetName(typeof(Enums.CardType), (object)cardTypes[index])), card.Id);
-                    }
+                }
+                catch (Exception ex)
+                {
+                    LogDebug($"medsCreateCardClones exception for card {key1}. Exception: {ex.Message}");
                 }
             }
+
+            LogDebug("medsCreateCardClones: Setting card lists");
             Traverse.Create(Globals.Instance).Field("_CardListByType").SetValue(medsCardListByType);
             Traverse.Create(Globals.Instance).Field("_CardListByClass").SetValue(medsCardListByClass);
             Traverse.Create(Globals.Instance).Field("_CardListNotUpgraded").SetValue(medsCardListNotUpgraded);

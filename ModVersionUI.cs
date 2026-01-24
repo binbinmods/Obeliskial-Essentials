@@ -506,7 +506,7 @@ namespace Obeliskial_Essentials
         internal static Dictionary<string, Toggle> toggleCardsUnlocked = new();
         internal static Dictionary<string, Toggle> toggleNodesUnlocked = new();
         internal static ButtonRef btnAllHeroesLockUnlock;
-        internal static ButtonRef btnAllCardbacksLockUnlock;
+        // internal static ButtonRef btnAllCardbacksLockUnlock;
         internal static InputFieldRef inputAllHeroesRank;
         internal static InputFieldRef inputAllHeroesExperience;
         internal static InputFieldRef inputSupplies;
@@ -538,6 +538,7 @@ namespace Obeliskial_Essentials
         }
         protected override void ConstructPanelContent()
         {
+            LogDebug("Profile Editor ConstructPanelContent started");
             Text spacer;
             // create close buttons in title bar
             GameObject closeHolder = this.TitleBar.transform.Find("CloseHolder").gameObject;
@@ -650,6 +651,7 @@ namespace Obeliskial_Essentials
             inputPerkLevel.Component.textComponent.alignment = TextAnchor.MiddleRight;
             inputPerkLevel.Component.characterValidation = InputField.CharacterValidation.Integer;
 
+            LogDebug("Profile Editor ConstructPanelContent: Creating heroes");
             // heroes 
             // create container + accordion
             GameObject GOHeroes = UIFactory.CreateUIObject("medsHeroes", profileScrollContent);
@@ -757,6 +759,7 @@ namespace Obeliskial_Essentials
 
 
             // cards 
+            LogDebug("Profile Editor ConstructPanelContent: Creating cards");
             int maxColumns = 4;
             // ensure order
             cardsByCategory["Warrior"] = new();
@@ -822,6 +825,7 @@ namespace Obeliskial_Essentials
             so worth doing IF hacky workaround not required. Maybe give it a bit more detailed think 
 
             */
+            LogDebug("Profile Editor ConstructPanelContent: Creating card categories");
             foreach (string cardCategory in cardsByCategory.Keys)
             {
                 cardsByCategory[cardCategory].Sort();
@@ -871,6 +875,7 @@ namespace Obeliskial_Essentials
                 }
                 GOCardsCategories[cardCategory].gameObject.SetActive(false);
             }
+            LogDebug("Profile Editor ConstructPanelContent: Creating card categories done");
             GOCardsCategories["All"].gameObject.SetActive(false);
 
 
@@ -902,12 +907,12 @@ namespace Obeliskial_Essentials
                 toggleHeroesUnlocked[scID].isOn = btnAllHeroesLockUnlock.ButtonText.text != "Lock All";
             btnAllHeroesLockUnlock.ButtonText.text = btnAllHeroesLockUnlock.ButtonText.text == "Lock All" ? "Unlock All" : "Lock All";
         }
-        internal static void AllCardbackLockUnlock()
-        {
-            foreach (string cardbackId in toggleCardbacksUnlocked.Keys)
-                toggleCardbacksUnlocked[cardbackId].isOn = btnAllCardbacksLockUnlock.ButtonText.text != "Lock All";
-            btnAllCardbacksLockUnlock.ButtonText.text = btnAllCardbacksLockUnlock.ButtonText.text == "Lock All" ? "Unlock All" : "Lock All";
-        }
+        // internal static void AllCardbackLockUnlock()
+        // {
+        //     foreach (string cardbackId in toggleCardbacksUnlocked.Keys)
+        //         toggleCardbacksUnlocked[cardbackId].isOn = btnAllCardbacksLockUnlock.ButtonText.text != "Lock All";
+        //     btnAllCardbacksLockUnlock.ButtonText.text = btnAllCardbacksLockUnlock.ButtonText.text == "Lock All" ? "Unlock All" : "Lock All";
+        // }
         internal static void AllHeroesRankUpdate(string _newRank)
         {
             if (int.TryParse(_newRank, out int iNewRank) && int.TryParse(inputAllHeroesExperience.Text, out int iNewXP))

@@ -46,6 +46,7 @@ namespace Obeliskial_Essentials
         private static Dictionary<string, string> SubclassByName = new();
         public static Dictionary<string, NodeData> medsNodeDataSourceGlobal = new();
         public static bool medsExportNode = false;
+
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Globals), "CreateGameContent")]
         [HarmonyPriority(Priority.First)]
@@ -3082,5 +3083,19 @@ namespace Obeliskial_Essentials
             }
         }
 
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Globals), "GetResourceEffect")]
+        public static bool GetResourceEffectPrefix(ref GameObject __result, Dictionary<string, GameObject> ___vfxAux, string _effect)
+        {
+            if (___vfxAux?.TryGetValue(_effect, out GameObject effect)?? false)
+            {
+                __result = effect;
+                return false;
+            }
+            __result = Resources.Load("Effects/" + _effect) as GameObject;
+            return false;
+
+
+        }
     }
 }
