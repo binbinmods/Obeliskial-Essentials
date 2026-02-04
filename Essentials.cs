@@ -1628,7 +1628,7 @@ namespace Obeliskial_Essentials
             }
         }
 
-        internal static void RefreshAllContent()
+        public static void RefreshAllContent()
         {
             LogDebug("Refreshing all game content...");
             Globals.Instance.CreateGameContent();

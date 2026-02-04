@@ -4,6 +4,8 @@ Update for AtO v1.7.3.2
 
 Hopefully fixed PC based export of sprites on current patch
 
+Updated to allow DuplicateHeroes to work
+
 # 1.6.2
 
 Fixed node export to include position data

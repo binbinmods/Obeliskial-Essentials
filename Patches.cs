@@ -208,6 +208,7 @@ namespace Obeliskial_Essentials
                 .OrderBy(subclass => subclass.CharacterName)
                 .GroupBy(subclass => subclass.HeroClass)
                 .ToList();
+            LogDebug(string.Join(", ", soloclass));
 
             List<string> excludedHeroes = ["youngbinks", "youngcharls", "youngheiner", "youngmagnus", "youngottis", "youngyogger"];
 
@@ -218,7 +219,14 @@ namespace Obeliskial_Essentials
                 string subclassId = subclass.Id;
                 if (excludedHeroes.Contains(subclassId))
                     continue;
-                Globals.Instance.SubClass[subclassId].OrderInList = orderNumber++;
+                try
+                {
+                    Globals.Instance.SubClass[subclassId].OrderInList = orderNumber++;
+                }
+                catch (Exception e)
+                {
+                    LogDebug($"Error setting OrderInList for subclass {subclassId}: {e.Message}");
+                }
                 LogDebug($"Setting OrderInList for {subclassId} to {orderNumber}");
             }
 
@@ -231,7 +239,14 @@ namespace Obeliskial_Essentials
                     if (excludedHeroes.Contains(subclassId))
                         continue;
 
-                    Globals.Instance.SubClass[subclassId].OrderInList = orderNumber++;
+                    try
+                    {
+                        Globals.Instance.SubClass[subclassId].OrderInList = orderNumber++;
+                    }
+                    catch (Exception e)
+                    {
+                        LogDebug($"Error setting OrderInList for subclass {subclassId}: {e.Message}");
+                    }
                     LogDebug($"Setting OrderInList for {subclassId} to {orderNumber}");
                 }
             }
@@ -260,7 +275,7 @@ namespace Obeliskial_Essentials
             Traverse.Create(HeroSelectionManager.Instance).Field("boxHero").SetValue(boxHero);
 
             HeroSelectionManager.Instance.ShowDrag(state: false, Vector3.zero);
-            int num = 64;
+            int num = 256;
             int num2 = 5;
             // LogDebug("HeroSelectionManager StartCo - Post Drag");
             foreach (KeyValuePair<string, SubClassData> item3 in Globals.Instance.SubClass)
