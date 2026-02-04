@@ -3087,7 +3087,7 @@ namespace Obeliskial_Essentials
         [HarmonyPatch(typeof(Globals), "GetResourceEffect")]
         public static bool GetResourceEffectPrefix(ref GameObject __result, Dictionary<string, GameObject> ___vfxAux, string _effect)
         {
-            if (___vfxAux?.TryGetValue(_effect, out GameObject effect)?? false)
+            if (___vfxAux?.TryGetValue(_effect, out GameObject effect) ?? false)
             {
                 __result = effect;
                 return false;

@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System;
 using System.Text;
 using UnityEngine.UI;
+using System.Runtime.InteropServices;
 
 
 /*
@@ -159,7 +160,7 @@ namespace Obeliskial_Essentials
                 return;
             RenderTexture renderTex = RenderTexture.GetTemporary((int)spriteToExport.texture.width, (int)spriteToExport.texture.height, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Linear);
             // we flip it when doing the Graphics.Blit because the sprites are packed (which... flips them? idk?)
-            if (Environment.OSVersion.Platform == PlatformID.MacOSX)
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 Graphics.Blit(spriteToExport.texture, renderTex);//, new Vector2(1, -1), new Vector2(0, 1));
             }
