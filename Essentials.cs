@@ -160,14 +160,15 @@ namespace Obeliskial_Essentials
                 return;
             RenderTexture renderTex = RenderTexture.GetTemporary((int)spriteToExport.texture.width, (int)spriteToExport.texture.height, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Linear);
             // we flip it when doing the Graphics.Blit because the sprites are packed (which... flips them? idk?)
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                Graphics.Blit(spriteToExport.texture, renderTex);//, new Vector2(1, -1), new Vector2(0, 1));
-            }
-            else
-            {
-                Graphics.Blit(spriteToExport.texture, renderTex, new Vector2(1, -1), new Vector2(0, 1));
-            }
+            // if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            // {
+            //     Graphics.Blit(spriteToExport.texture, renderTex);//, new Vector2(1, -1), new Vector2(0, 1));
+            // }
+            // else
+            // {
+            Graphics.Blit(spriteToExport.texture, renderTex, new Vector2(1, -1), new Vector2(0, 1));
+            // }
+            // Graphics.Blit(spriteToExport.texture, renderTex);
             RenderTexture previous = RenderTexture.active;
             RenderTexture.active = renderTex;
             readableText = fullTextureExport ? new((int)spriteToExport.texture.width, (int)spriteToExport.texture.height) : new((int)spriteToExport.textureRect.width, (int)spriteToExport.textureRect.height);
@@ -180,10 +181,10 @@ namespace Obeliskial_Essentials
             for (int i = 0; i < readableText.width; i++)
                 for (int j = 0; j < readableText.height; j++)
                 {
-                    // finalImage.SetPixel(i, readableText.height - j - 1, readableText.GetPixel(i, j));
+                    finalImage.SetPixel(i, readableText.height - j - 1, readableText.GetPixel(i, j));
                     // UnityE== UnityEngine.OperatingSystemFamily.MacOSX;
-                    int value = Environment.OSVersion.Platform == PlatformID.MacOSX ? j : readableText.height - j - 1;
-                    finalImage.SetPixel(i, value, readableText.GetPixel(i, j));
+                    // int value = !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? j : readableText.height - j - 1;
+                    // finalImage.SetPixel(i, value, readableText.GetPixel(i, j));
                 }
 
             finalImage.Apply();

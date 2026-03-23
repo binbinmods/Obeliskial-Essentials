@@ -522,7 +522,8 @@ namespace Obeliskial_Essentials
         /// </summary>
         /// <param name="damageType">Damage type to deal</param>
         /// <param name="amount">Amount of damage to deal</param>
-        public static void DealIndirectDamageToAllMonsters(Enums.DamageType damageType, int amount)
+        /// <param name="source">Source of the damage</param>
+        public static void DealIndirectDamageToAllMonsters(Enums.DamageType damageType, int amount, Character source = null)
         {
             LogDebug(debugBase + "Dealing Indirect Damage");
             if (MatchManager.Instance == null)
@@ -533,7 +534,7 @@ namespace Obeliskial_Essentials
                 NPC npc = teamNpc[index];
                 if (IsLivingNPC(npc))
                 {
-                    npc.IndirectDamage(damageType, amount);
+                    npc.IndirectDamage(damageType, amount, source);
                 }
             }
         }
