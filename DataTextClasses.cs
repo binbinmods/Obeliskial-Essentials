@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 namespace Obeliskial_Essentials
 {
+    // JSON export no longer depends on these DTO field lists (see DataTextConvert).
+    // The *Text classes remain so Obeliskial Content can still FromJson existing mod files.
     [Serializable]
     public class DataText { }
 
@@ -78,7 +80,7 @@ namespace Obeliskial_Essentials
     public class HeroCardsText : DataText
     {
         public int UnitsInDeck;
-        public string Card; // CardData
+        public string Card; // CardDataNew
     }
 
     // TODO: ActivateOnRuneTypeAdded, TryActivateOnEveryEvent, MaxBleedDamagePerTurn
@@ -135,7 +137,7 @@ namespace Obeliskial_Essentials
 
     // TODO: AddCardForModify, AddCardOnlyCheckAuxTypes, AddCardTypeBasedOnHeroClas, AddCardListBasedOnHeroClass, AddVanishToDeck, Auras, ChooseOneOfAvailableAuras, CopyConfig, Curses, CurseChargesSides, HealSelfTeamPerDamageDonePercent, HealBasedOnAuraCurse, PetTemporal, PetTemporalCast, PetTemporalMoveToCenter, PetTemporalMoveToBack, PetTemporalFadeOutDelay
     [Serializable]
-    public class CardDataText : DataText
+    public class CardDataNewText : DataText
     {
         // #MISSINGCARDENCHANT: enchant damage? enchantDamage, enchantDamagePreCalculated? e.g. profisherface?
         // public int enchantDamagePreCalculated2
@@ -147,11 +149,11 @@ namespace Obeliskial_Essentials
         // public IGNORE DamageSelfPreCalculated2; // IGNORE; InitClone automatically sets
         // public IGNORE DamageSidesPreCalculated; // IGNORE; InitClone automatically sets
         // public IGNORE DamageSidesPreCalculated2; // IGNORE; InitClone automatically sets
-        // public IGNORE DescriptionNormalized; // built by CardData.SetDescriptionNew
+        // public IGNORE DescriptionNormalized; // built by CardDataNew.SetDescriptionNew
         // public IGNORE EnergyCostOriginal; // can probably always set to 0, given InitClone will set it
         // public IGNORE InternalID; // InitClone automatically sets to ID
-        // public IGNORE KeyNotes; // automatically built by CreateCardClones-->CardData.InitClone, so no need to worry about it?
-        // public IGNORE Target; // probably set by CardData.SetTarget?
+        // public IGNORE KeyNotes; // automatically built by CreateCardClones-->CardDataNew.InitClone, so no need to worry about it?
+        // public IGNORE Target; // probably set by CardDataNew.SetTarget?
 
         // NEW CUSTOM DESCRIPTIONS v1.6.20
         // public  string preDescriptionId = "";
@@ -172,7 +174,7 @@ namespace Obeliskial_Essentials
         public int AddCardChoose;
         public bool AddCardCostTurn;
         public string AddCardFrom; // Enums.CardFrom (Mass Invis: Deck?)
-        // public string AddCardForModify; // CardIdProvider New Removed between 1.6.20 ad 1.7 calls GetCardID(CardData, caster, target)
+        // public string AddCardForModify; // CardIdProvider New Removed between 1.6.20 ad 1.7 calls GetCardID(CardDataNew, caster, target)
         public string AddCardId;
         public string[] AddCardList; // then Globals.Instance.GetCardData each?
         public string AddCardPlace; // Enums.CardPlace (Mass Invis: Discard?)
@@ -390,7 +392,7 @@ namespace Obeliskial_Essentials
         public string UpgradedFrom; // actual string
         public string UpgradesTo1; // "MassInvisibilityA"
         public string UpgradesTo2; // "MassInvisibilityB"
-        public string UpgradesToRare; // CARDDATA, NOT STRING! MassInvisibilityRare (CardData)
+        public string UpgradesToRare; // CARDDATA, NOT STRING! MassInvisibilityRare (CardDataNew)
         public bool Vanish; // exhaust
         public bool Visible; // ???
     }
@@ -630,7 +632,7 @@ namespace Obeliskial_Essentials
     {
         public int AddCardRound;
         public string AuraCurseCastIf; // AuraCurseData
-        public string Card; // CardData
+        public string Card; // CardDataNew
         public string OnlyCastIf; // OnlyCastIf
         public float PercentToCast;
         public int Priority;
@@ -699,7 +701,7 @@ namespace Obeliskial_Essentials
     [Serializable]
     public class LootItemText : DataText
     {
-        public string LootCard; // CardData
+        public string LootCard; // CardDataNew
         public float LootPercent;
         public string LootRarity; // CardRarity
         public string LootType; // CardType
@@ -728,7 +730,7 @@ namespace Obeliskial_Essentials
         public string Boss1; // NPCData
         public string Boss2; // NPCData
         public string BossCombat; // CombatData
-        public string[] CorruptionList; // CardData, a la DeathGrip, Hexproof, ThornProliferation
+        public string[] CorruptionList; // CardDataNew, a la DeathGrip, Hexproof, ThornProliferation
         public string Hero1; // SubClassData
         public string Hero2; // SubClassData
         public string Hero3; // SubClassData
@@ -832,7 +834,7 @@ namespace Obeliskial_Essentials
         public string RequirementName;
         public bool RequirementTrack;
         public string TrackSprite; // UnityEngine.Sprite
-        public string TrackCard;  //CardData New v1.6.20
+        public string TrackCard;  //CardDataNew New v1.6.20
         public bool ItemTrack;
         public string RequirementZoneFinishTrack;
     }
@@ -852,21 +854,21 @@ namespace Obeliskial_Essentials
         public bool RepeatForAllMages;
         public bool RepeatForAllHealers;
         public string ReplyActionText; // Enums.EventAction
-        public string ReplyShowCard; // CardData
+        public string ReplyShowCard; // CardDataNew
         public string ReplyText;
         public string RequiredClass; // SubClassData
         public string Requirement; // EventRequirementData
         public string RequirementBlocked; // EventRequirementData
-        public string[] RequirementCard; // List<CardData>
-        public string RequirementItem; // CardData
+        public string[] RequirementCard; // List<CardDataNew>
+        public string RequirementItem; // CardDataNew
         public bool RequirementMultiplayer;
         public string RequirementSku;
 
         // success
-        public string SSAddCard1; // CardData
-        public string SSAddCard2; // CardData
-        public string SSAddCard3; // CardData
-        public string SSAddItem; // CardData
+        public string SSAddCard1; // CardDataNew
+        public string SSAddCard2; // CardDataNew
+        public string SSAddCard3; // CardDataNew
+        public string SSAddItem; // CardDataNew
         public bool SSCardPlayerGame;
         public string SSCardPlayerGamePackData; // CardPlayerPackData
         public bool SSCardPlayerPairsGame;
@@ -920,10 +922,10 @@ namespace Obeliskial_Essentials
         public bool SSUpgradeUI;
 
         // critical success
-        public string SSCAddCard1; // CardData
-        public string SSCAddCard2; // CardData
-        public string SSCAddCard3; // CardData
-        public string SSCAddItem; // CardData
+        public string SSCAddCard1; // CardDataNew
+        public string SSCAddCard2; // CardDataNew
+        public string SSCAddCard3; // CardDataNew
+        public string SSCAddItem; // CardDataNew
         public bool SSCCardPlayerGame;
         public string SSCCardPlayerGamePackData; // CardPlayerPackData
         public bool SSCCardPlayerPairsGame;
@@ -962,10 +964,10 @@ namespace Obeliskial_Essentials
         public bool SSCUpgradeUI;
 
         // failure
-        public string FLAddCard1; // CardData
-        public string FLAddCard2; // CardData
-        public string FLAddCard3; // CardData
-        public string FLAddItem; // CardData
+        public string FLAddCard1; // CardDataNew
+        public string FLAddCard2; // CardDataNew
+        public string FLAddCard3; // CardDataNew
+        public string FLAddItem; // CardDataNew
         public bool FLCardPlayerGame;
         public string FLCardPlayerGamePackData; // CardPlayerPackData
         public bool FLCardPlayerPairsGame;
@@ -1002,10 +1004,10 @@ namespace Obeliskial_Essentials
         public bool FLUpgradeUI;
 
         // critical failure
-        public string FLCAddCard1; // CardData
-        public string FLCAddCard2; // CardData
-        public string FLCAddCard3; // CardData
-        public string FLCAddItem; // CardData
+        public string FLCAddCard1; // CardDataNew
+        public string FLCAddCard2; // CardDataNew
+        public string FLCAddCard3; // CardDataNew
+        public string FLCAddItem; // CardDataNew
         public bool FLCCardPlayerGame;
         public string FLCCardPlayerGamePackData; // CardPlayerPackData
         public bool FLCCardPlayerPairsGame;
@@ -1078,14 +1080,14 @@ namespace Obeliskial_Essentials
     [Serializable]
     public class PackDataText : DataText
     {
-        public string Card0; // CardData
-        public string Card1; // CardData
-        public string Card2; // CardData
-        public string Card3; // CardData
-        public string Card4; // CardData
-        public string Card5; // CardData
-        public string CardSpecial0; // CardData
-        public string CardSpecial1; // CardData
+        public string Card0; // CardDataNew
+        public string Card1; // CardDataNew
+        public string Card2; // CardDataNew
+        public string Card3; // CardDataNew
+        public string Card4; // CardDataNew
+        public string Card5; // CardDataNew
+        public string CardSpecial0; // CardDataNew
+        public string CardSpecial1; // CardDataNew
         public string PackClass; // CardClass
         public string PackID;
         public string PackName; // "nice" name
@@ -1140,8 +1142,8 @@ namespace Obeliskial_Essentials
         public int CardNum;
         public string CardPlace; // Enums.CardPlace
         public int CardsReduced;
-        public string CardToGain; // CardData
-        public string[] CardToGainList; // List<CardData>
+        public string CardToGain; // CardDataNew
+        public string[] CardToGainList; // List<CardDataNew>
         public string CardToGainType; // Enums.CardType
         public string CardToReduceType; // Enums.CardType
         public string CastedCardType; // Enums.CardType
@@ -1247,8 +1249,8 @@ namespace Obeliskial_Essentials
     [Serializable]
     public class CorruptionPackDataText : DataText
     {
-        public string[] HighPack; // CardData
-        public string[] LowPack; // CardData
+        public string[] HighPack; // CardDataNew
+        public string[] LowPack; // CardDataNew
         public string PackClass; // Enums.CardClass
         public string PackName;
         public int PackTier;
@@ -1268,16 +1270,16 @@ namespace Obeliskial_Essentials
     [Serializable]
     public class CardPlayerPackDataText : DataText
     {
-        public string Card0; // CardData
+        public string Card0; // CardDataNew
         public bool Card0RandomBoon;
         public bool Card0RandomInjury;
-        public string Card1; // CardData
+        public string Card1; // CardDataNew
         public bool Card1RandomBoon;
         public bool Card1RandomInjury;
-        public string Card2; // CardData
+        public string Card2; // CardDataNew
         public bool Card2RandomBoon;
         public bool Card2RandomInjury;
-        public string Card3; // CardData
+        public string Card3; // CardDataNew
         public bool Card3RandomBoon;
         public bool Card3RandomInjury;
         public int ModIterations;
@@ -1532,7 +1534,7 @@ namespace Obeliskial_Essentials
     {
         public string heroClass; //Enums.HeroClass
 
-        public string[] cardsList; //List<CardData>
+        public string[] cardsList; //List<CardDataNew>
     }
 
     [Serializable]

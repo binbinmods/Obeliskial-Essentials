@@ -1,3 +1,11 @@
+# 2.0.0
+
+Update for AtO v1.7.6.3
+
+Reworked export to automatically update
+
+Added all aura/curse updates from hero, perk, and card mods to here to reduce lag
+
 # 1.6.4
 
 Update for AtO v1.7.5

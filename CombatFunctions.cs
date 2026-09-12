@@ -4,11 +4,15 @@ using System.Linq;
 using static UnityEngine.Mathf;
 using System.Collections.ObjectModel;
 using static Obeliskial_Essentials.Essentials;
+using BattleMatch;
 using System.Text;
+using Cards;
+using HarmonyLib;
+using static Obeliskial_Essentials.TraitReversePatches;
 
 namespace Obeliskial_Essentials
 {
-    public class CustomFunctions
+    public class CombatFunctions
     {
         /// <summary>
         /// This is just used to help find the debugging
@@ -124,7 +128,7 @@ namespace Obeliskial_Essentials
 
         }
 
-        public static void WhenYouPlayXGainY(Enums.CardType desiredCardType, string desiredAuraCurse, int n_charges, CardData castedCard, ref Character _character, string traitName)
+        public static void WhenYouPlayXGainY(Enums.CardType desiredCardType, string desiredAuraCurse, int n_charges, CardRealtimeData castedCard, ref Character _character, string traitName)
         {
             // Grants n_charges of desiredAuraCurse to self when you play a desired cardtype
             //LogDebug("WhenYouPlayXGainY Debug Start");
@@ -152,7 +156,7 @@ namespace Obeliskial_Essentials
         /// <param name="cardDataList">Cards in hand</param>
         /// <param name="traitName">Name of the trait that this is attributable to</param>
         /// <param name="applyToAllCards">Flag to change it from applying only to one card type to applying to all card types </param>
-        public static void ReduceCostByStacks(Enums.CardType cardType, string auraCurseName, int nCharges, ref Character _character, ref List<string> heroHand, ref List<CardData> cardDataList, string traitName, bool applyToAllCards)
+        public static void ReduceCostByStacks(Enums.CardType cardType, string auraCurseName, int nCharges, ref Character _character, ref List<string> heroHand, ref List<CardRealtimeData> cardDataList, string traitName, bool applyToAllCards)
         {
             // Reduces the cost of all cards of cardType by 1 for every n_charges of the auraCurse
             if (!((UnityEngine.Object)_character.HeroData != (UnityEngine.Object)null))
@@ -162,7 +166,7 @@ namespace Obeliskial_Essentials
                 return;
             for (int index = 0; index < heroHand.Count; ++index)
             {
-                CardData cardData = MatchManager.Instance.GetCardData(heroHand[index]);
+                CardRealtimeData cardData = MatchManager.Instance.GetCardData(heroHand[index]);
                 if ((cardData.GetCardFinalCost() > 0) && (cardData.GetCardTypes().Contains(cardType) || applyToAllCards)) //previous .Contains(Enums.CardType.Attack)
                     cardDataList.Add(cardData);
             }
@@ -187,7 +191,7 @@ namespace Obeliskial_Essentials
         /// <param name="heroHand">character's hand</param>
         /// <param name="cardDataList">cards in the character's hand</param>
         /// <param name="traitName">name of the trait used in the combat log (i.e. "Defense Mastery")</param>
-        public static void ReduceCardTypeCostUntilDiscarded(Enums.CardType cardType, int amountToReduce, ref Character _character, ref List<string> heroHand, ref List<CardData> cardDataList, string traitName)
+        public static void ReduceCardTypeCostUntilDiscarded(Enums.CardType cardType, int amountToReduce, ref Character _character, ref List<string> heroHand, ref List<CardRealtimeData> cardDataList, string traitName)
         {
             if (!((Object)_character.HeroData != (Object)null))
                 return;
@@ -195,17 +199,17 @@ namespace Obeliskial_Essentials
             if (num <= 0)
                 return;
             // List<string> heroHand = MatchManager.Instance.GetHeroHand(this.character.HeroIndex);
-            // List<CardData> cardDataList = new List<CardData>();
+            // List<CardRealtimeData> cardDataList = new List<CardRealtimeData>();
             for (int index = 0; index < heroHand.Count; ++index)
             {
-                CardData cardData = MatchManager.Instance.GetCardData(heroHand[index]);
-                if ((Object)cardData != (Object)null && cardData.GetCardFinalCost() > 0 && cardData.HasCardType(cardType))
+                CardRealtimeData cardData = MatchManager.Instance.GetCardData(heroHand[index]);
+                if (cardData != null && cardData.GetCardFinalCost() > 0 && cardData.HasCardType(cardType))
                     cardDataList.Add(cardData);
             }
             for (int index = 0; index < cardDataList.Count; ++index)
             {
-                CardData cardData = cardDataList[index];
-                if ((Object)cardData != (Object)null)
+                CardRealtimeData cardData = cardDataList[index];
+                if (cardData != null)
                 {
                     cardData.EnergyReductionTemporal += num;
                     MatchManager.Instance.UpdateHandCards();
@@ -267,86 +271,86 @@ namespace Obeliskial_Essentials
         /// <summary>
         /// A Duality trait. Includes everything needed for the duality, no need to do anything else.
         /// </summary>
-        /// <param name="_character">Character casting the card</param>
-        /// <param name="_castedCard">Card that was class</param>
+        /// <param name="instance">Trait instance from DoTrait</param>
+        /// <param name="character">Character casting the card</param>
+        /// <param name="castedCard">Card that was cast</param>
         /// <param name="class1">Card Class that could be reduced</param>
         /// <param name="class2">Card Class that could be reduced</param>
         /// <param name="traitId">Trait this is attributable to</param>
-        public static void Duality(ref Character _character, ref CardData _castedCard, Enums.CardClass class1, Enums.CardClass class2, string traitId, int bonusActivations = 0)
+        /// <param name="extraChargeTrait">Optional trait ID that grants extra duality activations</param>
+        public static void Duality(Trait instance, Character character, CardRealtimeData castedCard, Enums.CardClass class1, Enums.CardClass class2, string traitId, string extraChargeTrait = null, bool permanentReduction = false)
         {
-            if (!((Object)MatchManager.Instance != (Object)null) || !((Object)_castedCard != (Object)null))
+            if (instance == null || MatchManager.Instance == null || castedCard == null)
                 return;
+            if (!permanentReduction)
+            {
+                TraitData traitData = Globals.Instance.GetTraitData(traitId);
+                string traitText = traitData != null ? Texts.Instance.GetText("traits_" + traitData.TraitName) : traitId;
+                TraitReversePatches.TryUseDualityCostReductionTrait(instance, character, castedCard, traitId, traitText, class1, class2, class2, class1, extraChargeTrait);
+                return;
+            }
+            DualityPermanent(character, castedCard, class1, class2, traitId, extraChargeTrait);
+        }
+
+        static void DualityPermanent(Character character, CardRealtimeData castedCard, Enums.CardClass class1, Enums.CardClass class2, string traitId, string extraChargeTrait = null)
+        {
             TraitData traitData = Globals.Instance.GetTraitData(traitId);
+            int bonusActivations = 0;
+            if (!string.IsNullOrEmpty(extraChargeTrait) && character != null && character.HaveTrait(extraChargeTrait))
+                bonusActivations = 1;
             if (MatchManager.Instance.activatedTraits != null && MatchManager.Instance.activatedTraits.ContainsKey(traitId) && MatchManager.Instance.activatedTraits[traitId] > (traitData.TimesPerTurn - 1 + bonusActivations))
                 return;
             for (int index1 = 0; index1 < 2; ++index1)
             {
-                Enums.CardClass cardClass1;
-                Enums.CardClass cardClass2;
-                if (index1 == 0)
-                {
-                    cardClass1 = class1;
-                    cardClass2 = class2;
-                }
-                else
-                {
-                    cardClass1 = class2;
-                    cardClass2 = class1;
-                }
-                if (_castedCard.CardClass == cardClass1)
-                {
-                    if (MatchManager.Instance.CountHeroHand() == 0 || !((Object)_character.HeroData != (Object)null))
-                        break;
-                    List<CardData> cardDataList = new List<CardData>();
-                    List<string> heroHand = MatchManager.Instance.GetHeroHand(_character.HeroIndex);
-                    int num1 = 0;
-                    for (int index2 = 0; index2 < heroHand.Count; ++index2)
-                    {
-                        CardData cardData = MatchManager.Instance.GetCardData(heroHand[index2]);
-                        if ((Object)cardData != (Object)null && cardData.CardClass == cardClass2 && _character.GetCardFinalCost(cardData) > num1)
-                            num1 = _character.GetCardFinalCost(cardData);
-                    }
-                    if (num1 <= 0)
-                        break;
-                    for (int index3 = 0; index3 < heroHand.Count; ++index3)
-                    {
-                        CardData cardData = MatchManager.Instance.GetCardData(heroHand[index3]);
-                        if ((Object)cardData != (Object)null && cardData.CardClass == cardClass2 && _character.GetCardFinalCost(cardData) >= num1)
-                            cardDataList.Add(cardData);
-                    }
-                    if (cardDataList.Count <= 0)
-                        break;
-                    CardData cardData1 = cardDataList.Count != 1 ? cardDataList[MatchManager.Instance.GetRandomIntRange(0, cardDataList.Count, "trait")] : cardDataList[0];
-                    if (!((Object)cardData1 != (Object)null))
-                        break;
-                    if (!MatchManager.Instance.activatedTraits.ContainsKey(traitId))
-                        MatchManager.Instance.activatedTraits.Add(traitId, 1);
-                    else
-                        ++MatchManager.Instance.activatedTraits[traitId];
-                    MatchManager.Instance.SetTraitInfoText();
-                    int num2 = 1;
-                    cardData1.EnergyReductionTemporal += num2;
-                    MatchManager.Instance.GetCardFromTableByIndex(cardData1.InternalId).ShowEnergyModification(-num2);
-                    MatchManager.Instance.UpdateHandCards();
-                    _character.HeroItem.ScrollCombatText(Texts.Instance.GetText("traits_" + traitData.TraitName) + TextChargesLeft(MatchManager.Instance.activatedTraits[traitId], traitData.TimesPerTurn + bonusActivations), Enums.CombatScrollEffectType.Trait);
-
-                    MatchManager.Instance.CreateLogCardModification(cardData1.InternalId, MatchManager.Instance.GetHero(_character.HeroIndex));
+                Enums.CardClass cardClass1 = index1 == 0 ? class1 : class2;
+                Enums.CardClass cardClass2 = index1 == 0 ? class2 : class1;
+                if (castedCard.CardClass != cardClass1)
+                    continue;
+                if (MatchManager.Instance.CountHeroHand() == 0 || character.HeroData == null)
                     break;
+                List<CardRealtimeData> cardDataList = new List<CardRealtimeData>();
+                List<string> heroHand = GetHandCards(null, character, null, null).Select(card => card.Id).ToList();
+                int num1 = 0;
+                for (int index2 = 0; index2 < heroHand.Count; ++index2)
+                {
+                    CardRealtimeData cardData = MatchManager.Instance.GetCardData(heroHand[index2]);
+                    if (cardData != null && cardData.CardClass == cardClass2 && character.GetCardFinalCost(cardData) > num1)
+                        num1 = character.GetCardFinalCost(cardData);
                 }
+                if (num1 <= 0)
+                    break;
+                for (int index3 = 0; index3 < heroHand.Count; ++index3)
+                {
+                    CardRealtimeData cardData = MatchManager.Instance.GetCardData(heroHand[index3]);
+                    if (cardData != null && cardData.CardClass == cardClass2 && character.GetCardFinalCost(cardData) >= num1)
+                        cardDataList.Add(cardData);
+                }
+                if (cardDataList.Count <= 0)
+                    break;
+                CardRealtimeData cardData1 = cardDataList.Count != 1 ? cardDataList[MatchManager.Instance.Random.GetRandomIntRange(0, cardDataList.Count, "trait")] : cardDataList[0];
+                if (cardData1 == null)
+                    break;
+                if (!MatchManager.Instance.activatedTraits.ContainsKey(traitId))
+                    MatchManager.Instance.activatedTraits.Add(traitId, 1);
+                else
+                    ++MatchManager.Instance.activatedTraits[traitId];
+                MatchManager.Instance.SetTraitInfoText();
+                int num2 = 1;
+                cardData1.EnergyReductionPermanent += num2;
+                MatchManager.Instance.GetCardFromTableByIndex(cardData1.InternalId).ShowEnergyModification(-num2);
+                MatchManager.Instance.UpdateHandCards();
+                character.HeroItem.ScrollCombatText(Texts.Instance.GetText("traits_" + traitData.TraitName) + TextChargesLeft(MatchManager.Instance.activatedTraits[traitId], traitData.TimesPerTurn + bonusActivations), Enums.CombatScrollEffectType.Trait);
+                MatchManager.Instance.CreateLogCardModification(cardData1.InternalId, MatchManager.Instance.GetHero(character.HeroIndex));
+                break;
             }
         }
 
         /// <summary>
-        /// A Duality trait. Includes everything needed for the duality, no need to do anything else.
+        /// A Duality trait based on card types rather than card classes.
         /// </summary>
-        /// <param name="_character">Character casting the card</param>
-        /// <param name="_castedCard">Card that was class</param>
-        /// <param name="class1">Card Class that could be reduced</param>
-        /// <param name="class2">Card Class that could be reduced</param>
-        /// <param name="traitId">Trait this is attributable to</param>
-        public static void DualityCardType(ref Character _character, ref CardData _castedCard, Enums.CardType[] cardTypes1, Enums.CardType[] cardTypes2, string traitId, int bonusActivations = 0)
+        public static void DualityCardType(Character character, CardRealtimeData castedCard, Enums.CardType[] cardTypes1, Enums.CardType[] cardTypes2, string traitId, int bonusActivations = 0)
         {
-            if (!((Object)MatchManager.Instance != (Object)null) || !((Object)_castedCard != (Object)null))
+            if (MatchManager.Instance == null || castedCard == null)
                 return;
             TraitData traitData = Globals.Instance.GetTraitData(traitId);
             if (MatchManager.Instance.activatedTraits != null && MatchManager.Instance.activatedTraits.ContainsKey(traitId) && MatchManager.Instance.activatedTraits[traitId] > (traitData.TimesPerTurn - 1 + bonusActivations))
@@ -365,55 +369,50 @@ namespace Obeliskial_Essentials
                     types1 = cardTypes2;
                     types2 = cardTypes1;
                 }
-                CardData castedCard = _castedCard;
-                // if (_castedCard.CardClass == cardClass1)
                 bool hasProperCardTypeToTrigger = types1.Any(castedCard.HasCardType);
-                // bool hasCardType2 = types2.Any(castedCard.HasCardType);
-                if (hasProperCardTypeToTrigger)
-                {
-                    if (MatchManager.Instance.CountHeroHand() == 0 || !((Object)_character.HeroData != (Object)null))
-                        break;
-                    List<CardData> cardDataList = new List<CardData>();
-                    List<string> heroHand = MatchManager.Instance.GetHeroHand(_character.HeroIndex);
-                    int num1 = 0;
-                    for (int index2 = 0; index2 < heroHand.Count; ++index2)
-                    {
-                        CardData cardData = MatchManager.Instance.GetCardData(heroHand[index2]);
-                        bool hasProperCardTypeToReduce = types2.Any(cardData.HasCardType);
-                        if ((Object)cardData != (Object)null && hasProperCardTypeToReduce && _character.GetCardFinalCost(cardData) > num1)
-                            num1 = _character.GetCardFinalCost(cardData);
-                    }
-                    if (num1 <= 0)
-                        break;
-                    for (int index3 = 0; index3 < heroHand.Count; ++index3)
-                    {
-                        CardData cardData = MatchManager.Instance.GetCardData(heroHand[index3]);
-                        bool hasProperCardTypeToReduce = types2.Any(cardData.HasCardType);
-
-                        if ((Object)cardData != (Object)null && hasProperCardTypeToReduce && _character.GetCardFinalCost(cardData) >= num1)
-                            cardDataList.Add(cardData);
-                    }
-                    if (cardDataList.Count <= 0)
-                        break;
-                    CardData cardData1 = cardDataList.Count != 1 ? cardDataList[MatchManager.Instance.GetRandomIntRange(0, cardDataList.Count, "trait")] : cardDataList[0];
-                    if (!((Object)cardData1 != (Object)null))
-                        break;
-                    if (!MatchManager.Instance.activatedTraits.ContainsKey(traitId))
-                        MatchManager.Instance.activatedTraits.Add(traitId, 1);
-                    else
-                        ++MatchManager.Instance.activatedTraits[traitId];
-                    MatchManager.Instance.SetTraitInfoText();
-                    int num2 = 1;
-                    cardData1.EnergyReductionTemporal += num2;
-                    MatchManager.Instance.GetCardFromTableByIndex(cardData1.InternalId).ShowEnergyModification(-num2);
-                    MatchManager.Instance.UpdateHandCards();
-                    _character.HeroItem.ScrollCombatText(Texts.Instance.GetText("traits_" + traitData.TraitName) + TextChargesLeft(MatchManager.Instance.activatedTraits[traitId], traitData.TimesPerTurn + bonusActivations), Enums.CombatScrollEffectType.Trait);
-
-                    MatchManager.Instance.CreateLogCardModification(cardData1.InternalId, MatchManager.Instance.GetHero(_character.HeroIndex));
+                if (!hasProperCardTypeToTrigger)
+                    continue;
+                if (MatchManager.Instance.CountHeroHand() == 0 || character.HeroData == null)
                     break;
+                List<CardRealtimeData> cardDataList = new List<CardRealtimeData>();
+                List<string> heroHand = GetHandCards(null, character, null, null).Select(card => card.Id).ToList();
+                int num1 = 0;
+                for (int index2 = 0; index2 < heroHand.Count; ++index2)
+                {
+                    CardRealtimeData cardData = MatchManager.Instance.GetCardData(heroHand[index2]);
+                    bool hasProperCardTypeToReduce = types2.Any(cardData.HasCardType);
+                    if (cardData != null && hasProperCardTypeToReduce && character.GetCardFinalCost(cardData) > num1)
+                        num1 = character.GetCardFinalCost(cardData);
                 }
+                if (num1 <= 0)
+                    break;
+                for (int index3 = 0; index3 < heroHand.Count; ++index3)
+                {
+                    CardRealtimeData cardData = MatchManager.Instance.GetCardData(heroHand[index3]);
+                    bool hasProperCardTypeToReduce = types2.Any(cardData.HasCardType);
+                    if (cardData != null && hasProperCardTypeToReduce && character.GetCardFinalCost(cardData) >= num1)
+                        cardDataList.Add(cardData);
+                }
+                if (cardDataList.Count <= 0)
+                    break;
+                CardRealtimeData cardData1 = cardDataList.Count != 1 ? cardDataList[MatchManager.Instance.Random.GetRandomIntRange(0, cardDataList.Count, "trait")] : cardDataList[0];
+                if (cardData1 == null)
+                    break;
+                if (!MatchManager.Instance.activatedTraits.ContainsKey(traitId))
+                    MatchManager.Instance.activatedTraits.Add(traitId, 1);
+                else
+                    ++MatchManager.Instance.activatedTraits[traitId];
+                MatchManager.Instance.SetTraitInfoText();
+                int num2 = 1;
+                cardData1.EnergyReductionTemporal += num2;
+                MatchManager.Instance.GetCardFromTableByIndex(cardData1.InternalId).ShowEnergyModification(-num2);
+                MatchManager.Instance.UpdateHandCards();
+                character.HeroItem.ScrollCombatText(Texts.Instance.GetText("traits_" + traitData.TraitName) + TextChargesLeft(MatchManager.Instance.activatedTraits[traitId], traitData.TimesPerTurn + bonusActivations), Enums.CombatScrollEffectType.Trait);
+                MatchManager.Instance.CreateLogCardModification(cardData1.InternalId, MatchManager.Instance.GetHero(character.HeroIndex));
+                break;
             }
         }
+
 
         /// <summary>
         /// For the rest of combat, reduces the cost of a card type when you play a different card type.
@@ -424,9 +423,9 @@ namespace Obeliskial_Essentials
         /// <param name="whenYouPlayThis"> Card type to trigger the effect</param>
         /// <param name="amountToReduce"> Amount of energy reduction per time this triggers</param>
         /// <param name="_trait"> Trait this is attributed to</param>
-        public static void PermanentyReduceXWhenYouPlayY(ref Character _character, ref CardData _castedCard, Enums.CardType reduceThis, Enums.CardType whenYouPlayThis, int amountToReduce, string _trait)
+        public static void PermanentyReduceXWhenYouPlayY(ref Character _character, ref CardRealtimeData _castedCard, Enums.CardType reduceThis, Enums.CardType whenYouPlayThis, int amountToReduce, string _trait)
         {
-            if (!((Object)MatchManager.Instance != (Object)null) || !((Object)_castedCard != (Object)null))
+            if (MatchManager.Instance == null || _castedCard == null)
                 return;
             TraitData traitData = Globals.Instance.GetTraitData(_trait);
             if (MatchManager.Instance.activatedTraits != null && MatchManager.Instance.activatedTraits.ContainsKey(_trait) && MatchManager.Instance.activatedTraits[_trait] > traitData.TimesPerTurn - 1)
@@ -435,19 +434,19 @@ namespace Obeliskial_Essentials
             if (!_castedCard.GetCardTypes().Contains(whenYouPlayThis))
                 return;
 
-            if (MatchManager.Instance.CountHeroHand() == 0 || !((Object)_character.HeroData != (Object)null))
+            if (MatchManager.Instance.CountHeroHand() == 0 || _character.HeroData == null)
                 return;
 
 
-            List<CardData> cardDataList = new List<CardData>();
-            List<string> heroHand = MatchManager.Instance.GetHeroHand(_character.HeroIndex);
+            List<CardRealtimeData> cardDataList = new List<CardRealtimeData>();
+            List<string> heroHand = GetHandCards(null, _character, null, null).Select(card => card.Id).ToList();
 
             if (reduceThis == Enums.CardType.None)
             {
                 for (int handIndex = 0; handIndex < heroHand.Count; ++handIndex)
                 {
-                    CardData cardData = MatchManager.Instance.GetCardData(heroHand[handIndex]);
-                    if ((Object)cardData != (Object)null)
+                    CardRealtimeData cardData = MatchManager.Instance.GetCardData(heroHand[handIndex]);
+                    if (cardData != null)
                         cardDataList.Add(cardData);
                 }
             }
@@ -455,8 +454,8 @@ namespace Obeliskial_Essentials
             {
                 for (int handIndex = 0; handIndex < heroHand.Count; ++handIndex)
                 {
-                    CardData cardData = MatchManager.Instance.GetCardData(heroHand[handIndex]);
-                    if ((Object)cardData != (Object)null && cardData.GetCardTypes().Contains(reduceThis))
+                    CardRealtimeData cardData = MatchManager.Instance.GetCardData(heroHand[handIndex]);
+                    if (cardData != null && cardData.GetCardTypes().Contains(reduceThis))
                         cardDataList.Add(cardData);
                 }
             }
@@ -466,7 +465,7 @@ namespace Obeliskial_Essentials
             else
                 ++MatchManager.Instance.activatedTraits[_trait];
 
-            CardData selectedCard = cardDataList[MatchManager.Instance.GetRandomIntRange(0, cardDataList.Count, "trait")];
+            CardRealtimeData selectedCard = cardDataList[MatchManager.Instance.Random.GetRandomIntRange(0, cardDataList.Count, "trait")];
             selectedCard.EnergyReductionPermanent += amountToReduce;
             MatchManager.Instance.GetCardFromTableByIndex(selectedCard.InternalId).ShowEnergyModification(-amountToReduce);
             MatchManager.Instance.UpdateHandCards();
@@ -484,19 +483,18 @@ namespace Obeliskial_Essentials
         /// <param name="includeHeroes">Optional flag to turn off counting heroes</param>
         /// <param name="includeNpcs">Optional flag to turn off counting npcs</param>
         /// <returns></returns>
-        public static int CountAllStacks(string auraCurse, Hero[] teamHero = null, NPC[] teamNpc = null, bool includeHeroes = true, bool includeNpcs = true)
+        public static int CountAllStacks(string auraCurse, List<Character> teamHero = null, List<Character> teamNpc = null, bool includeHeroes = true, bool includeNpcs = true)
         {
             if (MatchManager.Instance == null)
                 return 0;
 
-            // Assigns teamHero and teamNpc if null
-            teamHero ??= MatchManager.Instance.GetTeamHero();
-            teamNpc ??= MatchManager.Instance.GetTeamNPC();
+            teamHero ??= new List<Character>(AtOManager.Instance.team.heroes.ToArray());
+            teamNpc ??= MatchManager.Instance.GetTeamNPC().Characters;
 
             int stacks = 0;
             if (includeHeroes)
             {
-                for (int index = 0; index < teamHero.Length; ++index)
+                for (int index = 0; index < teamHero.Count; ++index)
                 {
                     if (IsLivingHero(teamHero[index]))
                     {
@@ -506,7 +504,7 @@ namespace Obeliskial_Essentials
             }
             if (includeNpcs)
             {
-                for (int index = 0; index < teamNpc.Length; ++index)
+                for (int index = 0; index < teamNpc.Count; ++index)
                 {
                     if (IsLivingNPC(teamNpc[index]))
                     {
@@ -528,10 +526,10 @@ namespace Obeliskial_Essentials
             LogDebug(debugBase + "Dealing Indirect Damage");
             if (MatchManager.Instance == null)
                 return;
-            NPC[] teamNpc = MatchManager.Instance.GetTeamNPC();
-            for (int index = 0; index < teamNpc.Length; ++index)
+            List<Character> teamNpc = MatchManager.Instance.GetTeamNPC().Characters;
+            for (int index = 0; index < teamNpc.Count; ++index)
             {
-                NPC npc = teamNpc[index];
+                Character npc = teamNpc[index];
                 if (IsLivingNPC(npc))
                 {
                     npc.IndirectDamage(damageType, amount, source);
@@ -615,7 +613,7 @@ namespace Obeliskial_Essentials
             if (validCharacters.Count == 0)
                 return null;
 
-            int i = MatchManager.Instance.GetRandomIntRange(0, validCharacters.Count);
+            int i = MatchManager.Instance.Random.GetRandomIntRange(0, validCharacters.Count);
 
             if (i < validCharacters.Count)
                 return validCharacters[i];
@@ -623,6 +621,37 @@ namespace Obeliskial_Essentials
                 return null;
             else
                 return validCharacters[0];
+        }
+
+
+        public static Character GetRandomCharacter(IList<Character> list)
+        {
+            if (list == null || list.Count == 0)
+                return null;
+            Character[] arr = new Character[list.Count];
+            for (int i = 0; i < list.Count; i++)
+                arr[i] = list[i];
+            return GetRandomCharacter(arr);
+        }
+
+        public static Character GetLowestHealthCharacter(IList<Character> characters)
+        {
+            if (characters == null || characters.Count == 0)
+                return null;
+            Character[] arr = new Character[characters.Count];
+            for (int i = 0; i < characters.Count; i++)
+                arr[i] = characters[i];
+            return GetLowestHealthCharacter(arr);
+        }
+
+        public static Character GetFrontCharacter(IList<Character> characters)
+        {
+            if (characters == null || characters.Count == 0)
+                return null;
+            Character[] arr = new Character[characters.Count];
+            for (int i = 0; i < characters.Count; i++)
+                arr[i] = characters[i];
+            return GetFrontCharacter(arr);
         }
 
         /// <summary>
@@ -661,7 +690,7 @@ namespace Obeliskial_Essentials
                     int num3 = 0;
                     for (; num3 < 10; ++num3)
                     {
-                        int index = intList.Count <= 1 ? intList[0] : intList[MatchManager.Instance.GetRandomIntRange(0, intList.Count, "trait")];
+                        int index = intList.Count <= 1 ? intList[0] : intList[MatchManager.Instance.Random.GetRandomIntRange(0, intList.Count, "trait")];
                         if (num3 == 9)
                             index = intList[0];
                         if (index < characters.Length && characters[index] != null)
@@ -725,7 +754,7 @@ namespace Obeliskial_Essentials
         /// <returns>true if the character has the perk </returns>
         public static bool CharacterHasPerkForSet(string perkName, bool flag, AtOManager __instance, Character _characterTarget)
         {
-            return flag && _characterTarget != null && __instance.CharacterHavePerk(_characterTarget.SubclassName, perkBase + perkName);
+            return flag && _characterTarget != null && __instance.team.CharacterHavePerk(_characterTarget.SubclassName, perkBase + perkName);
         }
 
         /// <summary>
@@ -738,7 +767,7 @@ namespace Obeliskial_Essentials
         /// <returns>true if the character has the perk </returns>
         public static bool CharacterHasPerkForConsume(string perkName, bool flag, AtOManager __instance, Character _characterCaster)
         {
-            return flag && _characterCaster != null && __instance.CharacterHavePerk(_characterCaster.SubclassName, perkBase + perkName);
+            return flag && _characterCaster != null && __instance.team.CharacterHavePerk(_characterCaster.SubclassName, perkBase + perkName);
         }
 
 
@@ -751,7 +780,7 @@ namespace Obeliskial_Essentials
         {
             if (AtOManager.Instance == null)
                 return false;
-            return AtOManager.Instance.TeamHavePerk(perkBase + perkName) || AtOManager.Instance.TeamHavePerk(perkName);
+            return AtOManager.Instance.team.TeamHavePerk(perkBase + perkName) || AtOManager.Instance.team.TeamHavePerk(perkName);
         }
 
 
@@ -782,13 +811,13 @@ namespace Obeliskial_Essentials
                 switch (characterHas)
                 {
                     case CharacterHas.Item:
-                        hasX = AtOManager.Instance.CharacterHaveItem(characterOfInterest.SubclassName, perkBase + id) || AtOManager.Instance.CharacterHaveItem(characterOfInterest.SubclassName, id);
+                        hasX = AtOManager.Instance.team.CharacterHaveItem(characterOfInterest.SubclassName, perkBase + id) || AtOManager.Instance.team.CharacterHaveItem(characterOfInterest.SubclassName, id);
                         break;
                     case CharacterHas.Perk:
-                        hasX = AtOManager.Instance.CharacterHavePerk(characterOfInterest.SubclassName, perkBase + id) || AtOManager.Instance.CharacterHavePerk(characterOfInterest.SubclassName, id);
+                        hasX = AtOManager.Instance.team.CharacterHavePerk(characterOfInterest.SubclassName, perkBase + id) || AtOManager.Instance.team.CharacterHavePerk(characterOfInterest.SubclassName, id);
                         break;
                     case CharacterHas.Trait:
-                        hasX = AtOManager.Instance.CharacterHaveTrait(characterOfInterest.SubclassName, perkBase + id) || AtOManager.Instance.CharacterHaveTrait(characterOfInterest.SubclassName, id);
+                        hasX = AtOManager.Instance.team.CharacterHaveTrait(characterOfInterest.SubclassName, perkBase + id) || AtOManager.Instance.team.CharacterHaveTrait(characterOfInterest.SubclassName, id);
                         break;
                     case CharacterHas.Enchantment:
                         hasX = CharacterHaveEnchantment(characterOfInterest, id);
@@ -801,21 +830,21 @@ namespace Obeliskial_Essentials
                 switch (characterHas)
                 {
                     case CharacterHas.Item:
-                        hasX = AtOManager.Instance.TeamHaveItem(perkBase + id) || AtOManager.Instance.TeamHaveItem(id);
+                        hasX = AtOManager.Instance.team.TeamHaveItem(perkBase + id) || AtOManager.Instance.team.TeamHaveItem(id);
                         break;
                     case CharacterHas.Perk:
-                        hasX = AtOManager.Instance.TeamHavePerk(perkBase + id) || AtOManager.Instance.TeamHavePerk(id);
+                        hasX = AtOManager.Instance.team.TeamHavePerk(perkBase + id) || AtOManager.Instance.team.TeamHavePerk(id);
                         break;
                     case CharacterHas.Trait:
-                        hasX = AtOManager.Instance.TeamHaveTrait(perkBase + id) || AtOManager.Instance.TeamHaveTrait(id);
+                        hasX = AtOManager.Instance.team.TeamHaveTrait(perkBase + id) || AtOManager.Instance.team.TeamHaveTrait(id);
                         break;
                     case CharacterHas.Enchantment:
-                        hasX = AtOManager.Instance.TeamHaveItem(itemStem + id) ||
-                               AtOManager.Instance.TeamHaveItem(itemStem + id + "a") ||
-                               AtOManager.Instance.TeamHaveItem(itemStem + id + "b") ||
-                               AtOManager.Instance.TeamHaveItem(id) ||
-                               AtOManager.Instance.TeamHaveItem(id + "a") ||
-                               AtOManager.Instance.TeamHaveItem(id + "b");
+                        hasX = AtOManager.Instance.team.TeamHaveItem(itemStem + id) ||
+                               AtOManager.Instance.team.TeamHaveItem(itemStem + id + "a") ||
+                               AtOManager.Instance.team.TeamHaveItem(itemStem + id + "b") ||
+                               AtOManager.Instance.team.TeamHaveItem(id) ||
+                               AtOManager.Instance.team.TeamHaveItem(id + "a") ||
+                               AtOManager.Instance.team.TeamHaveItem(id + "b");
                         break;
                 }
             }
@@ -842,7 +871,7 @@ namespace Obeliskial_Essentials
                 return false;
 
             bool correctCharacterType = (characterOfInterest.IsHero && appliesTo == AppliesTo.Heroes) || (!characterOfInterest.IsHero && appliesTo == AppliesTo.Monsters) || appliesTo == AppliesTo.Global;
-            bool hasPerk = AtOManager.Instance.TeamHavePerk(perkBase + perkName) || AtOManager.Instance.TeamHavePerk(perkName);
+            bool hasPerk = AtOManager.Instance.team.TeamHavePerk(perkBase + perkName) || AtOManager.Instance.team.TeamHavePerk(perkName);
 
             return hasPerk && correctCharacterType;
         }
@@ -862,7 +891,7 @@ namespace Obeliskial_Essentials
             // bool flag = appliesTo==AppliesTo.Global ? true :false;
 
             bool correctCharacterType = (characterOfInterest.IsHero && appliesTo == AppliesTo.Heroes) || (!characterOfInterest.IsHero && appliesTo == AppliesTo.Monsters) || appliesTo == AppliesTo.Global;
-            bool hasPerk = AtOManager.Instance.CharacterHavePerk(characterOfInterest.SubclassName, perkBase + perkName) || AtOManager.Instance.CharacterHavePerk(characterOfInterest.SubclassName, perkName);
+            bool hasPerk = AtOManager.Instance.team.CharacterHavePerk(characterOfInterest.SubclassName, perkBase + perkName) || AtOManager.Instance.team.CharacterHavePerk(characterOfInterest.SubclassName, perkName);
             //disarm1b - cannot be dispelled unless specified, increases resists by 10%
 
             return hasPerk && correctCharacterType;
@@ -887,7 +916,7 @@ namespace Obeliskial_Essentials
                 return false;
 
             bool correctCharacterType = (characterOfInterest.IsHero && appliesTo == AppliesTo.Heroes) || (!characterOfInterest.IsHero && appliesTo == AppliesTo.Monsters) || appliesTo == AppliesTo.Global;
-            bool hasPerk = AtOManager.Instance.TeamHaveTrait(perkBase + perkName) || AtOManager.Instance.TeamHavePerk(perkName);
+            bool hasPerk = AtOManager.Instance.team.TeamHaveTrait(perkBase + perkName) || AtOManager.Instance.team.TeamHavePerk(perkName);
 
             return hasPerk && correctCharacterType;
         }
@@ -908,7 +937,7 @@ namespace Obeliskial_Essentials
                 return false;
 
             bool correctCharacterType = (characterOfInterest.IsHero && appliesTo == AppliesTo.Heroes) || (!characterOfInterest.IsHero && appliesTo == AppliesTo.Monsters) || appliesTo == AppliesTo.Global;
-            bool hasPerk = AtOManager.Instance.CharacterHaveTrait(characterOfInterest.SubclassName, perkBase + perkName) || AtOManager.Instance.TeamHavePerk(perkName);
+            bool hasPerk = AtOManager.Instance.team.CharacterHaveTrait(characterOfInterest.SubclassName, perkBase + perkName) || AtOManager.Instance.team.TeamHavePerk(perkName);
 
             return hasPerk && correctCharacterType;
         }
@@ -924,7 +953,7 @@ namespace Obeliskial_Essentials
 
         public static bool TeamHasPerkForSet(string perkName, bool flag, AtOManager __instance, Character _characterTarget)
         {
-            return _characterTarget != null && __instance.TeamHavePerk(perkBase + perkName) && flag;
+            return _characterTarget != null && __instance.team.TeamHavePerk(perkBase + perkName) && flag;
         }
 
         /// <summary>
@@ -939,7 +968,7 @@ namespace Obeliskial_Essentials
         {
             if (__instance == null)
                 return false;
-            return _characterCaster != null && (__instance.TeamHavePerk(perkBase + perkName) || __instance.TeamHavePerk(perkName)) && flag;
+            return _characterCaster != null && (__instance.team.TeamHavePerk(perkBase + perkName) || __instance.team.TeamHavePerk(perkName)) && flag;
         }
 
         /// <summary>
@@ -953,9 +982,9 @@ namespace Obeliskial_Essentials
             if (_character == null || AtOManager.Instance == null)
                 return false;
             // if (_perkID.StartsWith(perkBase))
-            //     AtOManager.Instance.CharacterHavePerk(_character.SubclassName, _perkID);
+            //     AtOManager.Instance.team.CharacterHavePerk(_character.SubclassName, _perkID);
 
-            return AtOManager.Instance.CharacterHavePerk(_character.SubclassName, perkBase + _perkID) || AtOManager.Instance.CharacterHavePerk(_character.SubclassName, _perkID);
+            return AtOManager.Instance.team.CharacterHavePerk(_character.SubclassName, perkBase + _perkID) || AtOManager.Instance.team.CharacterHavePerk(_character.SubclassName, _perkID);
         }
 
         /// <summary>
@@ -967,7 +996,7 @@ namespace Obeliskial_Essentials
             //LogDebug("Binbin PestilyBiohealer - trying to cast card: "+cardToCast);
             if (cardToCast == null || Globals.Instance == null)
                 return;
-            CardData card = Globals.Instance.GetCardData(cardToCast);
+            CardRealtimeData card = Globals.Instance.GetCardData(cardToCast);
 
             if (card == null)
             {
@@ -1184,19 +1213,19 @@ namespace Obeliskial_Essentials
                 {
                     List<string> stringList = new List<string>();
                     List<int> intList = new List<int>();
-                    for (int index2 = 0; index2 < _characterTarget.AuraList.Count; ++index2)
+                    for (int index2 = 0; index2 < _characterTarget.AuraCurseList.Count; ++index2)
                     {
-                        if (_characterTarget.AuraList[index2] != null && (UnityEngine.Object)_characterTarget.AuraList[index2].ACData != (UnityEngine.Object)null && _characterTarget.AuraList[index2].GetCharges() > 0 && !(_characterTarget.AuraList[index2].ACData.Id == "furnace"))
+                        if (_characterTarget.AuraCurseList[index2] != null && (UnityEngine.Object)_characterTarget.AuraCurseList[index2].ACData != (UnityEngine.Object)null && _characterTarget.AuraCurseList[index2].GetCharges() > 0 && !(_characterTarget.AuraCurseList[index2].ACData.Id == "furnace"))
                         {
                             bool flag = false;
-                            if ((index1 == 0 || index1 == 2) && _characterTarget.AuraList[index2].ACData.IsAura)
+                            if ((index1 == 0 || index1 == 2) && _characterTarget.AuraCurseList[index2].ACData.IsAura)
                                 flag = true;
-                            else if ((index1 == 1 || index1 == 3) && !_characterTarget.AuraList[index2].ACData.IsAura)
+                            else if ((index1 == 1 || index1 == 3) && !_characterTarget.AuraCurseList[index2].ACData.IsAura)
                                 flag = true;
                             if (flag)
                             {
-                                stringList.Add(_characterTarget.AuraList[index2].ACData.Id);
-                                intList.Add(_characterTarget.AuraList[index2].GetCharges());
+                                stringList.Add(_characterTarget.AuraCurseList[index2].ACData.Id);
+                                intList.Add(_characterTarget.AuraCurseList[index2].GetCharges());
                             }
                         }
                     }
@@ -1230,7 +1259,7 @@ namespace Obeliskial_Essentials
                                         int maxCharges = _acData.GetMaxCharges();
                                         if (maxCharges > -1 && intList[index3] + num > maxCharges)
                                             num = maxCharges - intList[index3];
-                                        _characterTarget.SetAura(_characterCaster, _acData, num, useCharacterMods: false, canBePreventable: false);
+                                        _characterTarget.SetAuraCurse(_characterCaster, _acData, num, useCharacterMods: false, canBePreventable: false);
                                         break;
                                     }
                                     break;
@@ -1259,15 +1288,15 @@ namespace Obeliskial_Essentials
         /// <param name="useCharacterMods">whether or not to use the AC can be buffered</param>
         public static void ApplyAuraCurseToAll(string acToApply, int nToApply, AppliesTo appliesTo, Character sourceCharacter = null, bool useCharacterMods = false, bool isPreventable = true)
         {
-            LogInfo("ApplyAuraCurseToAll");
+            LogDebug("ApplyAuraCurseToAll");
             if (MatchManager.Instance == null) { LogError("No MatchManager"); return; }
             if (sourceCharacter == null && useCharacterMods) { LogError("No Source Character"); return; }
 
             AuraCurseData acData = GetAuraCurseData(acToApply);
             if (acData == null) { LogError("Improper AuraCurse"); return; }
 
-            Hero[] heroes = MatchManager.Instance.GetTeamHero();
-            NPC[] npcs = MatchManager.Instance.GetTeamNPC();
+            Hero[] heroes = AtOManager.Instance.team.heroes.ToArray();
+            List<Character> npcs = MatchManager.Instance.GetTeamNPC().Characters;
 
             switch (appliesTo)
             {
@@ -1277,7 +1306,7 @@ namespace Obeliskial_Essentials
                     {
                         if (IsLivingHero(hero))
                         {
-                            hero.SetAura(sourceCharacter, acData, nToApply, useCharacterMods: useCharacterMods, canBePreventable: isPreventable);
+                            hero.SetAuraCurse(sourceCharacter, acData, nToApply, useCharacterMods: useCharacterMods, canBePreventable: isPreventable);
                         }
                     }
                     break;
@@ -1286,24 +1315,24 @@ namespace Obeliskial_Essentials
                     {
                         if (IsLivingHero(hero))
                         {
-                            hero.SetAura(sourceCharacter, acData, nToApply, useCharacterMods: useCharacterMods, canBePreventable: isPreventable);
+                            hero.SetAuraCurse(sourceCharacter, acData, nToApply, useCharacterMods: useCharacterMods, canBePreventable: isPreventable);
                         }
                     }
                     foreach (NPC npc in npcs)
                     {
                         if (IsLivingNPC(npc))
                         {
-                            npc.SetAura(sourceCharacter, acData, nToApply, useCharacterMods: useCharacterMods, canBePreventable: isPreventable);
+                            npc.SetAuraCurse(sourceCharacter, acData, nToApply, useCharacterMods: useCharacterMods, canBePreventable: isPreventable);
                         }
                     }
 
                     break;
                 case AppliesTo.Monsters:
-                    foreach (NPC npc in npcs)
+                    foreach (Character npc in npcs)
                     {
                         if (IsLivingNPC(npc))
                         {
-                            npc.SetAura(sourceCharacter, acData, nToApply, useCharacterMods: useCharacterMods, canBePreventable: isPreventable);
+                            npc.SetAuraCurse(sourceCharacter, acData, nToApply, useCharacterMods: useCharacterMods, canBePreventable: isPreventable);
                         }
                     }
                     break;
@@ -1391,16 +1420,16 @@ namespace Obeliskial_Essentials
             //     characterToStealFrom = (Character)_npc;
             if (characterToStealFrom != null)
             {
-                for (int index = 0; index < characterToStealFrom.AuraList.Count && num < nToSteal; ++index)
+                for (int index = 0; index < characterToStealFrom.AuraCurseList.Count && num < nToSteal; ++index)
                 {
-                    bool charsAreNonNull = characterToStealFrom.AuraList[index] != null && (UnityEngine.Object)characterToStealFrom.AuraList[index].ACData != (UnityEngine.Object)null;
-                    bool acHasCorrectType = isAuraOrCurse == IsAuraOrCurse.Aura ? characterToStealFrom.AuraList[index].ACData.IsAura : !characterToStealFrom.AuraList[index].ACData.IsAura;
-                    bool acIsRemovable = characterToStealFrom.AuraList[index].ACData.Removable && characterToStealFrom.AuraList[index].GetCharges() > 0;
+                    bool charsAreNonNull = characterToStealFrom.AuraCurseList[index] != null && (UnityEngine.Object)characterToStealFrom.AuraCurseList[index].ACData != (UnityEngine.Object)null;
+                    bool acHasCorrectType = isAuraOrCurse == IsAuraOrCurse.Aura ? characterToStealFrom.AuraCurseList[index].ACData.IsAura : !characterToStealFrom.AuraCurseList[index].ACData.IsAura;
+                    bool acIsRemovable = characterToStealFrom.AuraCurseList[index].ACData.Removable && characterToStealFrom.AuraCurseList[index].GetCharges() > 0;
 
                     if (charsAreNonNull && acHasCorrectType && acIsRemovable)
                     {
-                        curseList.Add(characterToStealFrom.AuraList[index].ACData.Id);
-                        intList.Add(characterToStealFrom.AuraList[index].GetCharges());
+                        curseList.Add(characterToStealFrom.AuraCurseList[index].ACData.Id);
+                        intList.Add(characterToStealFrom.AuraCurseList[index].GetCharges());
                         ++num;
                     }
                 }
@@ -1411,7 +1440,7 @@ namespace Obeliskial_Essentials
                 for (int index = 0; index < curseList.Count; ++index)
                 {
                     if (characterStealing != null && characterStealing.Alive)
-                        characterStealing.SetAura(characterToStealFrom, Globals.Instance.GetAuraCurseData(curseList[index]), intList[index]);
+                        characterStealing.SetAuraCurse(characterToStealFrom, Globals.Instance.GetAuraCurseData(curseList[index]), intList[index]);
                 }
             }
         }
@@ -1429,13 +1458,13 @@ namespace Obeliskial_Essentials
         }
 
         /// <summary>
-        ///  Gets the cards in the characters deck as CardData objects
+        ///  Gets the cards in the characters deck as CardRealtimeData objects
         /// </summary>
         /// <param name="character">Character to get the Deck of</param>
-        /// <returns>A list of CardDatas representing all cards in the characters deck</returns>
-        public static List<CardData> GetDeckCardData(Character character)
+        /// <returns>A list of CardRealtimeDatas representing all cards in the characters deck</returns>
+        public static List<CardRealtimeData> GetDeckCardRealtimeData(Character character)
         {
-            List<CardData> deck = [];
+            List<CardRealtimeData> deck = [];
             foreach (string card in character.Cards)
             {
                 deck.Add(Globals.Instance.GetCardData(card));
@@ -1452,7 +1481,7 @@ namespace Obeliskial_Essentials
         public static int CountAllACOnCharacter(Character character, IsAuraOrCurse isAuraOrCurse)
         {
             int sum = 0;
-            foreach (Aura aura in character.AuraList)
+            foreach (AuraCurse aura in character.AuraCurseList)
             {
                 bool correctType = true; ;
                 switch (isAuraOrCurse)
@@ -1483,7 +1512,7 @@ namespace Obeliskial_Essentials
         /// <param name="currentCharacter">character to reduce the cards for. If null, gets the current active hero.</param>
         /// <param name="amountToReduce">Amount to reduce the card's cost by</param>
         /// <param name="isPermanent">If true, makes the reduction permanent.</param>
-        public static void ReduceCardCost(ref CardData cardData, Character currentCharacter = null, int amountToReduce = 1, bool isPermanent = false)
+        public static void ReduceCardCost(ref CardRealtimeData cardData, Character currentChar = null, int amountToReduce = 1, bool isPermanent = false)
         {
             if (MatchManager.Instance == null || cardData == null)
             {
@@ -1492,6 +1521,7 @@ namespace Obeliskial_Essentials
             }
 
             LogDebug("Reducing card Cost");
+            Character currentCharacter = currentChar;
             currentCharacter ??= MatchManager.Instance.GetHeroHeroActive();
 
             if (currentCharacter == null)
@@ -1525,35 +1555,35 @@ namespace Obeliskial_Essentials
         /// <param name="heroHand"> The hero's hand. If null, gets the current active hero's hand.</param>
         /// <param name="cardType">The cardType you are looking for. Use None to specify any card.</param>
         /// <returns>A random card with the highest cost of cardType. Returns null if card is not found.</returns>
-        public static CardData GetRandomHighestCostCard(Enums.CardType cardType, List<string> heroHand = null)
+        public static CardRealtimeData GetRandomHighestCostCard(Enums.CardType cardType, List<string> heroHand = null)
         {
             if (MatchManager.Instance == null)
             {
                 LogError("Null MatchManager");
                 return null;
             }
-            heroHand ??= MatchManager.Instance.GetHeroHand(MatchManager.Instance.GetHeroActive());
+            heroHand ??= GetHandCards(null, MatchManager.Instance.GetHeroHeroActive(), null, null).Select(card => card.Id).ToList();
 
             int num1 = 0;
-            List<CardData> cardDataList = new();
+            List<CardRealtimeData> cardDataList = new();
             for (int index = 0; index < heroHand.Count; ++index)
             {
-                CardData cardData = MatchManager.Instance.GetCardData(heroHand[index]);
-                if ((Object)cardData != (Object)null && (cardData.GetCardTypes().Contains(cardType) || cardType == Enums.CardType.None) && cardData.GetCardFinalCost() > num1)
+                CardRealtimeData cardData = MatchManager.Instance.GetCardData(heroHand[index]);
+                if (cardData != null && (cardData.GetCardTypes().Contains(cardType) || cardType == Enums.CardType.None) && cardData.GetCardFinalCost() > num1)
                     num1 = cardData.GetCardFinalCost();
             }
             if (num1 <= 0)
                 return null;
             for (int index = 0; index < heroHand.Count; ++index)
             {
-                CardData cardData = MatchManager.Instance.GetCardData(heroHand[index]);
-                if ((Object)cardData != (Object)null && (cardData.GetCardTypes().Contains(cardType) || cardType == Enums.CardType.None) && cardData.GetCardFinalCost() >= num1)
+                CardRealtimeData cardData = MatchManager.Instance.GetCardData(heroHand[index]);
+                if (cardData != null && (cardData.GetCardTypes().Contains(cardType) || cardType == Enums.CardType.None) && cardData.GetCardFinalCost() >= num1)
                     cardDataList.Add(cardData);
             }
             if (cardDataList.Count <= 0)
                 return null;
 
-            CardData cardData1 = cardDataList.Count != 1 ? cardDataList[MatchManager.Instance.GetRandomIntRange(0, cardDataList.Count)] : cardDataList[0];
+            CardRealtimeData cardData1 = cardDataList.Count != 1 ? cardDataList[MatchManager.Instance.Random.GetRandomIntRange(0, cardDataList.Count, "trait")] : cardDataList[0];
 
             return cardData1;
         }
@@ -1565,20 +1595,21 @@ namespace Obeliskial_Essentials
         /// <param name="equalOrAboveCertainCost">The cards must be greater than or equal to this amount</param>
         /// <param name="lessThanOrEqualToThisCost">The cards must be less than or equal to this amount</param>
         /// <returns></returns>
-        public static List<CardData> GetCardsFromHand(Enums.CardType cardType = Enums.CardType.None, int equalOrAboveCertainCost = 0, int lessThanOrEqualToThisCost = 100)
-        {
-            Character character = MatchManager.Instance.GetHeroHeroActive();
-            List<string> heroHand = MatchManager.Instance.GetHeroHand(character.HeroIndex);
+        // public static List<CardRealtimeData> GetCardsFromHand(Enums.CardType cardType = Enums.CardType.None, int equalOrAboveCertainCost = 0, int lessThanOrEqualToThisCost = 100)
+        // {
+        //     Character character = MatchManager.Instance.GetHeroHeroActive();
+        //     List<string> heroHand = GetHandCards(null, character, null, null).Select(card => card.Id).ToList();
 
-            List<CardData> cardDataList = new List<CardData>();
-            for (int index = 0; index < heroHand.Count; ++index)
-            {
-                CardData cardData = MatchManager.Instance.GetCardData(heroHand[index]);
-                if ((UnityEngine.Object)cardData != (UnityEngine.Object)null && cardData.GetCardFinalCost() > 0 && (cardData.GetCardTypes().Contains(cardType) || cardType == Enums.CardType.None) && cardData.GetCardFinalCost() >= equalOrAboveCertainCost && cardData.GetCardFinalCost() <= lessThanOrEqualToThisCost)
-                    cardDataList.Add(cardData);
-            }
-            return cardDataList;
-        }
+        //     List<CardRealtimeData> cardDataList = new List<CardRealtimeData>();
+        //     // Deck battleCards = TeamHero[heroActive].BattleCards
+        //     // for (int index = 0; index < heroHand.Count; ++index)
+        //     // {
+        //     //     CardRealtimeData cardData = MatchManager.Instance.GetCardData(heroHand[index]);
+        //     //     if (cardData != null && cardData.GetCardFinalCost() > 0 && (cardData.GetCardTypes().Contains(cardType) || cardType == Enums.CardType.None) && cardData.GetCardFinalCost() >= equalOrAboveCertainCost && cardData.GetCardFinalCost() <= lessThanOrEqualToThisCost)
+        //     //         cardDataList.Add(cardData);
+        //     // }
+        //     return cardDataList;
+        // }
 
         /// <summary>
         /// Gets cards of a certain type from your hand.
@@ -1588,15 +1619,15 @@ namespace Obeliskial_Essentials
         /// <param name="equalOrAboveCertainCost">The cards must be greater than or equal to this amount</param>
         /// <param name="lessThanOrEqualToThisCost">The cards must be less than or equal to this amount</param>
         /// <returns></returns>
-        public static List<CardData> GetCardsFromHand(List<string> heroHand, Enums.CardType cardType = Enums.CardType.None, int equalOrAboveCertainCost = 0, int lessThanOrEqualToThisCost = 100)
+        public static List<CardRealtimeData> GetCardsFromHand(List<string> heroHand, Enums.CardType cardType = Enums.CardType.None, int equalOrAboveCertainCost = 0, int lessThanOrEqualToThisCost = 100)
         {
-            // List<string> heroHand = MatchManager.Instance.GetHeroHand(character.HeroIndex);
+            // List<string> heroHand = GetHandCards(null, character, null, null).Select(card => card.Id).ToList();
 
-            List<CardData> cardDataList = new List<CardData>();
+            List<CardRealtimeData> cardDataList = new List<CardRealtimeData>();
             for (int index = 0; index < heroHand.Count; ++index)
             {
-                CardData cardData = MatchManager.Instance.GetCardData(heroHand[index]);
-                if ((UnityEngine.Object)cardData != (UnityEngine.Object)null && cardData.GetCardFinalCost() > 0 && (cardData.GetCardTypes().Contains(cardType) || cardType == Enums.CardType.None) && cardData.GetCardFinalCost() >= equalOrAboveCertainCost && cardData.GetCardFinalCost() <= lessThanOrEqualToThisCost)
+                CardRealtimeData cardData = MatchManager.Instance.GetCardData(heroHand[index]);
+                if (cardData != null && cardData.GetCardFinalCost() > 0 && (cardData.GetCardTypes().Contains(cardType) || cardType == Enums.CardType.None) && cardData.GetCardFinalCost() >= equalOrAboveCertainCost && cardData.GetCardFinalCost() <= lessThanOrEqualToThisCost)
                     cardDataList.Add(cardData);
             }
             return cardDataList;
@@ -1608,7 +1639,7 @@ namespace Obeliskial_Essentials
         /// </summary>
         /// <param name="heroHand">Hand to get the card from.</param>
         /// <returns>The rightmore card</returns>
-        public static CardData GetRightmostCard(List<string> heroHand)
+        public static CardRealtimeData GetRightmostCard(List<string> heroHand)
         {
             // MatchManager.Instance.GetCardData(heroHand.Last());
             return MatchManager.Instance.GetCardData(heroHand.Last());
@@ -1644,12 +1675,12 @@ namespace Obeliskial_Essentials
                 return false;
             }
 
-            return AtOManager.Instance.CharacterHaveItem(characterId, itemStem + id) ||
-                    AtOManager.Instance.CharacterHaveItem(characterId, itemStem + id + "a") ||
-                    AtOManager.Instance.CharacterHaveItem(characterId, itemStem + id + "b") ||
-                    AtOManager.Instance.CharacterHaveItem(characterId, id) ||
-                    AtOManager.Instance.CharacterHaveItem(characterId, id + "a") ||
-                    AtOManager.Instance.CharacterHaveItem(characterId, id + "b");
+            return AtOManager.Instance.team.CharacterHaveItem(characterId, itemStem + id) ||
+                    AtOManager.Instance.team.CharacterHaveItem(characterId, itemStem + id + "a") ||
+                    AtOManager.Instance.team.CharacterHaveItem(characterId, itemStem + id + "b") ||
+                    AtOManager.Instance.team.CharacterHaveItem(characterId, id) ||
+                    AtOManager.Instance.team.CharacterHaveItem(characterId, id + "a") ||
+                    AtOManager.Instance.team.CharacterHaveItem(characterId, id + "b");
         }
 
 
@@ -1665,19 +1696,19 @@ namespace Obeliskial_Essentials
                 return false;
             }
 
-            return AtOManager.Instance.TeamHaveItem(itemStem + id) ||
-                   AtOManager.Instance.TeamHaveItem(itemStem + id + "a") ||
-                   AtOManager.Instance.TeamHaveItem(itemStem + id + "b") ||
-                   AtOManager.Instance.TeamHaveItem(id) ||
-                   AtOManager.Instance.TeamHaveItem(id + "a") ||
-                   AtOManager.Instance.TeamHaveItem(id + "b");
+            return AtOManager.Instance.team.TeamHaveItem(itemStem + id) ||
+                   AtOManager.Instance.team.TeamHaveItem(itemStem + id + "a") ||
+                   AtOManager.Instance.team.TeamHaveItem(itemStem + id + "b") ||
+                   AtOManager.Instance.team.TeamHaveItem(id) ||
+                   AtOManager.Instance.team.TeamHaveItem(id + "a") ||
+                   AtOManager.Instance.team.TeamHaveItem(id + "b");
         }
 
         public static int SafeRandomInt(int min, int max, string type = "default", string seed = "")
         {
             if (MatchManager.Instance)
             {
-                return MatchManager.Instance.GetRandomIntRange(min, max, type, seed);
+                return MatchManager.Instance.Random.GetRandomIntRange(min, max, type, seed);
             }
             if (MapManager.Instance)
             {
@@ -1712,7 +1743,7 @@ namespace Obeliskial_Essentials
             string cardInDictionary;
             if (randomlyUpgraded)
             {
-                int randomIntRange = MatchManager.Instance.GetRandomIntRange(0, 100, "trait");
+                int randomIntRange = MatchManager.Instance.Random.GetRandomIntRange(0, 100, "trait");
                 cardInDictionary = MatchManager.Instance.CreateCardInDictionary(randomIntRange >= 45 ? (randomIntRange >= 90 ? str + "rare" : str + "b") : str + "a");
 
             }
@@ -1720,13 +1751,12 @@ namespace Obeliskial_Essentials
             {
                 cardInDictionary = MatchManager.Instance.CreateCardInDictionary(str);
             }
-            CardData cardData = MatchManager.Instance.GetCardData(cardInDictionary);
+            CardRealtimeData cardData = MatchManager.Instance.GetCardData(cardInDictionary);
             cardData.Vanish = vanish;
             if (permanentCostReduction)
             {
                 cardData.EnergyReductionToZeroPermanent = costZero;
                 cardData.EnergyReductionPermanent = costReduction;
-
             }
             else
             {
@@ -1772,7 +1802,7 @@ namespace Obeliskial_Essentials
             string str = "";
             for (int index = 0; !flag && index < 500; ++index)
             {
-                int randomIntRange = MatchManager.Instance.GetRandomIntRange(0, stringList.Count, "trait");
+                int randomIntRange = MatchManager.Instance.Random.GetRandomIntRange(0, stringList.Count, "trait");
                 str = stringList[randomIntRange];
                 if (Globals.Instance.GetCardData(str, false).EnergyCostOriginal == num2)
                     break;
@@ -1795,19 +1825,19 @@ namespace Obeliskial_Essentials
             // numToReduce = 1;
             // if (numToReduce <= 0)
             //     return;
-            List<string> heroHand = MatchManager.Instance.GetHeroHand(character.HeroIndex);
-            List<CardData> cardDataList = new List<CardData>();
+            List<string> heroHand = GetHandCards(null, character, null, null).Select(card => card.Id).ToList();
+            List<CardRealtimeData> cardDataList = new List<CardRealtimeData>();
             for (int index = 0; index < heroHand.Count; ++index)
             {
                 bool hasProperCardTypeToReduce = cardTypes.Any(MatchManager.Instance.GetCardData(heroHand[index]).HasCardType);
-                CardData cardData = MatchManager.Instance.GetCardData(heroHand[index]);
-                if ((UnityEngine.Object)cardData != (UnityEngine.Object)null && cardData.GetCardFinalCost() > 0 && hasProperCardTypeToReduce)
+                CardRealtimeData cardData = MatchManager.Instance.GetCardData(heroHand[index]);
+                if (cardData != null && cardData.GetCardFinalCost() > 0 && hasProperCardTypeToReduce)
                     cardDataList.Add(cardData);
             }
             for (int index = 0; index < cardDataList.Count; ++index)
             {
-                CardData cardData = cardDataList[index];
-                if ((UnityEngine.Object)cardData != (UnityEngine.Object)null)
+                CardRealtimeData cardData = cardDataList[index];
+                if (cardData != null)
                 {
                     cardData.EnergyReductionTemporal += numToReduce;
                     MatchManager.Instance.UpdateHandCards();
@@ -1827,10 +1857,10 @@ namespace Obeliskial_Essentials
         /// <param name="cardToShuffle">Card that gets shuffled</param>
         public static void ShuffleCardIntoAllDecks(string cardToShuffle, Enums.CardPlace cardPlace = Enums.CardPlace.RandomDeck)
         {
-            Hero[] teamHero = MatchManager.Instance.GetTeamHero();
+            Character[] teamHero = AtOManager.Instance.team.heroes.ToArray();
             for (int index = 0; index < teamHero.Length; ++index)
             {
-                Hero target = teamHero[index];
+                Character target = teamHero[index];
                 AddCardToDeckOrPile(target, cardToShuffle, cardPlace);
             }
             // this.character.HeroItem.ScrollCombatText(Texts.Instance.GetText("traits_DinnerIsReady"), Enums.CombatScrollEffectType.Trait);
@@ -1843,7 +1873,7 @@ namespace Obeliskial_Essentials
         /// <param name="target">Target to add card to</param>
         /// <param name="cardToShuffle">Card to add</param>
         /// <param name="cardPlace">Place to add it</param>
-        public static void AddCardToDeckOrPile(Hero target, string cardToShuffle, Enums.CardPlace cardPlace = Enums.CardPlace.RandomDeck)
+        public static void AddCardToDeckOrPile(Character target, string cardToShuffle, Enums.CardPlace cardPlace = Enums.CardPlace.RandomDeck)
         {
             if (target != null && (UnityEngine.Object)target.HeroData != (UnityEngine.Object)null && target.Alive)
             {
@@ -1852,6 +1882,100 @@ namespace Obeliskial_Essentials
                 MatchManager.Instance.GenerateNewCard(1, cardInDictionary1, false, cardPlace, heroIndex: target.HeroIndex);
             }
 
+        }
+
+
+        public static void Vampirism(ref Character _character, int damageDone, float multiplier, CardRealtimeData _castedCard)
+        {
+            if (_character == null || _character.GetHp() <= 0)
+                return;
+
+            int heal = Functions.FuncRoundToInt((float)damageDone * multiplier);
+            Enums.CardClass CC = Enums.CardClass.None;
+            if (_castedCard != null)
+                CC = _castedCard.CardClass;
+            int _hp = _character.HealReceivedFinal(_character.HealWithCharacterBonus(heal, CC));
+            _character.ModifyHp(_hp);
+            CastResolutionForCombatText _cast = new CastResolutionForCombatText();
+            _cast.heal = _hp;
+            if (_character.HeroItem != null)
+            {
+                _character.HeroItem.ScrollCombatTextDamageNew(_cast);
+            }
+            else
+            {
+                if (_character.NPCItem == null)
+                    return;
+                _character.NPCItem.ScrollCombatTextDamageNew(_cast);
+            }
+        }
+
+        public static void ProgressStanza(Character character)
+        {
+            if (character == null || !character.Alive)
+                return;
+            if (character.HasEffect("stanzaiii"))
+            {
+                character.HealAuraCurse(GetAuraCurseData("stanzaiii"));
+            }
+            else if (character.HasEffect("stanzaii"))
+            {
+                character.SetAuraCurse(character, GetAuraCurseData("stanzaiii"), 1);
+            }
+            else if (character.HasEffect("stanzai"))
+            {
+                character.SetAuraCurse(character, GetAuraCurseData("stanzaii"), 1);
+            }
+            else
+            {
+                character.SetAuraCurse(character, GetAuraCurseData("stanzai"), 1);
+            }
+        }
+
+        public static void SpreadPercentageOfCurses(Character center, ref Character target, float percent)
+        {
+            if (target == null || !target.Alive || center == null || !center.Alive)
+                return;
+            List<string> centerCurses = center.GetCurseList();
+            foreach (string curse in centerCurses)
+            {
+                int nHas = center.GetAuraCharges(curse);
+                int nToGive = UnityEngine.Mathf.RoundToInt(nHas * percent);
+                target.SetAuraCurse(null, GetAuraCurseData(curse), nToGive, useCharacterMods: false);
+            }
+        }
+
+        public static Character GetCharacterWithMostUniqueCurses(IList<Character> team)
+        {
+            Character charWithMostCurses = null;
+            int maxCurses = 0;
+            if (team == null)
+                return null;
+            foreach (Character npc in team)
+            {
+                if (IsLivingNPC(npc))
+                {
+                    int uniqueCurses = npc.GetCurseList().Count;
+                    if (uniqueCurses > maxCurses)
+                    {
+                        maxCurses = uniqueCurses;
+                        charWithMostCurses = npc;
+                    }
+                }
+            }
+            return charWithMostCurses;
+        }
+
+        public static void ShuffleRandomFruitIntoDeck(ref Character character)
+        {
+            if (character == null || !character.Alive || character.HeroItem == null)
+                return;
+            string[] fruits = ["dragonfruit", "prickypear", "gooseberry", "pinkcactusflower", "yellowcactusflower"];
+            int roll = MatchManager.Instance.Random.GetRandomIntRange(0, fruits.Length, "trait");
+            if (roll < 0 || roll >= fruits.Length)
+                roll = 0;
+            AddCardToDeckOrPile(character, fruits[roll]);
+            character.HeroItem.ScrollCombatText("Cacti Nature", Enums.CombatScrollEffectType.Trait);
         }
     }
 }

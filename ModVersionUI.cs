@@ -12,6 +12,7 @@ using System.Diagnostics;
 using BepInEx;
 using System.IO;
 using System.Reflection;
+using Cards;
 
 namespace Obeliskial_Essentials
 {
@@ -211,7 +212,7 @@ namespace Obeliskial_Essentials
                 {
                     try
                     {
-                        AtOManager.Instance.GetHero(i).GrantExperience(150);
+                        AtOManager.Instance.team.GetHero(i).GrantExperience(150);
                     }
                     catch (Exception e)
                     {
@@ -233,8 +234,8 @@ namespace Obeliskial_Essentials
             {
                 try
                 {
-                    NPC[] teamNPC = MatchManager.Instance.GetTeamNPC();
-                    foreach (NPC npc in teamNPC)
+                    List<Character> teamNPC = MatchManager.Instance.GetTeamNPC().Characters;
+                    foreach (Character npc in teamNPC)
                     {
                         if (npc != null && npc.Alive)
                             npc.HpCurrent = 1;
@@ -415,6 +416,19 @@ namespace Obeliskial_Essentials
                 ;
             });
 
+            // Export All Data
+            ButtonRef btnExportData = UIFactory.CreateButton(devToolsScrollContent, "btnExportData", "Export Data");
+            UIFactory.SetLayoutElement(btnExportData.Component.gameObject, minHeight: 30, minWidth: 100, flexibleWidth: 0, flexibleHeight: 0);
+            btnExportData.ButtonText.fontStyle = FontStyle.Bold;
+            btnExportData.Component.onClick.AddListener(delegate
+            {
+                try
+                {
+                    Patches.ExportAllData();
+                }
+                catch (Exception e) { LogError("Failed to export data: " + e.Message); }
+            });
+
             // Calculate Checksums
             ButtonRef btnCalculateChecksums = UIFactory.CreateButton(devToolsScrollContent, "btnCalculateChecksums", "Calculate Checksums");
             UIFactory.SetLayoutElement(btnCalculateChecksums.Component.gameObject, minWidth: 100, minHeight: 30);
@@ -585,7 +599,7 @@ namespace Obeliskial_Essentials
                 try
                 {
                     PlayerManager.Instance.TutorialWatched = new List<string> { "town", "townCraft", "cardsReward", "eventRolls", "characterPerks", "townReward", "firstTurnEnergy", "cardTarget", "combatSpeed", "castNPC", "townItemCraft" };
-                    SaveManager.SavePlayerData();
+                    SaveManager.Instance.SavePlayerData();
                 }
                 catch (Exception e) { LogError("Failed to complete tutorials: " + e.Message); }
                 ;
@@ -718,10 +732,12 @@ namespace Obeliskial_Essentials
             spacer = UIFactory.CreateLabel(GOSCDHorizontal, "spacerAllHeroes", " ");
             UIFactory.SetLayoutElement(spacer.gameObject, minWidth: 100, minHeight: 30);
 
+            LogDebug("Profile Editor ConstructPanelContent: Creating individual heroes");
             // individual heroes
             int a = 0;
             foreach (SubClassData scd in Globals.Instance.SubClass.Values)
             {
+                LogDebug("Profile Editor ConstructPanelContent: Creating individual hero: " + scd.Id);
                 if (!scd.MainCharacter || scd.Id == "medsdlcone" || scd.Id == "medsdlctwo" || scd.Id == "medsdlcthree" || scd.Id == "medsdlcfour")
                     continue;
                 GOSCDHorizontal = UIFactory.CreateUIObject("medsSCDHorizontal" + scd.Id, heroColumns[a % 3]);
@@ -782,7 +798,7 @@ namespace Obeliskial_Essentials
                 boon or injury; or
                 item.
             */
-            foreach (CardData card in Globals.Instance.Cards.Values)
+            foreach (CardRealtimeData card in Globals.Instance.Cards.Values)
             {
                 if (card.CardUpgraded != CardUpgraded.No || !acceptedCardClasses.Contains(card.CardClass))
                     continue;
@@ -963,7 +979,7 @@ namespace Obeliskial_Essentials
             inputHeroesExperience[_id].Component.interactable = toggleHeroesUnlocked[_id].isOn;
             inputHeroesRank[_id].Component.interactable = toggleHeroesUnlocked[_id].isOn;
             List<string> cardList = Globals.Instance.GetSubClassData(_id)?.GetCardsId() ?? new List<string>();
-            CardData item = Globals.Instance.GetSubClassData(_id)?.Item;
+            CardDataNew item = Globals.Instance.GetSubClassData(_id)?.Item;
             if (item != null)
                 cardList.Add(item.Id);
             foreach (string cardID in cardList)
@@ -1012,7 +1028,7 @@ namespace Obeliskial_Essentials
             foreach (string scID in toggleHeroesUnlocked.Keys)
             {
                 bool unlocked = PlayerManager.Instance.IsHeroUnlocked(scID);
-                LogInfo("Hero " + scID + (unlocked ? " is unlocked" : " is locked"));
+                LogDebug("Hero " + scID + (unlocked ? " is unlocked" : " is locked"));
                 toggleHeroesUnlocked[scID].SetIsOnWithoutNotify(unlocked);
                 inputHeroesRank[scID].Component.SetTextWithoutNotify(PlayerManager.Instance.GetPerkRank(scID).ToString());
                 inputHeroesExperience[scID].Component.SetTextWithoutNotify(PlayerManager.Instance.GetProgress(scID).ToString());
@@ -1029,7 +1045,7 @@ namespace Obeliskial_Essentials
                 {
                     string cardID = sCard.Split("|")[1];
                     bool unlocked = PlayerManager.Instance.IsCardUnlocked(cardID);
-                    LogInfo("Card " + cardID + (unlocked ? " is unlocked" : " is locked"));
+                    LogDebug("Card " + cardID + (unlocked ? " is unlocked" : " is locked"));
                     toggleCardsUnlocked[cardID].SetIsOnWithoutNotify(unlocked);
                     if (!unlocked && btnCardsLockUnlock["All"].ButtonText.text == "Lock All Cards")
                         btnCardsLockUnlock["All"].ButtonText.text = "Unlock All Cards";
@@ -1066,14 +1082,14 @@ namespace Obeliskial_Essentials
                     PlayerManager.Instance.HeroProgress[scID] = newXP;
             }
             PlayerManager.Instance.UnlockedHeroes = unlockedHeroes;
-            LogInfo("Unlocked heroes: " + string.Join(", ", unlockedHeroes));
+            LogDebug("Unlocked heroes: " + string.Join(", ", unlockedHeroes));
             List<string> unlockedCards = new();
             foreach (string cardID in toggleCardsUnlocked.Keys)
                 if (toggleCardsUnlocked[cardID].isOn)
                     unlockedCards.Add(cardID);
             PlayerManager.Instance.UnlockedCards = unlockedCards;
-            LogInfo("Unlocked cards: " + string.Join(", ", unlockedCards));
-            SaveManager.SavePlayerData();
+            LogDebug("Unlocked cards: " + string.Join(", ", unlockedCards));
+            SaveManager.Instance.SavePlayerData();
         }
         internal static void Init()
         {

@@ -15,6 +15,9 @@ using System;
 using System.Text;
 using UnityEngine.UI;
 using System.Runtime.InteropServices;
+using Cards;
+using System.Runtime.CompilerServices;
+using System.Collections;
 
 
 /*
@@ -41,7 +44,7 @@ namespace Obeliskial_Essentials
         internal static Dictionary<string, string> medsNodeEvent = new();
         internal static Dictionary<string, int> medsNodeEventPercent = new();
         internal static Dictionary<string, int> medsNodeEventPriority = new();
-        internal static Dictionary<string, EventReplyDataText> medsEventReplyDataText = new();
+        internal static Dictionary<string, Dictionary<string, object>> medsEventReplyDataText = new();
         internal static Dictionary<string, Node> medsNodeSource = new();
         public static List<string> medsAllThePetsCards = new();
         public static List<string> medsDropOnlyItems = new();
@@ -67,6 +70,7 @@ namespace Obeliskial_Essentials
         public static Dictionary<string, List<string>> medsBaseCardsListSearch = new();
         public static List<string> medsF2UIOpen = new();
         public static List<string> medsCheckSummary = new();
+        public static string debugBase = "Essentials";
         private void Awake()
         {
             Log = Logger;
@@ -90,27 +94,38 @@ namespace Obeliskial_Essentials
                 Force_Unlock_Mouse = true, // or null
                 Unhollowed_Modules_Folder = null
             });
-            UniverseLib.Universe.Init(1f, ProfileEditor.Init, LogHandler, new()
-            {
-                Disable_EventSystem_Override = false, // or null
-                Force_Unlock_Mouse = true, // or null
-                Unhollowed_Modules_Folder = null
-            });
+            // UniverseLib.Universe.Init(1f, ProfileEditor.Init, LogHandler, new()
+            // {
+            //     Disable_EventSystem_Override = false, // or null
+            //     Force_Unlock_Mouse = true, // or null
+            //     Unhollowed_Modules_Folder = null
+            // });
             RegisterMod(_name: PluginInfo.PLUGIN_NAME, _author: "stiffmeds", _description: "Essential reference classes and methods for Across the Obelisk modding.", _version: PluginInfo.PLUGIN_VERSION, _date: ModDate, _link: @"https://across-the-obelisk.thunderstore.io/package/meds/Obeliskial_Essentials/", _priority: int.MaxValue, _type: new string[1] { "Core" });
             //AddModVersionText(PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION, ModDate.ToString());
             harmony.PatchAll();
         }
-        internal static void LogDebug(string msg)
+
+        internal static void LogDebug(string msg, [CallerMemberName] string caller = "")
         {
             if (EnableDebugLogging.Value)
             {
-                Log.LogDebug(msg);
+                Log.LogDebug($"{debugBase}- {caller} - {msg}");
             }
-
         }
         internal static void LogInfo(string msg)
         {
-            Log.LogInfo(msg);
+            Log.LogInfo(debugBase + msg);
+        }
+        internal static void LogError(string msg, [CallerMemberName] string caller = "")
+        {
+            Log.LogError($"{debugBase}- {caller} - {msg}");
+        }
+
+        public static IEnumerator RunAfter(IEnumerator original, Action action)
+        {
+            while (original.MoveNext())
+                yield return original.Current;
+            action();
         }
 
 
@@ -118,11 +133,8 @@ namespace Obeliskial_Essentials
         {
             Log.LogWarning(msg);
         }
-        internal static void LogError(string msg)
-        {
-            Log.LogError(msg);
-        }
-        void LogHandler(string message, UnityEngine.LogType type)
+
+        internal static void LogHandler(string message, UnityEngine.LogType type)
         {
             string log = message?.ToString() ?? "";
             switch (type)
@@ -286,204 +298,19 @@ namespace Obeliskial_Essentials
 
         public static void ExtractData<T>(T[] data)
         {
-            //string combined = "{";
-            //int h = 1; // counts hundreds for combined files
+            if (data == null || data.Length == 0)
+                return;
+            bool pretty = true;
+            string type = DataTextConvert.GetExportFolder(data[0]);
             for (int a = 1; a <= data.Length; a++)
             {
-                string type = "";
-                string id = "";
-                string text = "";
+                object d = data[a - 1];
+                string id = DataTextConvert.ToString(d);
+                Dictionary<string, object> converted = DataTextConvert.ToText(d);
+                string text = DataTextConvert.ToJson(converted, pretty);
                 string textFULL = "";
-                bool pretty = true;
-                if (data[a - 1].GetType() == typeof(SubClassData))
-                {
-                    type = "subclass";
-                    SubClassData d = (SubClassData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(TraitData))
-                {
-                    type = "trait";
-                    TraitData d = (TraitData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(CardData))
-                {
-                    type = "card";
-                    CardData d = (CardData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(PerkData))
-                {
-                    type = "perk";
-                    PerkData d = (PerkData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(AuraCurseData))
-                {
-                    type = "auraCurse";
-                    AuraCurseData d = (AuraCurseData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(NPCData))
-                {
-                    type = "npc";
-                    NPCData d = (NPCData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(NodeData))
-                {
-                    type = "node";
-                    NodeData d = (NodeData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                    textFULL = JsonUtility.ToJson(DataTextConvert.ToFULLText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(LootData))
-                {
-                    type = "loot";
-                    LootData d = (LootData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(PerkNodeData))
-                {
-                    type = "perkNode";
-                    PerkNodeData d = (PerkNodeData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(ChallengeData))
-                {
-                    type = "challengeData";
-                    ChallengeData d = (ChallengeData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(ChallengeTrait))
-                {
-                    type = "challengeTrait";
-                    ChallengeTrait d = (ChallengeTrait)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(CombatData))
-                {
-                    type = "combatData";
-                    CombatData d = (CombatData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(EventData))
-                {
-                    type = "event";
-                    EventData d = (EventData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(EventReplyDataText))
-                {
-                    type = "eventReply";
-                    EventReplyDataText d = (EventReplyDataText)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(d, pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(EventRequirementData))
-                {
-                    type = "eventRequirement";
-                    EventRequirementData d = (EventRequirementData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(ZoneData))
-                {
-                    type = "zone";
-                    ZoneData d = (ZoneData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(KeyNotesData))
-                {
-                    type = "keynote";
-                    KeyNotesData d = (KeyNotesData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(PackData))
-                {
-                    type = "pack";
-                    PackData d = (PackData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(CardPlayerPackData))
-                {
-                    type = "cardPlayerPack";
-                    CardPlayerPackData d = (CardPlayerPackData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(CardPlayerPairsPackData))
-                {
-                    type = "pairsPack";
-                    CardPlayerPairsPackData d = (CardPlayerPairsPackData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(ItemData))
-                {
-                    type = "item";
-                    ItemData d = (ItemData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(CardbackData))
-                {
-                    type = "cardback";
-                    CardbackData d = (CardbackData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(SkinData))
-                {
-                    type = "skin";
-                    SkinData d = (SkinData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(CorruptionPackData))
-                {
-                    type = "corruptionPack";
-                    CorruptionPackData d = (CorruptionPackData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(CinematicData))
-                {
-                    type = "cinematic";
-                    CinematicData d = (CinematicData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else if (data[a - 1].GetType() == typeof(TierRewardData))
-                {
-                    type = "tierReward";
-                    TierRewardData d = (TierRewardData)(object)data[a - 1];
-                    id = d.TierNum.ToString();
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d), pretty);
-                }
-                else
-                {
-                    Log.LogError("Unknown type while extracting data: " + data[a - 1].GetType());
-                    return;
-                }
-                //text = text.Replace(@""":false,", @""":0,").Replace(@""":false}", @""":0}").Replace(@""":true,", @""":1,").Replace(@""":true}", @""":1}");
+                if (d is NodeData node)
+                    textFULL = DataTextConvert.ToJson(DataTextConvert.ToFULLText(node), pretty);
                 if (a == 1)
                 {
                     FolderCreate(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", type));
@@ -499,7 +326,6 @@ namespace Obeliskial_Essentials
                     WriteToJSON(type + "_FULL", textFULL, id);
                 if (a == data.Length)
                 {
-                    // WriteToJSON(type, combined.Remove(combined.Length - 1) + "}", a, h);
                     File.AppendAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "!combined", type + ".json"), "\"" + id + "\": " + text + "}]");
                     if (textFULL != "")
                         File.AppendAllText(Path.Combine(Paths.ConfigPath, "Obeliskial_exported", "!combined", type + "_FULL.json"), "\"" + id + "\": " + textFULL + "]");
@@ -561,7 +387,7 @@ namespace Obeliskial_Essentials
 
             int seed = AtOManager.Instance.GetGameId().GetDeterministicHashCode();
 
-            int team = TeamHeroToInt(AtOManager.Instance.GetTeam());
+            int team = TeamHeroToInt(AtOManager.Instance.team.heroes.ToArray());
             int nodes = 0; // #TODO: nodelist
             string[] gameVersion = GameManager.Instance.gameVersion.Split(".");
             int vanillaVersion = int.Parse(gameVersion[0]) * 10000 + int.Parse(gameVersion[1]) * 100 + int.Parse(gameVersion[2]);
@@ -807,14 +633,14 @@ namespace Obeliskial_Essentials
                         List<string> stringList = new List<string>();
                         for (int index = 0; index < Globals.Instance.CardListByType[Enums.CardType.Corruption].Count; ++index)
                         {
-                            CardData cardData = Globals.Instance.GetCardData(Globals.Instance.CardListByType[Enums.CardType.Corruption][index], false);
-                            if ((UnityEngine.Object)cardData != (UnityEngine.Object)null && !cardData.OnlyInWeekly)
+                            CardRealtimeData cardData = Globals.Instance.GetCardData(Globals.Instance.CardListByType[Enums.CardType.Corruption][index], false);
+                            if (cardData != null && !cardData.HasFlag(CustomFlags.OnlyInWeekly))
                                 stringList.Add(Globals.Instance.CardListByType[Enums.CardType.Corruption][index]);
                         }
                         bool flag3 = false;
                         int medsRandomCorruptionIndex;
                         string medsCorruptionIdCard = "";
-                        CardData medsCDataCorruption = null;
+                        CardRealtimeData medsCDataCorruption = null;
                         while (!flag3)
                         {
                             int index1 = UnityEngine.Random.Range(0, stringList.Count);
@@ -826,12 +652,12 @@ namespace Obeliskial_Essentials
                                 for (int index2 = 0; index2 < deterministicHashCode % 10; ++index2)
                                     UnityEngine.Random.Range(0, 100);
                                 medsCDataCorruption = Globals.Instance.GetCardData(medsCorruptionIdCard, false);
-                                if (!((UnityEngine.Object)medsCDataCorruption == (UnityEngine.Object)null) && (!medsCDataCorruption.OnlyInWeekly))
+                                if (!(medsCDataCorruption == null) && (!medsCDataCorruption.HasFlag(CustomFlags.OnlyInWeekly)))
                                     flag3 = true;
                             }
                         }
 
-                        if ((UnityEngine.Object)medsCDataCorruption == (UnityEngine.Object)null)
+                        if (medsCDataCorruption == null)
                             medsCDataCorruption = Globals.Instance.GetCardData(medsCorruptionIdCard, false);
                         if (medsCDataCorruption.CardRarity == CardRarity.Common)
                         {
@@ -919,10 +745,10 @@ namespace Obeliskial_Essentials
             SnapshotCamera snapshotCamera = SnapshotCamera.MakeSnapshotCamera(0);
             CardScreenManager.Instance.ShowCardScreen(true);
             // for each card in cards
-            Dictionary<string, CardData> allCards = Traverse.Create(Globals.Instance).Field("_CardsSource").GetValue<Dictionary<string, CardData>>();
-            LogInfo("i herd u liek memory leaks ;)");
+            Dictionary<string, CardRealtimeData> allCards = Traverse.Create(Globals.Instance).Field("_Cards").GetValue<Dictionary<string, CardRealtimeData>>();
+            LogDebug("i herd u liek memory leaks ;)");
             int a = 1;
-            foreach (KeyValuePair<string, CardData> kvp in allCards)
+            foreach (KeyValuePair<string, CardRealtimeData> kvp in allCards)
             {
                 if (a == 100)
                     Globals.Instance.StartCoroutine(DevTools.medsButtonTextRevert(DevTools.btnProfileEditor, "i herd u liek memory leaks ;)"));
@@ -960,18 +786,15 @@ namespace Obeliskial_Essentials
             List<string> doneList = new();
             foreach (string id in Globals.Instance.Cards.Keys)
             {
-                CardData card = Globals.Instance.GetCardData(id, false);
+                CardRealtimeData card = Globals.Instance.GetCardData(id, false);
                 if (card != null)
                 {
-                    CardData relatedCard = Globals.Instance.GetCardData(card.RelatedCard, false);
-                    if (relatedCard != null && (card.CardClass == CardClass.Monster || (card.CardClass == CardClass.Item && relatedCard.CardClass == CardClass.Special) || (card.CardClass == CardClass.Special && relatedCard.CardClass == CardClass.Special && relatedCard.CardType != CardType.Enchantment)) && !doneList.Contains(relatedCard.Id))
-                        doneList.Add(relatedCard.Id);
-                    CardData relatedCard2 = Globals.Instance.GetCardData(card.RelatedCard2, false);
-                    if (relatedCard2 != null && (card.CardClass == CardClass.Monster || (card.CardClass == CardClass.Item && relatedCard2.CardClass == CardClass.Special) || (card.CardClass == CardClass.Special && relatedCard2.CardClass == CardClass.Special && relatedCard2.CardType != CardType.Enchantment)) && !doneList.Contains(relatedCard2.Id))
-                        doneList.Add(relatedCard2.Id);
-                    CardData relatedCard3 = Globals.Instance.GetCardData(card.RelatedCard3, false);
-                    if (relatedCard3 != null && (card.CardClass == CardClass.Monster || (card.CardClass == CardClass.Item && relatedCard3.CardClass == CardClass.Special) || (card.CardClass == CardClass.Special && relatedCard3.CardClass == CardClass.Special && relatedCard3.CardType != CardType.Enchantment)) && !doneList.Contains(relatedCard3.Id))
-                        doneList.Add(relatedCard3.Id);
+                    foreach (string relatedID in card.RelatedCards)
+                    {
+                        CardRealtimeData relatedCard = Globals.Instance.GetCardData(relatedID, false);
+                        if (relatedCard != null && (card.CardClass == CardClass.Monster || (card.CardClass == CardClass.Item && relatedCard.CardClass == CardClass.Special) || (card.CardClass == CardClass.Special && relatedCard.CardClass == CardClass.Special && relatedCard.CardType != CardType.Enchantment)) && !doneList.Contains(relatedCard.Id))
+                            doneList.Add(relatedCard.Id);
+                    }
                 }
             }
             Dictionary<string, List<string>> cardIDs = new();
@@ -1007,7 +830,7 @@ namespace Obeliskial_Essentials
             {
                 if (doneList.Contains(id))
                     continue;
-                CardData card = Globals.Instance.GetCardData(id, false);
+                CardRealtimeData card = Globals.Instance.GetCardData(id, false);
                 if (card != null)
                 {
                     string cardname = card.CardName;
@@ -1015,7 +838,7 @@ namespace Obeliskial_Essentials
                         cardname += " (Corruptor)";
                     else if (card.CardClass == CardClass.Monster)
                         cardname += " (Monster)";
-                    else if (card.CardClass == CardClass.Special && !card.Starter && card.CardType != CardType.Enchantment)
+                    else if (card.CardClass == CardClass.Special && !card.HasFlag(CustomFlags.Starter) && card.CardType != CardType.Enchantment)
                         cardname += " (Special)";
                     else if (card.CardClass == CardClass.Item)
                         cardname += " (Item)";
@@ -1023,24 +846,24 @@ namespace Obeliskial_Essentials
                         cardIDs[cardname] = new();
                     List<string> newRelated = new();
                     cardIDs[cardname].Add(card.Id);
-                    foreach (string relatedID in GetRelatedCardIDs(card))
+                    foreach (string relatedID in card.RelatedCards)
                         newRelated.Add(relatedID);
                     // blue upgrade
-                    CardData upgrade1 = Globals.Instance.GetCardData(card.UpgradesTo1, false);
+                    CardRealtimeData upgrade1 = Globals.Instance.GetCardData(card.UpgradesTo1, false);
                     if (upgrade1 != null && !cardIDs[cardname].Contains(upgrade1.Id))
                     {
                         cardIDs[cardname].Add(upgrade1.Id);
                         doneList.Add(upgrade1.Id);
-                        foreach (string relatedID in GetRelatedCardIDs(upgrade1))
+                        foreach (string relatedID in upgrade1.RelatedCards)
                             newRelated.Add(relatedID);
                     }
                     // yellow upgrade
-                    CardData upgrade2 = Globals.Instance.GetCardData(card.UpgradesTo2, false);
+                    CardRealtimeData upgrade2 = Globals.Instance.GetCardData(card.UpgradesTo2, false);
                     if (upgrade2 != null && !cardIDs[cardname].Contains(upgrade2.Id))
                     {
                         cardIDs[cardname].Add(upgrade2.Id);
                         doneList.Add(upgrade2.Id);
-                        foreach (string relatedID in GetRelatedCardIDs(upgrade2))
+                        foreach (string relatedID in upgrade2.RelatedCards)
                             newRelated.Add(relatedID);
                     }
                     // purple upgrade
@@ -1048,7 +871,7 @@ namespace Obeliskial_Essentials
                     {
                         cardIDs[cardname].Add(card.UpgradesToRare.Id);
                         doneList.Add(card.UpgradesToRare.Id);
-                        foreach (string relatedID in GetRelatedCardIDs(card.UpgradesToRare))
+                        foreach (string relatedID in Globals.Instance.GetCardData(card.UpgradesToRare.Id, false).RelatedCards)
                             newRelated.Add(relatedID);
                     }
 
@@ -1085,23 +908,7 @@ namespace Obeliskial_Essentials
                 Globals.Instance.StartCoroutine(FullCardSpriteOutputCo(true, _btn));
             //File.WriteAllText(Path.Combine(Paths.GameRootPath, "Tome of Knowledge", "autocomplete.txt"), combinedNames);
         }
-        public static List<string> GetRelatedCardIDs(CardData _card)
-        {
-            List<string> IDs = new();
-            if (_card != null)
-            {
-                CardData relatedCard = Globals.Instance.GetCardData(_card.RelatedCard, false);
-                if (relatedCard != null && !IDs.Contains(relatedCard.Id))
-                    IDs.Add(relatedCard.Id);
-                CardData relatedCard2 = Globals.Instance.GetCardData(_card.RelatedCard2, false);
-                if (relatedCard2 != null && !IDs.Contains(relatedCard2.Id))
-                    IDs.Add(relatedCard2.Id);
-                CardData relatedCard3 = Globals.Instance.GetCardData(_card.RelatedCard3, false);
-                if (relatedCard3 != null && !IDs.Contains(relatedCard3.Id))
-                    IDs.Add(relatedCard3.Id);
-            }
-            return IDs;
-        }
+
         public static void MapNodeExport(bool forExcel = false) // exports map node positions into text format
         {
             if (forExcel)
@@ -1238,144 +1045,144 @@ namespace Obeliskial_Essentials
             medsBaseCardsListSearch[_term].Add(id);
         }
 
-        public static void medsCreateCardClones()
-        {
-            Traverse.Create(Globals.Instance).Field("_CardsListSearch").SetValue(medsBaseCardsListSearch);
-            Dictionary<string, CardData> medsCardsSource = Traverse.Create(Globals.Instance).Field("_CardsSource").GetValue<Dictionary<string, CardData>>();
-            Dictionary<CardType, List<string>> medsCardListByType = new();
-            Dictionary<CardClass, List<string>> medsCardListByClass = new();
-            List<string> medsCardListNotUpgraded = new();
-            Dictionary<CardClass, List<string>> medsCardListNotUpgradedByClass = new();
-            Dictionary<string, List<string>> medsCardListByClassType = new();
-            Dictionary<string, int> medsCardEnergyCost = new();
-            Dictionary<CardType, List<string>> medsCardItemByType = new();
-            List<string> medsSortNameID = new();
-            LogDebug("medsCreateCardClones: Starting to set card lists");
-            foreach (CardType key in Enum.GetValues(typeof(Enums.CardType)))
-            {
-                if (key != Enums.CardType.None)
-                    medsCardListByType[key] = new List<string>();
-            }
-            foreach (CardClass key in Enum.GetValues(typeof(Enums.CardClass)))
-            {
-                medsCardListByClass[key] = new List<string>();
-                medsCardListNotUpgradedByClass[key] = new List<string>();
-            }
-            Dictionary<string, CardData> medsCards = new();
-            foreach (string key in medsCardsSource.Keys)
-                medsCards.Add(key, medsCardsSource[key]);
-            StringBuilder stringBuilder = new StringBuilder();
-            LogDebug("medsCreateCardClones: Starting to set card names");
-            foreach (string key1 in medsCardsSource.Keys)
-            {
-                stringBuilder.Clear();
-                medsCards[key1].InitClone(key1);
-                CardData card = medsCards[key1];
-                string text1;
-                if (card.UpgradedFrom != "")
-                {
-                    stringBuilder.Append("c_");
-                    stringBuilder.Append(card.UpgradedFrom);
-                    stringBuilder.Append("_name");
-                    text1 = Texts.Instance.GetText(stringBuilder.ToString(), "cards");
-                }
-                else
-                {
-                    stringBuilder.Append("c_");
-                    stringBuilder.Append(card.Id);
-                    stringBuilder.Append("_name");
-                    text1 = Texts.Instance.GetText(stringBuilder.ToString(), "cards");
-                }
-                if (text1 != "")
-                    card.CardName = text1;
-                stringBuilder.Clear();
-                stringBuilder.Append("c_");
-                stringBuilder.Append(card.Id);
-                stringBuilder.Append("_fluff");
-                string text2 = Texts.Instance.GetText(stringBuilder.ToString(), "cards");
-                if (text2 != "")
-                    card.Fluff = text2;
-                medsSortNameID.Add(card.CardName + "|" + key1);
-            }
-            // sort by name _then_ ID
-            medsSortNameID.Sort();
-            Dictionary<string, CardData> medsCardsSorted = new();
-            Dictionary<string, CardData> medsCardsSourceSorted = new();
-            // LogDebug("READY TO SORT CARDS! " + medsSortNameID.Count);
-            foreach (string key in medsSortNameID)
-            {
-                string cID = key.Split("|")[1];
-                //LogDebug("SORTING CARD: " + key);
-                medsCardsSorted[cID] = medsCards[cID];
-                medsCardsSourceSorted[cID] = medsCardsSource[cID];
-            }
-            // LogDebug("FINISHED SORTING CARDS!");
-            medsCardsSource = medsCardsSourceSorted;
-            medsCards = medsCardsSorted;
+        // public static void medsCreateCardClones()
+        // {
+        //     Traverse.Create(Globals.Instance).Field("_CardsListSearch").SetValue(medsBaseCardsListSearch);
+        //     Dictionary<string, CardRealtimeData> medsCardsSource = Traverse.Create(Globals.Instance).Field("_Cards").GetValue<Dictionary<string, CardRealtimeData>>();
+        //     Dictionary<CardType, List<string>> medsCardListByType = new();
+        //     Dictionary<CardClass, List<string>> medsCardListByClass = new();
+        //     List<string> medsCardListNotUpgraded = new();
+        //     Dictionary<CardClass, List<string>> medsCardListNotUpgradedByClass = new();
+        //     Dictionary<string, List<string>> medsCardListByClassType = new();
+        //     Dictionary<string, int> medsCardEnergyCost = new();
+        //     Dictionary<CardType, List<string>> medsCardItemByType = new();
+        //     List<string> medsSortNameID = new();
+        //     LogDebug("medsCreateCardClones: Starting to set card lists");
+        //     foreach (CardType key in Enum.GetValues(typeof(Enums.CardType)))
+        //     {
+        //         if (key != Enums.CardType.None)
+        //             medsCardListByType[key] = new List<string>();
+        //     }
+        //     foreach (CardClass key in Enum.GetValues(typeof(Enums.CardClass)))
+        //     {
+        //         medsCardListByClass[key] = new List<string>();
+        //         medsCardListNotUpgradedByClass[key] = new List<string>();
+        //     }
+        //     Dictionary<string, CardRealtimeData> medsCards = new();
+        //     foreach (string key in medsCardsSource.Keys)
+        //         medsCards.Add(key, medsCardsSource[key]);
+        //     StringBuilder stringBuilder = new StringBuilder();
+        //     LogDebug("medsCreateCardClones: Starting to set card names");
+        //     foreach (string key1 in medsCardsSource.Keys)
+        //     {
+        //         stringBuilder.Clear();
+        //         medsCards[key1].InitClone(key1);
+        //         CardRealtimeData card = medsCards[key1];
+        //         string text1;
+        //         if (card.UpgradedFrom != "")
+        //         {
+        //             stringBuilder.Append("c_");
+        //             stringBuilder.Append(card.UpgradedFrom);
+        //             stringBuilder.Append("_name");
+        //             text1 = Texts.Instance.GetText(stringBuilder.ToString(), "cards");
+        //         }
+        //         else
+        //         {
+        //             stringBuilder.Append("c_");
+        //             stringBuilder.Append(card.Id);
+        //             stringBuilder.Append("_name");
+        //             text1 = Texts.Instance.GetText(stringBuilder.ToString(), "cards");
+        //         }
+        //         if (text1 != "")
+        //             card.CardName = text1;
+        //         stringBuilder.Clear();
+        //         stringBuilder.Append("c_");
+        //         stringBuilder.Append(card.Id);
+        //         stringBuilder.Append("_fluff");
+        //         string text2 = Texts.Instance.GetText(stringBuilder.ToString(), "cards");
+        //         if (text2 != "")
+        //             card.Fluff = text2;
+        //         medsSortNameID.Add(card.CardName + "|" + key1);
+        //     }
+        //     // sort by name _then_ ID
+        //     medsSortNameID.Sort();
+        //     Dictionary<string, CardRealtimeData> medsCardsSorted = new();
+        //     Dictionary<string, CardRealtimeData> medsCardsSourceSorted = new();
+        //     // LogDebug("READY TO SORT CARDS! " + medsSortNameID.Count);
+        //     foreach (string key in medsSortNameID)
+        //     {
+        //         string cID = key.Split("|")[1];
+        //         //LogDebug("SORTING CARD: " + key);
+        //         medsCardsSorted[cID] = medsCards[cID];
+        //         medsCardsSourceSorted[cID] = medsCardsSource[cID];
+        //     }
+        //     // LogDebug("FINISHED SORTING CARDS!");
+        //     medsCardsSource = medsCardsSourceSorted;
+        //     medsCards = medsCardsSorted;
 
 
-            foreach (string key1 in medsCardsSource.Keys)
-            {
-                CardData card = medsCards[key1];
-                if (card == null)
-                {
-                    LogDebug("medsCreateCardClones: Card is null: " + key1);
-                    continue;
-                }
-                try
-                {
-                    if ((card.CardClass != Enums.CardClass.Item || !card.Item.QuestItem) && card.ShowInTome)
-                    {
-                        medsCardEnergyCost.Add(card.Id, card.EnergyCost);
-                        Globals.Instance.IncludeInSearch(card.CardName, card.Id);
+        //     foreach (string key1 in medsCardsSource.Keys)
+        //     {
+        //         CardRealtimeData card = medsCards[key1];
+        //         if (card == null)
+        //         {
+        //             LogDebug("medsCreateCardClones: Card is null: " + key1);
+        //             continue;
+        //         }
+        //         try
+        //         {
+        //             if ((card.CardClass != Enums.CardClass.Item || !card.Item.QuestItem) && card.ShowInTome)
+        //             {
+        //                 medsCardEnergyCost.Add(card.Id, card.EnergyCost);
+        //                 Globals.Instance.IncludeInSearch(card.CardName, card.Id);
 
-                        medsCardListByClass[card.CardClass].Add(card.Id);
-                        if (card.CardUpgraded == Enums.CardUpgraded.No)
-                        {
-                            medsCardListNotUpgradedByClass[card.CardClass].Add(card.Id);
-                            medsCardListNotUpgraded.Add(card.Id);
-                            if (card.CardClass == Enums.CardClass.Item)
-                            {
-                                if (!medsCardItemByType.ContainsKey(card.CardType))
-                                    medsCardItemByType.Add(card.CardType, new List<string>());
-                                if (!medsCardItemByType[card.CardType].Contains(card.Id))
-                                    medsCardItemByType[card.CardType].Add(card.Id);
-                            }
-                        }
-                        List<Enums.CardType> cardTypes = card.GetCardTypes();
-                        for (int index = 0; index < cardTypes.Count; ++index)
-                        {
-                            medsCardListByType[cardTypes[index]].Add(card.Id);
-                            string key2 = Enum.GetName(typeof(Enums.CardClass), (object)card.CardClass) + "_" + Enum.GetName(typeof(Enums.CardType), (object)cardTypes[index]);
-                            if (!medsCardListByClassType.ContainsKey(key2))
-                                medsCardListByClassType[key2] = new List<string>();
-                            if (!medsCardListByClassType[key2].Contains(card.Id))
-                                medsCardListByClassType[key2].Add(card.Id);
-                            Globals.Instance.IncludeInSearch(Texts.Instance.GetText(Enum.GetName(typeof(Enums.CardType), (object)cardTypes[index])), card.Id);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogDebug($"medsCreateCardClones exception for card {key1}. Exception: {ex.Message}");
-                }
-            }
+        //                 medsCardListByClass[card.CardClass].Add(card.Id);
+        //                 if (card.CardUpgraded == Enums.CardUpgraded.No)
+        //                 {
+        //                     medsCardListNotUpgradedByClass[card.CardClass].Add(card.Id);
+        //                     medsCardListNotUpgraded.Add(card.Id);
+        //                     if (card.CardClass == Enums.CardClass.Item)
+        //                     {
+        //                         if (!medsCardItemByType.ContainsKey(card.CardType))
+        //                             medsCardItemByType.Add(card.CardType, new List<string>());
+        //                         if (!medsCardItemByType[card.CardType].Contains(card.Id))
+        //                             medsCardItemByType[card.CardType].Add(card.Id);
+        //                     }
+        //                 }
+        //                 List<Enums.CardType> cardTypes = card.GetCardTypes();
+        //                 for (int index = 0; index < cardTypes.Count; ++index)
+        //                 {
+        //                     medsCardListByType[cardTypes[index]].Add(card.Id);
+        //                     string key2 = Enum.GetName(typeof(Enums.CardClass), (object)card.CardClass) + "_" + Enum.GetName(typeof(Enums.CardType), (object)cardTypes[index]);
+        //                     if (!medsCardListByClassType.ContainsKey(key2))
+        //                         medsCardListByClassType[key2] = new List<string>();
+        //                     if (!medsCardListByClassType[key2].Contains(card.Id))
+        //                         medsCardListByClassType[key2].Add(card.Id);
+        //                     Globals.Instance.IncludeInSearch(Texts.Instance.GetText(Enum.GetName(typeof(Enums.CardType), (object)cardTypes[index])), card.Id);
+        //                 }
+        //             }
+        //         }
+        //         catch (Exception ex)
+        //         {
+        //             LogDebug($"medsCreateCardClones exception for card {key1}. Exception: {ex.Message}");
+        //         }
+        //     }
 
-            LogDebug("medsCreateCardClones: Setting card lists");
-            Traverse.Create(Globals.Instance).Field("_CardListByType").SetValue(medsCardListByType);
-            Traverse.Create(Globals.Instance).Field("_CardListByClass").SetValue(medsCardListByClass);
-            Traverse.Create(Globals.Instance).Field("_CardListNotUpgraded").SetValue(medsCardListNotUpgraded);
-            Traverse.Create(Globals.Instance).Field("_CardListNotUpgradedByClass").SetValue(medsCardListNotUpgradedByClass);
-            Traverse.Create(Globals.Instance).Field("_CardListByClassType").SetValue(medsCardListByClassType);
-            Traverse.Create(Globals.Instance).Field("_CardEnergyCost").SetValue(medsCardEnergyCost);
-            Traverse.Create(Globals.Instance).Field("_CardItemByType").SetValue(medsCardItemByType);
-            Traverse.Create(Globals.Instance).Field("_CardEnergyCost").SetValue(medsCardEnergyCost);
-            Traverse.Create(Globals.Instance).Field("_Cards").SetValue(medsCards);
-            Traverse.Create(Globals.Instance).Field("_CardsSource").SetValue(medsCardsSource);
-            foreach (string key in Globals.Instance.Cards.Keys)
-                Globals.Instance.Cards[key].InitClone2();
-            //medsCardListNotUpgraded.Sort(); // no longer necessary because we sort cards and cardssource instead?
-        }
+        //     LogDebug("medsCreateCardClones: Setting card lists");
+        //     Traverse.Create(Globals.Instance).Field("_CardListByType").SetValue(medsCardListByType);
+        //     Traverse.Create(Globals.Instance).Field("_CardListByClass").SetValue(medsCardListByClass);
+        //     Traverse.Create(Globals.Instance).Field("_CardListNotUpgraded").SetValue(medsCardListNotUpgraded);
+        //     Traverse.Create(Globals.Instance).Field("_CardListNotUpgradedByClass").SetValue(medsCardListNotUpgradedByClass);
+        //     Traverse.Create(Globals.Instance).Field("_CardListByClassType").SetValue(medsCardListByClassType);
+        //     Traverse.Create(Globals.Instance).Field("_CardEnergyCost").SetValue(medsCardEnergyCost);
+        //     Traverse.Create(Globals.Instance).Field("_CardItemByType").SetValue(medsCardItemByType);
+        //     Traverse.Create(Globals.Instance).Field("_CardEnergyCost").SetValue(medsCardEnergyCost);
+        //     Traverse.Create(Globals.Instance).Field("_Cards").SetValue(medsCards);
+        //     Traverse.Create(Globals.Instance).Field("_CardsSource").SetValue(medsCardsSource);
+        //     foreach (string key in Globals.Instance.Cards.Keys)
+        //         Globals.Instance.Cards[key].InitClone2();
+        //     //medsCardListNotUpgraded.Sort(); // no longer necessary because we sort cards and cardssource instead?
+        // }
 
         public static void DropOnlyItemNodes()
         {
@@ -1525,7 +1332,7 @@ namespace Obeliskial_Essentials
                         for (int c = 0; c < 8; c++) // pack 1-8
                         {
                             string sTmp = a.ToString() + "_" + b.ToString() + "_" + c.ToString();
-                            CardData crd = Globals.Instance.GetCardData(cardsDrafted[sTmp][d], false);
+                            CardRealtimeData crd = Globals.Instance.GetCardData(cardsDrafted[sTmp][d], false);
                             CardScreenManager.Instance.SetCardData(crd);
                             GameObject cardGO = Traverse.Create(CardScreenManager.Instance).Field("cardGO").GetValue<GameObject>();
                             if ((UnityEngine.Object)cardGO != (UnityEngine.Object)null)
@@ -1562,10 +1369,10 @@ namespace Obeliskial_Essentials
             List<string> average = new();
             List<string> hard = new();
             List<string> extreme = new();
-            List<CardData> cards = new();
+            List<CardRealtimeData> cards = new();
             foreach (string cor in Globals.Instance.CardListByType[CardType.Corruption])
             {
-                CardData card = Globals.Instance.GetCardData(cor);
+                CardRealtimeData card = Globals.Instance.GetCardData(cor);
                 if (card != null)
                 {
                     cards.Add(card);
@@ -1640,7 +1447,7 @@ namespace Obeliskial_Essentials
             string s = _skin.SkinName + ":\n";
             foreach (SpriteRenderer _sr in GOSRs)
                 s += _sr.sprite.name + ": (" + _sr.sprite.rect.xMin + "," + (_sr.sprite.texture.height - _sr.sprite.rect.yMin) + "),(" + _sr.sprite.rect.xMax + "," + (_sr.sprite.texture.height - _sr.sprite.rect.yMax) + ")\n";
-            LogInfo(s);
+            LogDebug(s);
         }
         internal static void LogShopItems(string _seed = "", string _shop = "caravanshop", string _node = "", int _townReroll = 0, bool _obeliskChallenge = false, int _madness = 0, int _corruptorCount = 0, bool _poverty = false)
         {
@@ -1662,7 +1469,7 @@ namespace Obeliskial_Essentials
                 if (node == "")
                     node = AtOManager.Instance.currentMapNode;
                 if (_townReroll == 0)
-                    reroll = AtOManager.Instance.shopItemReroll;
+                    reroll = AtOManager.Instance.ShopManager.shopItemReroll;
                 if (_obeliskChallenge == false && GameManager.Instance != null && GameManager.Instance.IsObeliskChallenge())
                     _obeliskChallenge = true;
                 _madness = _obeliskChallenge ? AtOManager.Instance.GetObeliskMadness() : AtOManager.Instance.GetNgPlus();
@@ -1699,7 +1506,7 @@ namespace Obeliskial_Essentials
                         {
                             bool flag = false;
                             int num2 = 0;
-                            CardData cardData = (CardData)null;
+                            CardRealtimeData cardData = (CardRealtimeData)null;
                             for (; !flag && num2 < 10000; ++num2)
                             {
                                 if (index1 >= ts2.Count)
@@ -1737,7 +1544,7 @@ namespace Obeliskial_Essentials
             {
                 bool flag = false;
                 int num3 = 0;
-                CardData cardData = (CardData)null;
+                CardRealtimeData cardData = (CardRealtimeData)null;
                 int num4 = UnityEngine.Random.Range(0, 100);
                 while (!flag && num3 < 10000)
                 {
@@ -1812,7 +1619,7 @@ namespace Obeliskial_Essentials
                 for (int index3 = 0; index3 < ts1.Count; ++index3)
                 {
                     int num6 = UnityEngine.Random.Range(0, 100);
-                    CardData cardData = Globals.Instance.GetCardData(ts1[index3], false);
+                    CardRealtimeData cardData = Globals.Instance.GetCardData(ts1[index3], false);
                     if (!(cardData == null))
                     {
                         bool flag = false;
@@ -1832,7 +1639,7 @@ namespace Obeliskial_Essentials
             LogInfo("SHOP CONTENTS for " + _shop + " at node " + node + " in seed " + _seed + " (reroll: " + (reroll == "" ? _townReroll.ToString() : reroll) + ", " + (_obeliskChallenge ? "OC " : "") + "madness " + _madness.ToString() + "|" + _corruptorCount.ToString() + (_poverty ? " with poverty" : "") + ")");
             foreach (string cardID in ts1)
             {
-                CardData card = Globals.Instance.GetCardData(cardID);
+                CardRealtimeData card = Globals.Instance.GetCardData(cardID);
                 if (card != null)
                     LogInfo(card.CardName + (card.CardUpgraded == CardUpgraded.Rare ? " (Corrupted)" : (card.CardUpgraded == CardUpgraded.A ? " (Blue)" : (card.CardUpgraded == CardUpgraded.B ? " (Yellow)" : ""))) + " [" + card.Id + "]");
             }
@@ -1845,7 +1652,7 @@ namespace Obeliskial_Essentials
             List<string> checksums = new(){
                 ActualChecksums(Traverse.Create(Globals.Instance).Field("_SubClassSource").GetValue<Dictionary<string, SubClassData>>().Select(item => item.Value).ToArray()),
                 ActualChecksums(Traverse.Create(Globals.Instance).Field("_TraitsSource").GetValue<Dictionary<string, TraitData>>().Select(item => item.Value).ToArray()),
-                ActualChecksums(Traverse.Create(Globals.Instance).Field("_CardsSource").GetValue<Dictionary<string, CardData>>().Select(item => item.Value).ToArray()),
+                ActualChecksums(Traverse.Create(Globals.Instance).Field("_CardsSource").GetValue<Dictionary<string, CardDataNew>>().Select(item => item.Value).ToArray()),
                 ActualChecksums(Traverse.Create(Globals.Instance).Field("_PerksSource").GetValue<Dictionary<string, PerkData>>().Select(item => item.Value).ToArray()),
                 //ActualChecksums(Traverse.Create(Globals.Instance).Field("_AurasCursesSource").GetValue<Dictionary<string, AuraCurseData>>().Select(item => item.Value).ToArray()),
                 ActualChecksums(Traverse.Create(Globals.Instance).Field("_NPCsSource").GetValue<Dictionary<string, NPCData>>().Select(item => item.Value).ToArray()),
@@ -1874,211 +1681,27 @@ namespace Obeliskial_Essentials
                 File.AppendAllText(sPath, _checksum);
             if (_FaloRowi)
             {
-                File.AppendAllText(sPath, "\n\nArchitect's Ring CARD\n" + JsonUtility.ToJson(DataTextConvert.ToText(Globals.Instance.GetCardData("architectsring"))));
-                File.AppendAllText(sPath, "\n\nArchitect's Ring ITEM\n" + JsonUtility.ToJson(DataTextConvert.ToText(Globals.Instance.GetItemData("architectsring"))));
-                File.AppendAllText(sPath, "\n\nSacred Axe CARD\n" + JsonUtility.ToJson(DataTextConvert.ToText(Globals.Instance.GetCardData("sacredaxe"))));
-                File.AppendAllText(sPath, "\n\nSacred Axe ITEM\n" + JsonUtility.ToJson(DataTextConvert.ToText(Globals.Instance.GetItemData("sacredaxe"))));
-                File.AppendAllText(sPath, "\n\nTurban CARD\n" + JsonUtility.ToJson(DataTextConvert.ToText(Globals.Instance.GetCardData("turban"))));
-                File.AppendAllText(sPath, "\n\nTurban ITEM\n" + JsonUtility.ToJson(DataTextConvert.ToText(Globals.Instance.GetItemData("turban"))));
-                File.AppendAllText(sPath, "\n\nTurban (rare) CARD\n" + JsonUtility.ToJson(DataTextConvert.ToText(Globals.Instance.GetCardData("turbanrare"))));
-                File.AppendAllText(sPath, "\n\nTurban (rare) ITEM\n" + JsonUtility.ToJson(DataTextConvert.ToText(Globals.Instance.GetItemData("turbanrare"))));
+                File.AppendAllText(sPath, "\n\nArchitect's Ring CARD\n" + DataTextConvert.ToJson(DataTextConvert.ToText(Globals.Instance.GetCardData("architectsring"))));
+                File.AppendAllText(sPath, "\n\nArchitect's Ring ITEM\n" + DataTextConvert.ToJson(DataTextConvert.ToText(Globals.Instance.GetItemData("architectsring"))));
+                File.AppendAllText(sPath, "\n\nSacred Axe CARD\n" + DataTextConvert.ToJson(DataTextConvert.ToText(Globals.Instance.GetCardData("sacredaxe"))));
+                File.AppendAllText(sPath, "\n\nSacred Axe ITEM\n" + DataTextConvert.ToJson(DataTextConvert.ToText(Globals.Instance.GetItemData("sacredaxe"))));
+                File.AppendAllText(sPath, "\n\nTurban CARD\n" + DataTextConvert.ToJson(DataTextConvert.ToText(Globals.Instance.GetCardData("turban"))));
+                File.AppendAllText(sPath, "\n\nTurban ITEM\n" + DataTextConvert.ToJson(DataTextConvert.ToText(Globals.Instance.GetItemData("turban"))));
+                File.AppendAllText(sPath, "\n\nTurban (rare) CARD\n" + DataTextConvert.ToJson(DataTextConvert.ToText(Globals.Instance.GetCardData("turbanrare"))));
+                File.AppendAllText(sPath, "\n\nTurban (rare) ITEM\n" + DataTextConvert.ToJson(DataTextConvert.ToText(Globals.Instance.GetItemData("turbanrare"))));
             }
         }
         public static string ActualChecksums<T>(T[] data)
         {
-            string type = "";
+            if (data == null || data.Length == 0)
+                return "";
+            string type = DataTextConvert.GetExportFolder(data[0]);
             string result = "";
             for (int a = 1; a <= data.Length; a++)
             {
-                string id = "";
-                string text = "";
-                if (data[a - 1].GetType() == typeof(SubClassData))
-                {
-                    type = "subclass";
-                    SubClassData d = (SubClassData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(TraitData))
-                {
-                    type = "trait";
-                    TraitData d = (TraitData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(CardData))
-                {
-                    type = "card";
-                    CardData d = (CardData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(PerkData))
-                {
-                    type = "perk";
-                    PerkData d = (PerkData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(AuraCurseData))
-                {
-                    type = "auraCurse";
-                    AuraCurseData d = (AuraCurseData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(NPCData))
-                {
-                    type = "npc";
-                    NPCData d = (NPCData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(NodeData))
-                {
-                    type = "node";
-                    NodeData d = (NodeData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(LootData))
-                {
-                    type = "loot";
-                    LootData d = (LootData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(PerkNodeData))
-                {
-                    type = "perkNode";
-                    PerkNodeData d = (PerkNodeData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(ChallengeData))
-                {
-                    type = "challengeData";
-                    ChallengeData d = (ChallengeData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(ChallengeTrait))
-                {
-                    type = "challengeTrait";
-                    ChallengeTrait d = (ChallengeTrait)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(CombatData))
-                {
-                    type = "combatData";
-                    CombatData d = (CombatData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(EventData))
-                {
-                    type = "event";
-                    EventData d = (EventData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(EventReplyDataText))
-                {
-                    type = "eventReply";
-                    EventReplyDataText d = (EventReplyDataText)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(d).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(EventRequirementData))
-                {
-                    type = "eventRequirement";
-                    EventRequirementData d = (EventRequirementData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(ZoneData))
-                {
-                    type = "zone";
-                    ZoneData d = (ZoneData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(KeyNotesData))
-                {
-                    type = "keynote";
-                    KeyNotesData d = (KeyNotesData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(PackData))
-                {
-                    type = "pack";
-                    PackData d = (PackData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(CardPlayerPackData))
-                {
-                    type = "cardPlayerPack";
-                    CardPlayerPackData d = (CardPlayerPackData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(CardPlayerPairsPackData))
-                {
-                    type = "pairsPack";
-                    CardPlayerPairsPackData d = (CardPlayerPairsPackData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(ItemData))
-                {
-                    type = "item";
-                    ItemData d = (ItemData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(CardbackData))
-                {
-                    type = "cardback";
-                    CardbackData d = (CardbackData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(SkinData))
-                {
-                    type = "skin";
-                    SkinData d = (SkinData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(CorruptionPackData))
-                {
-                    type = "corruptionPack";
-                    CorruptionPackData d = (CorruptionPackData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(CinematicData))
-                {
-                    type = "cinematic";
-                    CinematicData d = (CinematicData)(object)data[a - 1];
-                    id = DataTextConvert.ToString(d);
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else if (data[a - 1].GetType() == typeof(TierRewardData))
-                {
-                    type = "tierReward";
-                    TierRewardData d = (TierRewardData)(object)data[a - 1];
-                    id = d.TierNum.ToString();
-                    text = JsonUtility.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
-                }
-                else
-                {
-                    Log.LogError("Unknown type while extracting data: " + data[a - 1].GetType());
-                    return result;
-                }
+                object d = data[a - 1];
+                string id = DataTextConvert.ToString(d);
+                string text = DataTextConvert.ToJson(DataTextConvert.ToText(d)).GetHashCode().ToString();
                 result += "\n" + id + ": " + text;
             }
             medsCheckSummary.Add(type + " (" + data.Length.ToString() + "): " + result.GetHashCode().ToString());
